@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import Image from "next/image";
+import * as React from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -13,18 +14,20 @@ import {
   Settings2,
   SquareTerminal,
   Users,
-} from "lucide-react"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
+} from "lucide-react";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { fetchProfileData } from "@/actions/getDataUserID";
+import logoSCA from "../../public/SCZ-Alimentos-Logo.svg";
 
-// This is sample data.
+// Datos de ejemplo
 const data = {
   user: {
     name: "shadcn",
@@ -138,7 +141,7 @@ const data = {
   projects: [
     {
       name: "Panel de Control",
-      url: "#",
+      url: "/",
       icon: LayoutDashboard,
     },
     {
@@ -158,26 +161,52 @@ const data = {
     },
     {
       name: "Iniciar Sesion",
-      url: "/login",
+      url: "/signin",
       icon: Settings2,
-    }
+    },
   ],
-}
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <img src="/SCZ-Alimentos-Logo.svg" className="flex justify-center items-center" alt="Logo" width={200} height={200}></img>
-      </SidebarHeader>
-      <SidebarContent>
-        {/* <NavMain items={data.navMain} /> */}
-        <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  )
-}
+};
+  type User= {
+    id: number;
+    full_name: string;
+    ci: string;
+    rol_id: number;
+    rol_name: string;
+  };
+  export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const [userData, setUserData] = React.useState<User | null>(null);
+  
+    React.useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const data = await fetchProfileData();
+          setUserData(data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      };
+  
+      fetchData();
+    }, []); // El array vacío [] asegura que esto solo se ejecute una vez, al montar el componente
+  
+    return (
+      <Sidebar collapsible="icon" {...props}>
+        <SidebarHeader>
+          <img
+            src="/SCZ-Alimentos-Logo.svg"
+            className="flex justify-center items-center"
+            alt="Logo"
+            width={200}
+            height={200}
+          />
+        </SidebarHeader>
+        <SidebarContent>
+          <NavProjects projects={data.projects} />
+        </SidebarContent>
+        <SidebarFooter>
+          {userData && <NavUser user={userData} />}
+        </SidebarFooter>
+        <SidebarRail />
+      </Sidebar>
+    );
+  }
