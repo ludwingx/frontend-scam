@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 // import {
 //   Breadcrumb,
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   description: "Santa Cruz Alimentos Manager, sistema de gestión",
 };
 
-export default function RootLayout({
+export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
