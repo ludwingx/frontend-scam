@@ -1,6 +1,4 @@
 "use client";
-
-import Image from "next/image";
 import * as React from "react";
 import {
   AudioWaveform,
@@ -12,6 +10,7 @@ import {
   LayoutDashboard,
   Package,
   Settings2,
+  ShoppingBasket,
   SquareTerminal,
   Users,
 } from "lucide-react";
@@ -25,7 +24,6 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { fetchProfileData } from "@/actions/getDataUserID";
-import logoSCA from "../../public/SCZ-Alimentos-Logo.svg";
 
 // Datos de ejemplo
 const data = {
@@ -150,12 +148,17 @@ const data = {
       icon: BriefcaseBusiness,
     },
     {
+      name: "Ingredientes",
+      url: "/ingredients",
+      icon: ShoppingBasket,
+    },
+    {
       name: "Productos",
       url: "/products",
       icon: Package,
     },
     {
-      name: "Users",
+      name: "Usuarios",
       url: "/users",
       icon: Users,
     },
