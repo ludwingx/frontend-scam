@@ -8,12 +8,13 @@ import { ColumnDef } from "@tanstack/react-table";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
-export type Business = {
+export type Ingredients = {
   id: string;
   name: string;
+  unit_measurement: string;
 };
 
-export const columns: ColumnDef<Business>[] = [
+export const columns: ColumnDef<Ingredients>[] = [
   {
     id: "rowNumber",
     header: "N°",
@@ -25,7 +26,10 @@ export const columns: ColumnDef<Business>[] = [
     accessorKey: "name",
     header: "Nombre",
   },
-
+  {
+    accessorKey: "unit_measurement",
+    header: "Unidad de Medida",
+  },
   //edit & delete opcion
   {
     id: "actions",
@@ -36,8 +40,8 @@ export const columns: ColumnDef<Business>[] = [
       return (
         <div className=" flex gap-2 justify-center">
           <ReusableDialog
-            title="Editar Negocio"
-            description="Aquí podrás editar un negocio."
+            title="Editar Ingrediente"
+            description="Aquí podrás editar un ingrediente."
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-700">
                 Editar
@@ -56,15 +60,26 @@ export const columns: ColumnDef<Business>[] = [
                   className="col-span-3"
                 />
               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="unidadMedida" className="text-right">
+                  Unidad de Medida
+                </Label>
+                <Input
+                  id="unidadMedida"
+                  placeholder="Ingresa la unidad de medida"
+                  className="col-span-3"
+                />
+              </div>
             </div>
           </ReusableDialog>
 
           <ReusableDialog
             title="Eliminar Negocio"
-            description="Que deseas eliminar el negocio?"
+            description="Que deseas eliminar el ingrediente?"
             trigger={<Button variant="destructive">Eliminar</Button>}
             // eslint-disable-next-line react/no-children-prop
-            submitButtonText="Eliminar" children={undefined}          ></ReusableDialog>
+            submitButtonText="Eliminar" children={undefined}
+          ></ReusableDialog>
         </div>
       );
     },

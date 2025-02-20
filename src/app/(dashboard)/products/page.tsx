@@ -1,3 +1,4 @@
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -7,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil } from "lucide-react";
+import { CirclePlus, Pencil } from "lucide-react";
 import Image from 'next/image'
 // Definimos el tipo de datos de los productos
 type Product = {
@@ -25,7 +26,7 @@ async function getData(): Promise<Product[]> {
     {
       id: "1",
       name: "Cuñape",
-      price: 10.99,
+      price: 5.00,
       business: "Mil Sabores",
       status: "active",
       img: "/cuñape.png",
@@ -61,57 +62,56 @@ export default async function Page() {
   const data = await getData(); // Obtenemos los datos
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
       {/* Título de la página */}
-      <div className="Container flex flex-col gap-2 pl-10">
-        <h2 className="scroll-m-20 text-3xl font-semibold tracking-tight first:mt-0">
+      <div className="flex flex-col gap-4 mb-6">
+      <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                Panel de Control
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+                Negocios
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <h2 className="text-3xl font-semibold text-gray-900">
           Productos
         </h2>
+        <small className="text-sm font-medium text-gray-600">
+          Aquí podrás gestionar los productos.
+        </small>
       </div>
 
       {/* Descripción y botón de crear producto */}
-      <div className="flex items-center justify-between">
-        <small className="text-sm font-medium leading-none pl-10 pt-4">
-          Aquí podrás gestionar los productos.
-        </small>
-        <div className="pr-4 pt-4">
-          <Dialog>
-            <DialogTrigger className="bg-primary text-white flex items-center gap-2 px-3 py-2 rounded hover:bg-primary/90 size-xl">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-circle-plus"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M8 12h8" />
-                <path d="M12 8v8" />
-              </svg>
-              <span>Crear Producto</span>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Crear Producto</DialogTitle>
-                <DialogDescription>
-                  Completa el formulario para agregar un nuevo producto.
-                </DialogDescription>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
-        </div>
+      <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
+
+        <Dialog>
+          <DialogTrigger className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+          <CirclePlus/>
+            <span>Crear Producto</span>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Crear Producto</DialogTitle>
+              <DialogDescription>
+                Completa el formulario para agregar un nuevo producto.
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Contenedor de las tarjetas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:p-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {data.map((product) => (
           <Card key={product.id} className="hover:shadow-lg transition-shadow flex flex-col justify-between">
-            <CardHeader className="p-2">
+            <CardHeader className="p-4">
               {/* Imagen del producto */}
               <div className="flex items-center justify-center">
                 <Image
@@ -119,27 +119,29 @@ export default async function Page() {
                   height={100}
                   src={product.img}
                   alt={product.name}
-                  className="rounded-lg"
+                  className="rounded-lg object-cover"
                 />
               </div>
             </CardHeader>
-            <CardContent className="p-2 flex flex-col gap-2">
-              <CardTitle className="text-lg">{product.name}</CardTitle>
-              <CardDescription className="text-sm">
+            <CardContent className="p-4 flex flex-col gap-3">
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                {product.name}
+              </CardTitle>
+              <CardDescription className="text-sm text-gray-600">
                 {product.business}
               </CardDescription>
-              <p className="text-md font-semibold">
-                ${product.price.toFixed(2)}
+              <p className="text-md font-semibold text-gray-900">
+                Bs. {product.price.toFixed(2)}
               </p>
               <div className="flex items-center justify-between">
                 <p
-                  className={`text-sm ${
+                  className={`text-sm font-medium ${
                     product.status === "active" ? "text-green-500" : "text-red-500"
                   }`}
                 >
                   {product.status === "active" ? "Activo" : "Inactivo"}
                 </p>
-                <button className="text-primary hover:underline p-2">
+                <button className="text-blue-600 hover:text-blue-600/80 transition-colors p-1">
                   <Pencil className="w-4 h-4" />
                 </button>
               </div>
