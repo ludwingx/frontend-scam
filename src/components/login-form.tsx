@@ -62,7 +62,7 @@ const LoginForm = () => {
     };
 
     return (
-    <div className="flex flex-col gap-6 ">  
+    <div className="flex flex-col gap-6 md:gap-8 ">  
         <Card className="overflow-hidden ">
           <CardContent className="grid p-0 md:grid-cols-2">
           <form onSubmit={handleSubmit} className="p-6 md:p-8">
