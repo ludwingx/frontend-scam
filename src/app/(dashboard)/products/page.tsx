@@ -1,15 +1,34 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { CirclePlus, Pencil } from "lucide-react";
-import Image from 'next/image'
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { ProductsActions } from "./ProductsActions";
+import { ReusableDialog } from "@/components/ReusableDialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 // Definimos el tipo de datos de los productos
 type Product = {
   id: string;
@@ -26,7 +45,7 @@ async function getData(): Promise<Product[]> {
     {
       id: "1",
       name: "Cuñape",
-      price: 5.00,
+      price: 5.0,
       business: "Mil Sabores",
       status: "active",
       img: "/cuñape.png",
@@ -65,24 +84,25 @@ export default async function Page() {
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
       {/* Título de la página */}
       <div className="flex flex-col gap-4 mb-6">
-      <Breadcrumb>
+        <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <BreadcrumbLink
+                href="/dashboard"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator className="text-gray-400" />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-gray-900">
-                Negocios
+                Productos
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h2 className="text-3xl font-semibold text-gray-900">
-          Productos
-        </h2>
+        <h2 className="text-3xl font-semibold text-gray-900">Productos</h2>
         <small className="text-sm font-medium text-gray-600">
           Aquí podrás gestionar los productos.
         </small>
@@ -90,27 +110,16 @@ export default async function Page() {
 
       {/* Descripción y botón de crear producto */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-
-        <Dialog>
-          <DialogTrigger className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-          <CirclePlus/>
-            <span>Crear Producto</span>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Crear Producto</DialogTitle>
-              <DialogDescription>
-                Completa el formulario para agregar un nuevo producto.
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+        <ProductsActions />
       </div>
 
       {/* Contenedor de las tarjetas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {data.map((product) => (
-          <Card key={product.id} className="hover:shadow-lg transition-shadow flex flex-col justify-between">
+          <Card
+            key={product.id}
+            className="hover:shadow-lg transition-shadow flex flex-col justify-between"
+          >
             <CardHeader className="p-4">
               {/* Imagen del producto */}
               <div className="flex items-center justify-center">
@@ -123,7 +132,7 @@ export default async function Page() {
                 />
               </div>
             </CardHeader>
-            <CardContent className="p-4 flex flex-col gap-3">
+            <CardContent className="p-4 flex flex-col gap-2">
               <CardTitle className="text-lg font-semibold text-gray-900">
                 {product.name}
               </CardTitle>
@@ -133,19 +142,69 @@ export default async function Page() {
               <p className="text-md font-semibold text-gray-900">
                 Bs. {product.price.toFixed(2)}
               </p>
-              <div className="flex items-center justify-between">
-                <p
-                  className={`text-sm font-medium ${
-                    product.status === "active" ? "text-green-500" : "text-red-500"
-                  }`}
-                >
-                  {product.status === "active" ? "Activo" : "Inactivo"}
-                </p>
-                <button className="text-blue-600 hover:text-blue-600/80 transition-colors p-1">
-                  <Pencil className="w-4 h-4" />
-                </button>
-              </div>
             </CardContent>
+            <CardFooter className="flex justify-between items-center p-4">
+              <ReusableDialog
+                title="Eliminar Negocio"
+                description="Que deseas eliminar el ingrediente?"
+                trigger={<Trash2 cursor={"pointer"} className="w-4 h-4 text-red-600 hover:text-red-600/80" />}
+                // eslint-disable-next-line react/no-children-prop
+                submitButtonText="Eliminar" children={undefined}
+              ></ReusableDialog>
+              <ReusableDialog
+                title="Editar Producto"
+                description="Aquí podrás editar un producto."
+                trigger={
+                  <Pencil
+                    cursor={"pointer"}
+                    type="button"
+                    className="w-4 h-4 text-gray-600 hover:text-gray-900"
+                  />
+                }
+                submitButtonText="Guardar Cambios"
+              >
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Nombre
+                    </Label>
+                    <Input
+                      id="name"
+                      defaultValue={product.name}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Negocio
+                    </Label>
+                    <Select>
+                      <SelectTrigger className="w-[277px]">
+                        <SelectValue placeholder={product.business} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Negocios:</SelectLabel>
+                          <SelectItem value="apple">Mil Sabores</SelectItem>
+                          <SelectItem value="banana">Tortas Express</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-right">
+                      Precio
+                    </Label>
+                    <Input
+                      id="price"
+                      defaultValue={product.price}
+                      className="col-span-3"
+                    />
+                  </div>
+                </div>
+              </ReusableDialog>
+            </CardFooter>
           </Card>
         ))}
       </div>

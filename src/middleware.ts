@@ -10,9 +10,9 @@ export async function middleware(request: NextRequest) {
   const isPublicPath = publicPaths.includes(request.nextUrl.pathname);
 
   // Si no hay token y la ruta no es pública, redirigir a /auth/signin
-  if (!token && !isPublicPath) {
-    return NextResponse.redirect(new URL('/signin', request.url));
-  }
+  // if (!token && !isPublicPath) {
+  //   return NextResponse.redirect(new URL('/signin', request.url));
+  // }
 
   // Si hay token y está en una ruta pública, redirigir al perfil
   if (token && isPublicPath) {
