@@ -11,6 +11,7 @@ import {
   Package,
   Settings2,
   ShoppingBasket,
+  ShoppingCart,
   SquareTerminal,
   Users,
 } from "lucide-react";
@@ -156,6 +157,11 @@ const data = {
       name: "Productos",
       url: "/products",
       icon: Package,
+    },
+    {
+      name: "Compras",
+      url: "/purchases",
+      icon: ShoppingCart
     },
     {
       name: "Usuarios",

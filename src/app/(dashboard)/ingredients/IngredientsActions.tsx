@@ -4,6 +4,7 @@ import { ReusableDialog } from "@/components/ReusableDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CirclePlus } from "lucide-react";
 
 export function IngredientsActions() {
   const handleCreateIngredient = () => {
@@ -20,7 +21,7 @@ export function IngredientsActions() {
         description="Aquí podrás crear un producto."
         trigger={
           <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-            <span>Crear Ingrediente</span>
+            <CirclePlus/><span>Crear Ingrediente</span>
           </Button>
         }
         onSubmit={handleCreateIngredient}
