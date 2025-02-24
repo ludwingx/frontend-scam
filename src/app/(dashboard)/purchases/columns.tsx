@@ -2,46 +2,132 @@
 
 import { ReusableDialog } from "@/components/ReusableDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ColumnDef } from "@tanstack/react-table";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TableHeader, TableRow, TableHead, TableBody, TableCell, TableFooter, Table } from "@/components/ui/table";
+import { X } from "lucide-react";
+import { ComboboxIngredients } from "./ComboBoxIngredients";
+import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+// Tipo para definir la estructura de los datos de compras
 export type Purchases = {
-  id: string;
-  name: string;
-  unit_measurement: string;
+  id: number;
+  fecha_compra: string;
+  detalle_compra: {
+    id: number;
+    nombre_ingrediente: string;
+    cantidad: number;
+    precio_unitario: number;
+  }[];
+  total_compra: number;
 };
 
+// Columnas de la tabla
 export const columns: ColumnDef<Purchases>[] = [
   {
     id: "rowNumber",
     header: "N°",
     cell: ({ row }) => {
-      return <div>{row.index + 1}</div>;
+      return <div className="text-center">{row.index + 1}</div>; // Centrar el contenido
     },
   },
   {
-    accessorKey: "name",
-    header: "Nombre",
+    accessorKey: "fecha_compra",
+    header: "Fecha de Compra",
+    cell: ({ row }) => {
+      return <div className="text-center">{row.original.fecha_compra}</div>; // Centrar el contenido
+    },
   },
   {
-    accessorKey: "unit_measurement",
-    header: "Unidad de Medida",
+    accessorKey: "detalle_compra",
+    header: "Detalle de Compra",
+    cell: ({ row }) => {
+      const detalles = row.original.detalle_compra;
+      const totalCompra = row.original.total_compra;
+
+      return (
+        <Sheet >
+          <SheetTrigger  asChild>
+            <Button variant="outline" className="w-full bg-green-100 hover:bg-green-200" >Ver Detalle</Button>
+          </SheetTrigger>
+          <SheetContent className="sm:max-w-2xl ">
+            <SheetHeader>
+              <SheetTitle>Detalle de la Compra</SheetTitle>
+              <SheetDescription className="pb-6">
+                Aquí puedes ver el detalle de los ingredientes comprados.
+              </SheetDescription>
+            </SheetHeader>
+            <ScrollArea className="h-[calc(100vh-200px)] p-2">
+              <table className="w-full text-sm pr-4">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-center p-2">N°</th>
+                    <th className="text-center p-2">Ítem</th>
+                    <th className="text-center p-2">Cantidad</th>
+                    <th className="text-center p-2">Precio Unitario (Bs.)</th>
+                    <th className="text-right p-2 ">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detalles.map((detalle) => (
+                    <tr key={detalle.id} className="border-b">
+                      <td className="text-center p-2">{detalles.indexOf(detalle) + 1}</td>
+                      <td className="text-center p-2">{detalle.nombre_ingrediente}</td>
+                      <td className="text-center p-2">{detalle.cantidad}</td>
+                      <td className="text-center p-2">Bs. {detalle.precio_unitario.toFixed(2)}</td>
+                      <td className="text-right  p-2 ">Bs. {(detalle.cantidad * detalle.precio_unitario).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                  {/* Fila para el total */}
+                  <tr className="bg-gray-100">
+                    <td colSpan={4} className="text-right p-2 font-medium">Total:</td>
+                    <td className="text-right p-2 font-medium">Bs. {totalCompra.toFixed(2)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </ScrollArea>
+            <SheetFooter className="pt-8">
+              <SheetClose asChild>
+                <Button type="button">Cerrar</Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      );
+    },
   },
-  //edit & delete opcion
+  {
+    accessorKey: "total_compra",
+    header: "Total de Compra",
+    cell: ({ row }) => {
+      return <div className="text-center">Bs. {row.original.total_compra.toFixed(2)}</div>; // Centrar el contenido
+    },
+  },
   {
     id: "actions",
     header: () => <div className="text-center">Acciones</div>, // Centrar el header
     cell: ({ row }) => {
-      const business = row.original;
+      const purchase = row.original;
 
       return (
-        <div className=" flex gap-2 justify-center">
-          <ReusableDialog
-            title="Editar Ingrediente"
-            description="Aquí podrás editar un ingrediente."
+        <div className="flex gap-2 justify-center">
+          {/* Diálogo para editar */}
+          <ReusableDialogWidth
+            title="Editar Compra"
+            description="Aquí podrás editar los detalles de la compra."
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-700">
                 Editar
@@ -49,37 +135,152 @@ export const columns: ColumnDef<Purchases>[] = [
             }
             submitButtonText="Guardar Cambios"
           >
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-4">
+              {/* Fecha de la compra */}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Nombre
+                <Label htmlFor="fecha_compra" className="text-right">
+                  Fecha de la compra
                 </Label>
                 <Input
-                  id="name"
-                  defaultValue={business.name}
-                  className="col-span-3"
+                  id="fecha_compra"
+                  type="date"
+                  defaultValue={purchase.fecha_compra} // Mostrar la fecha de la compra
                 />
               </div>
+
+              {/* Sucursal */}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="unidadMedida" className="text-right">
-                  Unidad de Medida
+                <Label htmlFor="sucursal" className="text-right">
+                  Sucursal
                 </Label>
-                <Input
-                  id="unidadMedida"
-                  placeholder="Ingresa la unidad de medida"
-                  className="col-span-3"
-                />
+                <Select>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Selecciona una sucursal" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Sucursales:</SelectLabel>
+                      <SelectItem value="apple">Radial 19</SelectItem>
+                      <SelectItem value="banana">Villa 1ro de mayo</SelectItem>
+                      <SelectItem value="blueberry">Radial 26</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Tabla de ingredientes */}
+              <div className="grid items-center gap-4">
+                <ScrollArea className="h-[300px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40px]">N°</TableHead>
+                        <TableHead className="w-[220px]">Ingrediente</TableHead>
+                        <TableHead className="text-center w-[100px]">
+                          Cantidad
+                        </TableHead>
+                        <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
+                        <TableHead className="text-right">Subtotal</TableHead>
+                        <TableHead className="w-[40px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {purchase.detalle_compra.map((ing, index) => (
+                        <TableRow key={ing.id}>
+                          <TableCell className="font-medium">{index + 1}</TableCell>
+                          <TableCell>
+                            <ComboboxIngredients
+                              value={ing.nombre_ingrediente}
+                              onSelect={() => {
+                                // Aquí puedes manejar la actualización del ingrediente
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              className="text-center"
+                              type="number"
+                              value={ing.cantidad || ""}
+                              onChange={() => {
+                                // Aquí puedes manejar el cambio de cantidad
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Input
+                              className="text-center w-[120px]"
+                              type="text"
+                              value={ing.precio_unitario || ""}
+                              onChange={() => {
+                                // Aquí puedes manejar el cambio de precio
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="text-right w-[100px]">
+                            Bs. {(ing.cantidad * ing.precio_unitario).toFixed(2).replace(".", ",")}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                // Aquí puedes manejar la eliminación del ingrediente
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {/* Fila para agregar un nuevo ingrediente */}
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          {purchase.detalle_compra.length + 1}
+                        </TableCell>
+                        <TableCell>
+                          <ComboboxIngredients
+                            value=""
+                            onSelect={() => {
+                              // Aquí puedes manejar la adición de un nuevo ingrediente
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input type="number" disabled />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Input className="w-[120px]" type="text" disabled />
+                        </TableCell>
+                        <TableCell className="text-right w-[100px]">
+                          Bs. 0,00
+                        </TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    </TableBody>
+                    <TableFooter>
+                      <TableRow>
+                        <TableCell colSpan={4}>Total</TableCell>
+                        <TableCell className="text-right">
+                          Bs. {purchase.total_compra.toFixed(2).replace(".", ",")}
+                        </TableCell>
+                        <TableCell></TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  </Table>
+                </ScrollArea>
               </div>
             </div>
-          </ReusableDialog>
+          </ReusableDialogWidth>
 
+          {/* Diálogo para eliminar */}
           <ReusableDialog
-            title="Eliminar Negocio"
-            description="Que deseas eliminar el ingrediente?"
+            title="Eliminar Compra"
+            description="¿Estás seguro de que deseas eliminar esta compra?"
             trigger={<Button variant="destructive">Eliminar</Button>}
-            // eslint-disable-next-line react/no-children-prop
-            submitButtonText="Eliminar" children={undefined}
-          ></ReusableDialog>
+            submitButtonText="Eliminar"
+          >
+            <p>Esta acción no se puede deshacer.</p>
+          </ReusableDialog>
         </div>
       );
     },

@@ -39,6 +39,12 @@ export function ProductsActions() {
             </Label>
             <Input id="unidadMedida" placeholder="Ingresa la unidad de medida" className="col-span-3" />
           </div>
+          <div  className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="precio" className="text-right">
+              Precio
+            </Label>
+            <Input id="precio" type="number" placeholder="Ingresa el precio del producto" className="col-span-3" />
+          </div>
         </div>
       </ReusableDialog>
 
