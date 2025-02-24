@@ -71,7 +71,7 @@ export const columns: ColumnDef<Users>[] = [
                   ci
                 </Label>
                 <Input
-                  id="ci"
+                  id="ci" defaultValue={users.ci}
                   placeholder="Ingresa el carnet de identidad"
                   className="col-span-3"
                 />
@@ -82,7 +82,7 @@ export const columns: ColumnDef<Users>[] = [
                 </Label>
                 <Select>
                   <SelectTrigger className="w-[275px]">
-                    <SelectValue placeholder="Selecciona un rol" />
+                    <SelectValue placeholder={users.rol_name} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Administrador">Administrador</SelectItem>

@@ -66,6 +66,7 @@ export const columns: ColumnDef<Ingredients>[] = [
                 </Label>
                 <Input
                   id="unidadMedida"
+                  defaultValue={business.unit_measurement}
                   placeholder="Ingresa la unidad de medida"
                   className="col-span-3"
                 />

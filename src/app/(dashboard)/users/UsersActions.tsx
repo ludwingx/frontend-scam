@@ -44,7 +44,7 @@ export function UsersActions() {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="ci" className="text-right">
-              ci
+              C.I.
             </Label>
             <Input
               id="ci"
@@ -58,7 +58,7 @@ export function UsersActions() {
             </Label>
             <Select>
               <SelectTrigger className="w-[275px]">
-                <SelectValue placeholder="Selecciona un rol" />
+                <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Administrador">Administrador</SelectItem>

@@ -8,15 +8,16 @@ import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableFooter,
   TableHeader,
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus, X } from "lucide-react"; // Importar el ícono "X"
+import { CirclePlus, X } from "lucide-react";
 import { ComboboxIngredients } from "./ComboBoxIngredients";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Ingrediente {
   id: number;
@@ -29,13 +30,11 @@ interface Ingrediente {
 export function PurchasesActions() {
   const [ingredients, setIngredients] = useState<Ingrediente[]>([]);
 
-  // Función para agregar o actualizar un ingrediente
   const handleAddOrUpdateIngredient = (
     ingrediente: Ingrediente,
     index?: number
   ) => {
     if (index !== undefined) {
-      // Actualizar el ingrediente existente
       const updatedIngredients = [...ingredients];
       updatedIngredients[index] = {
         ...ingrediente,
@@ -44,7 +43,6 @@ export function PurchasesActions() {
       };
       setIngredients(updatedIngredients);
     } else {
-      // Agregar un nuevo ingrediente
       const existe = ingredients.some((ing) => ing.id === ingrediente.id);
       if (!existe) {
         setIngredients((prev) => [
@@ -55,12 +53,10 @@ export function PurchasesActions() {
     }
   };
 
-  // Función para eliminar un ingrediente
   const handleRemoveIngredient = (id: number) => {
     setIngredients((prev) => prev.filter((ing) => ing.id !== id));
   };
 
-  // Función para actualizar la cantidad de un ingrediente
   const handleCantidadChange = (id: number, value: string) => {
     const updatedIngredients = ingredients.map((ing) =>
       ing.id === id ? { ...ing, cantidad: Number(value) } : ing
@@ -68,7 +64,6 @@ export function PurchasesActions() {
     setIngredients(updatedIngredients);
   };
 
-  // Función para actualizar el precio unitario de un ingrediente
   const handlePrecioChange = (id: number, value: string) => {
     const formattedValue = value.replace(",", ".");
     if (/^[\d,.]*$/.test(value)) {
@@ -79,14 +74,12 @@ export function PurchasesActions() {
     }
   };
 
-  // Calcular el subtotal de cada ingrediente
   const calculateSubtotal = (ingredient: Ingrediente) => {
     const cantidad = ingredient.cantidad || 0;
     const precioUnitario = ingredient.precioUnitario || 0;
     return cantidad * precioUnitario;
   };
 
-  // Calcular el total de la compra
   const calculateTotal = () => {
     return ingredients.reduce(
       (total, ing) => total + calculateSubtotal(ing),
@@ -95,7 +88,7 @@ export function PurchasesActions() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <ReusableDialogWidth
         title="Crear Compra"
         description="Aquí podrás crear una compra."
@@ -106,108 +99,118 @@ export function PurchasesActions() {
           </Button>
         }
         onSubmit={() => console.log("Crear Compra")}
+
       >
-        <div className="grid gap-4 py-4">
+        <div className="grid gap-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Fecha de la compra
             </Label>
-            <Input id="name" type="date" className="col-span-3" />
+            <Input id="name" type="date"  />
           </div>
-          
-          <div className="grid items-center gap-4">
-            <Table>
-              <TableCaption>
-                Una lista de tus ingredientes recientes.
-              </TableCaption>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Sucursal
+            </Label>
+            <Select>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Selecciona una sucursal" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Sucursales:</SelectLabel>
+                  <SelectItem value="apple">Radial 19</SelectItem>
+                  <SelectItem value="banana">Villa 1ro de mayo</SelectItem>
+                  <SelectItem value="blueberry">Radial 26</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid items-center gap-4"> <ScrollArea className="h-[300px]">
+            <Table >
+             
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[40px]">N°</TableHead>
-                  <TableHead className="w-[280px]">Ingrediente</TableHead>
-                  <TableHead>Cantidad</TableHead>
-                  <TableHead className="text-center">Precio Unitario</TableHead>
+                  <TableHead className="w-[220px]">Ingrediente</TableHead>
+                  <TableHead className="text-center w-[100px]">
+                    Cantidad
+                  </TableHead>
+                  <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
                   <TableHead className="text-right">Subtotal</TableHead>
-                  <TableHead className="w-[40px]"></TableHead>{" "}
-                  {/* Columna para el botón "X" */}
+                  <TableHead className="w-[40px]"></TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {/* Mostrar los ingredientes seleccionados */}
-                {ingredients.map((ing, index) => (
-                  <TableRow key={ing.id}>
-                    <TableCell className="font-medium">{index + 1}</TableCell>
+                <TableBody>
+                  {ingredients.map((ing, index) => (
+                    <TableRow key={ing.id}>
+                      
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>
+                        <ComboboxIngredients
+                          value={ing.nombre}
+                          onSelect={(ingrediente) =>
+                            handleAddOrUpdateIngredient(ingrediente, index)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          className="text-center"
+                          type="number"
+                          value={ing.cantidad || ""}
+                          onChange={(e) =>
+                            handleCantidadChange(ing.id, e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          className="text-center w-[120px]"
+                          type="text"
+                          onChange={(e) =>
+                            handlePrecioChange(ing.id, e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="text-right w-[100px]">
+                        Bs. {calculateSubtotal(ing).toFixed(2).replace(".", ",")}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveIngredient(ing.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      {ingredients.length + 1}
+                    </TableCell>
                     <TableCell>
                       <ComboboxIngredients
-                        value={ing.nombre} // Pasar el nombre del ingrediente seleccionado
+                        value=""
                         onSelect={(ingrediente) =>
-                          handleAddOrUpdateIngredient(ingrediente, index)
+                          handleAddOrUpdateIngredient(ingrediente)
                         }
                       />
                     </TableCell>
                     <TableCell>
-                      <Input
-                        type="number"
-                        value={ing.cantidad || ""}
-                        onChange={(e) =>
-                          handleCantidadChange(ing.id, e.target.value)
-                        }
-                      />
+                      <Input type="number" disabled />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Input
-                        className="w-[60px]"
-                        type="text"
-                        value={
-                          ing.precioUnitario === undefined ||
-                          ing.precioUnitario === 0
-                            ? ""
-                            : ing.precioUnitario.toString().replace(".", ",")
-                        }
-                        onChange={(e) =>
-                          handlePrecioChange(ing.id, e.target.value)
-                        }
-                      />
+                      <Input className="w-[120px]" type="text" disabled />
                     </TableCell>
                     <TableCell className="text-right w-[100px]">
-                      Bs. {calculateSubtotal(ing).toFixed(2).replace(".", ",")}
+                      
                     </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveIngredient(ing.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
-                ))}
-
-                {/* Mostrar una fila vacía para agregar un nuevo ingrediente */}
-                <TableRow>
-                  <TableCell className="font-medium">
-                    {ingredients.length + 1}
-                  </TableCell>
-                  <TableCell>
-                    <ComboboxIngredients
-                      value="" // Valor vacío para la fila vacía
-                      onSelect={(ingrediente) =>
-                        handleAddOrUpdateIngredient(ingrediente)
-                      }
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input type="number" disabled />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Input className="w-[60px]" type="text" disabled />
-                  </TableCell>
-                  <TableCell className="text-right w-[100px]">
-                    Bs. 0,00
-                  </TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableBody>
+                </TableBody>
               <TableFooter>
                 <TableRow>
                   <TableCell colSpan={4}>Total</TableCell>
@@ -217,7 +220,8 @@ export function PurchasesActions() {
                   <TableCell></TableCell>
                 </TableRow>
               </TableFooter>
-            </Table>
+
+            </Table>              </ScrollArea>
           </div>
         </div>
       </ReusableDialogWidth>

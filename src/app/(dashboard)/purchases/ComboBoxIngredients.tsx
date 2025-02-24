@@ -23,26 +23,30 @@ interface Ingrediente {
 }
 
 interface ComboboxIngredientsProps {
+  value: string; // Add this line
   onSelect: (ingrediente: Ingrediente) => void;
-
 }
 const ingredientesData = [
   { id: 1, nombre: "Harina" },
   { id: 2, nombre: "Azúcar" },
-  { id: 3, nombre: "Huevos" },
+  { id: 3, nombre: "Huevo" },
   { id: 4, nombre: "Leche" },
   { id: 5, nombre: "Mantequilla" },
+  { id: 6, nombre: "Queso" },
+  { id: 7, nombre: "Sal" },
+  { id: 8, nombre: "Aceite" },
+  { id: 9, nombre: "Azucares" },
+  { id: 10, nombre: "Cafe" }
 ];
 
-export function ComboboxIngredients({ value, onSelect, disabledItems = [] }: ComboboxIngredientsProps & { disabledItems?: string[] }) {
+export function ComboboxIngredients( { onSelect, value, disabledItems = [] }: ComboboxIngredientsProps & { disabledItems?: string[] }) {
   const [open, setOpen] = React.useState(false);
   const [internalValue, setInternalValue] = React.useState(value);
 
   // Sincronizar el estado interno con la prop `value`
   React.useEffect(() => {
     setInternalValue(value);
-  }, [value]);
-
+  }, [value])
   // Filtrar los ingredientes disponibles
   const filteredIngredientesData = ingredientesData.filter(
     (ingrediente) => !disabledItems.includes(ingrediente.nombre)
