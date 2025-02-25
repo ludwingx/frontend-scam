@@ -1,10 +1,19 @@
 "use client"; // Marcar como Client Component
 
 import { ReusableDialog } from "@/components/ReusableDialog";
+import { ReusableSelect } from "@/components/ReusableSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CirclePlus } from "lucide-react";
 
 export function ProductsActions() {
@@ -39,22 +48,18 @@ export function ProductsActions() {
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Negocio
-                    </Label>
-                    <Select>
-                      <SelectTrigger className="w-[277px]">
-                        <SelectValue placeholder="Seleccionar Negocio" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Negocios:</SelectLabel>
-                          <SelectItem value="apple">Mil Sabores</SelectItem>
-                          <SelectItem value="banana">Tortas Express</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <Label htmlFor="name" className="text-right">
+              Negocio
+            </Label>
+            <ReusableSelect
+              placeholder="Selecciona un negocio"
+              label="Negocios:"
+              options={[
+                { value: "Mil Sabores", label: "Mil Sabores" },
+                { value: "Tortas Express", label: "Tortas Express" },
+              ]}
+            />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="unidadMedida" className="text-right">
               Unidad de Medida

@@ -37,7 +37,11 @@ export const columns: ColumnDef<Business>[] = [
         <div className=" flex gap-2 justify-center">
           <ReusableDialog
             title="Editar Negocio"
-            description="Aquí podrás editar un negocio."
+            description={
+              <>
+                Aquí podras modificar los datos del negocio <strong>{business.name}</strong>
+              </>
+            } 
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
                 Editar
@@ -61,7 +65,11 @@ export const columns: ColumnDef<Business>[] = [
 
           <ReusableDialog
             title="Eliminar Negocio"
-            description="Que deseas eliminar el negocio?"
+            description={
+              <>
+                ¿Estás seguro de eliminar el ingrediente <strong>{business.name}</strong>?
+              </>
+            }
             trigger={<Button variant="destructive">Eliminar</Button>}
             // eslint-disable-next-line react/no-children-prop
             submitButtonText="Eliminar" children={undefined}          ></ReusableDialog>
