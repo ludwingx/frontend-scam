@@ -26,12 +26,14 @@ import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
 export type Purchases = {
   id: number;
   fecha_compra: string;
+  sucursal: string;
   detalle_compra: {
     id: number;
     nombre_ingrediente: string;
     cantidad: number;
     precio_unitario: number;
   }[];
+
   total_compra: number;
 };
 
@@ -127,9 +129,9 @@ export const columns: ColumnDef<Purchases>[] = [
           {/* Diálogo para editar */}
           <ReusableDialogWidth
             title="Editar Compra"
-            description="Aquí podrás editar los detalles de la compra."
+            description={"Aquí podrás editar los detalles de la compra N°" + purchase.id}
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-700">
+              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
                 Editar
               </Button>
             }
@@ -155,7 +157,7 @@ export const columns: ColumnDef<Purchases>[] = [
                 </Label>
                 <Select>
                   <SelectTrigger className="w-[220px]">
-                    <SelectValue placeholder="Selecciona una sucursal" />
+                    <SelectValue placeholder={purchase.sucursal} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
