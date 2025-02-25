@@ -43,7 +43,7 @@ export const columns: ColumnDef<Ingredients>[] = [
             title="Editar Ingrediente"
             description="Aquí podrás editar un ingrediente."
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
+              <Button className="bg-blue-600 text-white hover:bg-blue-700">
                 Editar
               </Button>
             }
@@ -66,7 +66,6 @@ export const columns: ColumnDef<Ingredients>[] = [
                 </Label>
                 <Input
                   id="unidadMedida"
-                  defaultValue={business.unit_measurement}
                   placeholder="Ingresa la unidad de medida"
                   className="col-span-3"
                 />

@@ -91,7 +91,7 @@ export function PurchasesActions() {
     <div className="flex flex-col gap-4">
       <ReusableDialogWidth
         title="Crear Compra"
-        description="Aquí podrás crear una compra."
+        description="Aquí podrás crear una compra." 
         trigger={
           <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
             <CirclePlus />
@@ -131,14 +131,14 @@ export function PurchasesActions() {
              
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[40px]">N°</TableHead>
-                  <TableHead className="w-[220px]">Ingrediente</TableHead>
-                  <TableHead className="text-center w-[100px]">
+                  <TableHead className="w-[40px]  text-gray-900">N°</TableHead>
+                  <TableHead className="w-[220px]  text-gray-900">Ingrediente</TableHead>
+                  <TableHead className="text-center w-[100px]  text-gray-900">
                     Cantidad
                   </TableHead>
-                  <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
-                  <TableHead className="text-right">Subtotal</TableHead>
-                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead className="text-center  text-gray-900">Precio Unitario (Bs.)</TableHead>
+                  <TableHead className="text-right  text-gray-900">Subtotal</TableHead>
+                  <TableHead className="w-[40px]  text-gray-900"></TableHead>
                 </TableRow>
               </TableHeader>
                 <TableBody>

@@ -6,6 +6,7 @@ import {
   Bot,
   BriefcaseBusiness,
   Command,
+  Container,
   GalleryVerticalEnd,
   LayoutDashboard,
   Package,
@@ -162,6 +163,11 @@ const data = {
       name: "Compras",
       url: "/purchases",
       icon: ShoppingCart
+    },
+    {
+      name: "Inventario",
+      url: "/storage",
+      icon: Container
     },
     {
       name: "Usuarios",
