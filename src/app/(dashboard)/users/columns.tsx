@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ColumnDef } from "@tanstack/react-table";
-
+import { ReusableSelect } from "@/components/ReusableSelect";
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type Users = {
@@ -80,18 +80,16 @@ export const columns: ColumnDef<Users>[] = [
                 <Label htmlFor="email" className="text-right">
                   Rol de Usuario
                 </Label>
-                <Select>
-                  <SelectTrigger className="w-[275px]">
-                    <SelectValue placeholder={users.rol_name} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Administrador">Administrador</SelectItem>
-                    <SelectItem value="Vendedor">Vendedor</SelectItem>
-                    <SelectItem value="Encargado de almacen">
-                      Encargado de almacen
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <ReusableSelect
+                                                     placeholder="Selecciona un rol"
+                                                     label="Roles:"
+                                                     options={[
+                                                       
+                                        { value: "Administrador", label: "Administrador" },
+                                        { value: "Encargado de Almacen", label: "Radial 19" },
+                               
+                                                      ]}
+                                                   />
                 {/* //select roll */}
               </div>
             </div>

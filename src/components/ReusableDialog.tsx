@@ -14,7 +14,7 @@ import { ReactNode } from "react";
 
 interface ReusableDialogProps {
   title: string;
-  description: string;
+  description: string | ReactNode; 
   trigger: ReactNode;
   children: ReactNode;
   onSubmit?: () => void;

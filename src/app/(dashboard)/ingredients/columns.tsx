@@ -35,13 +35,17 @@ export const columns: ColumnDef<Ingredients>[] = [
     id: "actions",
     header: () => <div className="text-center">Acciones</div>, // Centrar el header
     cell: ({ row }) => {
-      const business = row.original;
+      const ingredients = row.original;
 
       return (
         <div className=" flex gap-2 justify-center">
           <ReusableDialog
             title="Editar Ingrediente"
-            description="Aquí podrás editar un ingrediente."
+            description={
+              <>
+                Aquí podras modificar los datos del ingrediente <strong>{ingredients.name}</strong>
+              </>
+            } 
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-700">
                 Editar
@@ -56,7 +60,7 @@ export const columns: ColumnDef<Ingredients>[] = [
                 </Label>
                 <Input
                   id="name"
-                  defaultValue={business.name}
+                  defaultValue={ingredients.name}
                   className="col-span-3"
                 />
               </div>
@@ -75,7 +79,11 @@ export const columns: ColumnDef<Ingredients>[] = [
 
           <ReusableDialog
             title="Eliminar Negocio"
-            description="Que deseas eliminar el ingrediente?"
+            description={
+              <>
+                ¿Estás seguro de eliminar el ingrediente <strong>{ingredients.name}</strong>?
+              </>
+            }
             trigger={<Button variant="destructive">Eliminar</Button>}
             // eslint-disable-next-line react/no-children-prop
             submitButtonText="Eliminar" children={undefined}

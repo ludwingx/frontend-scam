@@ -20,15 +20,7 @@ import { ProductsActions } from "./ProductsActions";
 import { ReusableDialog } from "@/components/ReusableDialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ReusableSelect } from "@/components/ReusableSelect";
 // Definimos el tipo de datos de los productos
 type Product = {
   id: string;
@@ -146,7 +138,11 @@ export default async function Page() {
             <CardFooter className="flex justify-between items-center p-4">
               <ReusableDialog
                 title="Eliminar Negocio"
-                description="Que deseas eliminar el ingrediente?"
+                description={
+                  <>
+                    ¿Estás seguro de eliminar el producto <strong>{product.name}</strong>?
+                  </>
+                }
                 trigger={<Trash2 cursor={"pointer"} className="w-4 h-4 text-red-600 hover:text-red-600/80" />}
                 // eslint-disable-next-line react/no-children-prop
                 submitButtonText="Eliminar" children={undefined}
@@ -178,18 +174,15 @@ export default async function Page() {
                     <Label htmlFor="name" className="text-right">
                       Negocio
                     </Label>
-                    <Select>
-                      <SelectTrigger className="w-[277px]">
-                        <SelectValue placeholder={product.business} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Negocios:</SelectLabel>
-                          <SelectItem value="apple">Mil Sabores</SelectItem>
-                          <SelectItem value="banana">Tortas Express</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                    <ReusableSelect
+                      placeholder="Selecciona un negocio"
+                      label="Negocios:"
+                      options={[
+                        { value: "Mil Sabores", label: "Mil Sabores" },
+                        { value: "Tortas Express", label: "Tortas Express" }
+
+                       ]}
+                    />
                   </div>
 
                   <div className="grid grid-cols-4 items-center gap-4">

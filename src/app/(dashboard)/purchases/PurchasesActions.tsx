@@ -18,7 +18,7 @@ import { CirclePlus, X } from "lucide-react";
 import { ComboboxIngredients } from "./ComboBoxIngredients";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
+import { ReusableSelect } from "@/components/ReusableSelect";
 interface Ingrediente {
   id: number;
   nombre: string;
@@ -112,19 +112,16 @@ export function PurchasesActions() {
             <Label htmlFor="name" className="text-right">
               Sucursal
             </Label>
-            <Select>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Selecciona una sucursal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Sucursales:</SelectLabel>
-                  <SelectItem value="apple">Radial 19</SelectItem>
-                  <SelectItem value="banana">Villa 1ro de mayo</SelectItem>
-                  <SelectItem value="blueberry">Radial 26</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+<ReusableSelect
+                                     placeholder="Selecciona un negocio"
+                                     label="Negocios:"
+                                     options={[
+                                       
+                        { value: "Radial 26", label: "Radial 26" },
+                        { value: "Radial 19", label: "Radial 19" },
+               
+                                      ]}
+                                   />
           </div>
           <div className="grid items-center gap-4"> <ScrollArea className="h-[300px]">
             <Table >

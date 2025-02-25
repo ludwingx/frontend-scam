@@ -21,6 +21,7 @@ import { TableHeader, TableRow, TableHead, TableBody, TableCell, TableFooter, Ta
 import { X } from "lucide-react";
 import { ComboboxIngredients } from "./ComboBoxIngredients";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
+import { ReusableSelect } from "@/components/ReusableSelect";
 
 // Tipo para definir la estructura de los datos de compras
 export type Purchases = {
@@ -155,19 +156,16 @@ export const columns: ColumnDef<Purchases>[] = [
                 <Label htmlFor="sucursal" className="text-right">
                   Sucursal
                 </Label>
-                <Select>
-                  <SelectTrigger className="w-[220px]">
-                    <SelectValue placeholder={purchase.sucursal} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Sucursales:</SelectLabel>
-                      <SelectItem value="apple">Radial 19</SelectItem>
-                      <SelectItem value="banana">Villa 1ro de mayo</SelectItem>
-                      <SelectItem value="blueberry">Radial 26</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
+                <ReusableSelect
+                                     placeholder="Selecciona un negocio"
+                                     label="Negocios:"
+                                     options={[
+                                       
+                        { value: "Radial 26", label: "Radial 26" },
+                        { value: "Radial 19", label: "Radial 19" },
+               
+                                      ]}
+                                   />
               </div>
 
               {/* Tabla de ingredientes */}

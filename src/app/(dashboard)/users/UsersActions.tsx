@@ -1,6 +1,7 @@
 "use client"; // Marcar como Client Component
 
 import { ReusableDialog } from "@/components/ReusableDialog";
+import { ReusableSelect } from "@/components/ReusableSelect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,16 +57,16 @@ export function UsersActions() {
             <Label htmlFor="email" className="text-right">
               Rol de Usuario
             </Label>
-            <Select>
-              <SelectTrigger className="w-[275px]">
-                <SelectValue placeholder="Seleccionar rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Administrador">Administrador</SelectItem>
-                <SelectItem value="Vendedor">Vendedor</SelectItem>
-                <SelectItem value="Encargado de almacen">Encargado de almacen</SelectItem>
-              </SelectContent>
-            </Select>
+            <ReusableSelect
+                                                                placeholder="Selecciona un rol"
+                                                                label="Roles:"
+                                                                options={[
+                                                                  
+                                                   { value: "Administrador", label: "Administrador" },
+                                                   { value: "Encargado de Almacen", label: "Radial 19" },
+                                          
+                                                                 ]}
+                                                              />
             {/* //select roll */}
           </div>
         </div>
