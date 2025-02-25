@@ -56,7 +56,16 @@ export default async function Page() {
       </div>
 
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
-        <DataTable  columns={columns} data={data} />
+        <DataTable   columns={columns}
+                  data={data}
+                  enableFilter // Habilitar el filtro
+                  filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
+                  filterColumn="name" // Especificar la columna a filtrar
+                  enablePagination // Habilitar la paginación
+                  enableRowSelection // Habilitar la selección de filas
+                  enableColumnVisibility // Habilitar la visibilidad de columnas
+        
+        />
       </div>
     </div>
   );

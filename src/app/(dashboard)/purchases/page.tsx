@@ -197,7 +197,15 @@ export default async function Page() {
       {/* Tabla de compras */}
       <div className="flex flex-col gap-4 mb-6 md:mb-0 md:overflow-x-auto">
     
-        <DataTable columns={columns} data={data} />
+        <DataTable  columns={columns}
+                  data={data}
+                  enableFilter // Habilitar el filtro
+                  filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
+                  filterColumn="fecha_compra" // Especificar la columna a filtrar
+                  enablePagination // Habilitar la paginación
+                  enableRowSelection // Habilitar la selección de filas
+                  enableColumnVisibility // Habilitar la visibilidad de columnas 
+                />
 
       </div>
     </div>

@@ -76,7 +76,7 @@ export const columns: ColumnDef<Purchases>[] = [
               <table className="w-full text-sm pr-4">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-center p-2">N°</th>
+                    <th className="text-center  p-2">N°</th>
                     <th className="text-center p-2">Ítem</th>
                     <th className="text-center p-2">Cantidad</th>
                     <th className="text-center p-2">Precio Unitario (Bs.)</th>
@@ -174,16 +174,16 @@ export const columns: ColumnDef<Purchases>[] = [
               <div className="grid items-center gap-4">
                 <ScrollArea className="h-[300px]">
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[40px]">N°</TableHead>
-                        <TableHead className="w-[220px]">Ingrediente</TableHead>
-                        <TableHead className="text-center w-[100px]">
+                    <TableHeader className="text-center color-gray-900">
+                      <TableRow >
+                        <TableHead className="w-[40px] text-gray-900">N°</TableHead>
+                        <TableHead className="w-[220px] text-gray-900">Ingrediente</TableHead>
+                        <TableHead className="text-center w-[100px] text-gray-900">
                           Cantidad
                         </TableHead>
-                        <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
-                        <TableHead className="text-right">Subtotal</TableHead>
-                        <TableHead className="w-[40px]"></TableHead>
+                        <TableHead className="text-center text-gray-900">Precio Unitario (Bs.)</TableHead>
+                        <TableHead className="text-right text-gray-900">Subtotal</TableHead>
+                        <TableHead className="w-[40px] text-gray-900"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -277,11 +277,11 @@ export const columns: ColumnDef<Purchases>[] = [
           {/* Diálogo para eliminar */}
           <ReusableDialog
             title="Eliminar Compra"
-            description="¿Estás seguro de que deseas eliminar esta compra?"
+            description={"¿Estás seguro de que deseas eliminar la compra N° " + purchase.id + "?"}
             trigger={<Button variant="destructive">Eliminar</Button>}
             submitButtonText="Eliminar"
           >
-            <p>Esta acción no se puede deshacer.</p>
+            <span className="text-red-600 font-semibold">Esta acción no se puede deshacer.</span>
           </ReusableDialog>
         </div>
       );
