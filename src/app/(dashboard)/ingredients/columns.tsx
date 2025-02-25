@@ -43,7 +43,7 @@ export const columns: ColumnDef<Ingredients>[] = [
             title="Editar Ingrediente"
             description="Aquí podrás editar un ingrediente."
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-700">
+              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
                 Editar
               </Button>
             }

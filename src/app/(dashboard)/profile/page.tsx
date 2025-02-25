@@ -43,7 +43,7 @@ export default function Page() {
           </Avatar>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Carlos Navarro</h1>
           <p className="text-sm text-gray-600">Administrador</p>
-          <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+          <button className="mt-4 px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-600/90 transition-colors duration-200">
             Cambiar Foto
           </button>
         </div>
@@ -69,7 +69,7 @@ export default function Page() {
               <p className="mt-1 text-sm text-gray-900">Ciudad de México, México</p>
             </div>
           </div>
-          <button className="mt-6 px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+          <button className="mt-6 px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-600/90 transition-colors duration-200">
             Editar Perfil
           </button>
         </div>

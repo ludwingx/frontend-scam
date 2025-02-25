@@ -17,6 +17,7 @@ async function getData(): Promise<Purchases[]> {
     {
       id: 1,
       fecha_compra: "2023-10-01",
+      sucursal: "Radial 19",
       detalle_compra: [
         {
           id: 101,
@@ -108,6 +109,7 @@ async function getData(): Promise<Purchases[]> {
     {
       id: 2,
       fecha_compra: "2023-10-02",
+      sucursal: "Radial 26",
       detalle_compra: [
         {
           id: 103,
@@ -133,6 +135,7 @@ async function getData(): Promise<Purchases[]> {
     {
       id: 3,
       fecha_compra: "2023-10-03",
+      sucursal: "Villa 1ro de mayo",
       detalle_compra: [
         {
           id: 104,
