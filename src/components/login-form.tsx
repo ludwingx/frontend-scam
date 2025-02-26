@@ -23,7 +23,7 @@ const LoginForm = () => {
         console.log("Password:" + password);
         try {
             // Hacer la solicitud al backend
-            const response = await fetch('https://3612-189-28-75-151.ngrok-free.app/auth/login', {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/login', {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',

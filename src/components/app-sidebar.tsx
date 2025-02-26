@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/sidebar";
 import { fetchProfileData } from "@/actions/getDataUserID";
 
+import { User } from "@/types/user";
+
 // Datos de ejemplo
 const data = {
   user: {
@@ -181,13 +183,7 @@ const data = {
     },
   ],
 };
-  type User= {
-    id: number;
-    full_name: string;
-    ci: string;
-    rol_id: number;
-    rol_name: string;
-  };
+
   export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [userData, setUserData] = React.useState<User | null>(null);
   
@@ -219,7 +215,7 @@ const data = {
           <NavProjects projects={data.projects} />
         </SidebarContent>
         <SidebarFooter>
-          {userData && <NavUser user={userData} />}
+          {userData && <NavUser />}
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
