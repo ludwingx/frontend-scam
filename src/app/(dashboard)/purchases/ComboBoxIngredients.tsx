@@ -18,6 +18,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 interface Ingrediente {
+  unit_measurement: string;
   id: number;
   nombre: string;
 }
@@ -27,16 +28,16 @@ interface ComboboxIngredientsProps {
   onSelect: (ingrediente: Ingrediente) => void;
 }
 const ingredientesData = [
-  { id: 1, nombre: "Harina" },
-  { id: 2, nombre: "Azúcar" },
-  { id: 3, nombre: "Huevo" },
-  { id: 4, nombre: "Leche" },
-  { id: 5, nombre: "Mantequilla" },
-  { id: 6, nombre: "Queso" },
-  { id: 7, nombre: "Sal" },
-  { id: 8, nombre: "Aceite" },
-  { id: 9, nombre: "Azucares" },
-  { id: 10, nombre: "Cafe" }
+  { id: 1, nombre: "Harina", unit_measurement: "gramos" },
+  { id: 2, nombre: "Azúcar", unit_measurement: "gramos" },
+  { id: 3, nombre: "Huevo", unit_measurement: "unidad" },
+  { id: 4, nombre: "Leche", unit_measurement: "mililitros" },
+  { id: 5, nombre: "Mantequilla", unit_measurement: "gramos" },
+  { id: 6, nombre: "Queso", unit_measurement: "gramos" },
+  { id: 7, nombre: "Sal", unit_measurement: "gramos" },
+  { id: 8, nombre: "Aceite", unit_measurement: "mililitros" },
+  { id: 9, nombre: "Azucares", unit_measurement: "gramos" },
+  { id: 10, nombre: "Cafe", unit_measurement: "gramos" },
 ];
 
 export function ComboboxIngredients( { onSelect, value, disabledItems = [] }: ComboboxIngredientsProps & { disabledItems?: string[] }) {

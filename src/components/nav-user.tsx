@@ -1,12 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
+
 } from "lucide-react";
 
 import {
@@ -30,19 +30,29 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { deleteCookie } from "cookies-next";
+import { fetchProfileData } from "@/services/fetchProfileData";
+import Link from "next/link";
 
-export function NavUser({
-  user,
-}: {
-  user: {
+export function NavUser() {
+  const { isMobile } = useSidebar();
+  const [user, setUser] = useState<{
     id: number;
     full_name: string;
     ci: string;
     rol_id: number;
     rol_name: string;
-  };
-}) {
-  const { isMobile } = useSidebar();
+  } | null>(null);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const userData = await fetchProfileData();
+      if (userData) {
+        setUser(userData);
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const handleLogout = () => {
     // Eliminar las cookies del token y user_id
@@ -52,6 +62,10 @@ export function NavUser({
     // Redirigir al usuario a la página de login
     window.location.href = "/signin";
   };
+
+  if (!user) {
+    return <div>Cargando...</div>; // O un spinner de carga
+  }
 
   return (
     <SidebarMenu>
@@ -96,21 +110,17 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
+            {/* <DropdownMenuGroup>
+               <DropdownMenuItem>
                 <Sparkles />
                 Upgrade to Pro
               </DropdownMenuItem>
-            </DropdownMenuGroup>
+            </DropdownMenuGroup> */}
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem >
                 <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
+                <Link href="/profile">Cuenta</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />

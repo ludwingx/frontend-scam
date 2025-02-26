@@ -60,7 +60,7 @@ export default async function Page() {
                   data={data}
                   enableFilter // Habilitar el filtro
                   filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
-                  filterColumn="name" // Especificar la columna a filtrar
+                  filterColumn="full_name" // Especificar la columna a filtrar
                   enablePagination // Habilitar la paginación
                   enableRowSelection // Habilitar la selección de filas
                   enableColumnVisibility // Habilitar la visibilidad de columnas

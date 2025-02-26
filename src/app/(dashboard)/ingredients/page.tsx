@@ -16,17 +16,17 @@ async function getData(): Promise<Ingredients[]> {
     {
       id: "1",
       name: "Queso Criollo",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "2",
       name: "Almidón",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "3",
       name: "Mantequilla",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "4",
@@ -36,72 +36,72 @@ async function getData(): Promise<Ingredients[]> {
     {
       id: "5",
       name: "Yuca",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "6",
       name: "Leche",
-      unit_measurement: "Ltr",
+      unit_measurement: "ml",
     },
     {
       id: "7",
       name: "Harina",
-      unit_measurement: "Kg",
+      unit_measurement: "ml",
     },
     {
       id: "8",
       name: "Azucar",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "9",
       name: "Sal",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "10",
       name: "Aceite",
-      unit_measurement: "Ltr",
+      unit_measurement: "ml",
     },
     {
       id: "11",
       name: "Cafe",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "12",
       name: "Azucares",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "13",
       name: "Queso",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "14",
       name: "Mantequilla",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "15",
       name: "Harina",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "16",
       name: "Azucar",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "17",
       name: "Sal",
-      unit_measurement: "Kg",
+      unit_measurement: "gr",
     },
     {
       id: "18",
       name: "Aceite",
-      unit_measurement: "Ltr",
+      unit_measurement: "ml",
     },
     {
       id: "19",

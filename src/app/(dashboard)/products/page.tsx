@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/card";
 import { Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { ProductsActions } from "./ProductsActions";
 import { ReusableDialog } from "@/components/ReusableDialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ReusableSelect } from "@/components/ReusableSelect";
+import { ProductsActions } from "./ProductsActions";
 // Definimos el tipo de datos de los productos
 type Product = {
   id: string;

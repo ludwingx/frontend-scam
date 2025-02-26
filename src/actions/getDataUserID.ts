@@ -2,14 +2,8 @@
 'use server'; // Marca esta función como una función de servidor
 
 import { cookies } from "next/headers";
+import { User } from "@/types/user";
 
-type User = {
-    id: number;
-    full_name: string;
-    ci: string;
-    rol_id: number;
-    rol_name: string;
-};
 
 export const fetchProfileData = async (): Promise<User | null> => {
     const token = (await cookies()).get('token')?.value;

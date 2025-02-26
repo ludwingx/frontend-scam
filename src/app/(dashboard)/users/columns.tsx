@@ -4,7 +4,6 @@ import { ReusableDialog } from "@/components/ReusableDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ColumnDef } from "@tanstack/react-table";
 import { ReusableSelect } from "@/components/ReusableSelect";
 // This type is used to define the shape of our data.
@@ -39,7 +38,7 @@ export const columns: ColumnDef<Users>[] = [
   //edit & delete opcion
   {
     id: "actions",
-    header: () => <div className="text-center">Acciones</div>, // Centrar el header
+    header: "Acciones",
     cell: ({ row }) => {
       const users = row.original;
 
