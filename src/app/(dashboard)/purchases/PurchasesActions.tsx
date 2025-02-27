@@ -1,238 +1,230 @@
 "use client";
 
-import * as React from "react";
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import { useState } from "react";
+import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
+  TableFooter,
   TableHeader,
+  TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { CirclePlus, X } from "lucide-react";
+import { ComboboxIngredients } from "./ComboBoxIngredients";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  enableFilter?: boolean; // Prop opcional para habilitar el filtro
-  filterPlaceholder?: string; // Texto del placeholder del filtro
-  filterColumn?: string; // Columna a filtrar (opcional, por defecto "name")
-  enablePagination?: boolean; // Prop opcional para habilitar la paginación
-  enableRowSelection?: boolean; // Prop opcional para habilitar la selección de filas
-  enableColumnVisibility?: boolean; // Prop opcional para habilitar la visibilidad de columnas
+interface Ingrediente {
+  id: number;
+  nombre: string;
+  cantidad?: number;
+  precioUnitario?: number;
+  subtotal?: number;
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-  enableFilter = false,
-  filterPlaceholder = "Filtrar...",
-  filterColumn = "name", // Columna a filtrar por defecto
-  enablePagination = false,
-  enableRowSelection = false,
-  enableColumnVisibility = false,
-}: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+export function PurchasesActions() {
+  const [ingredients, setIngredients] = useState<Ingrediente[]>([]);
 
-  const table = useReactTable({
-    data,
-    columns,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: enableFilter ? getFilteredRowModel() : undefined,
-    getPaginationRowModel: enablePagination
-      ? getPaginationRowModel()
-      : undefined,
-    getSortedRowModel: getSortedRowModel(),
-  });
+  const handleAddOrUpdateIngredient = (
+    ingrediente: Ingrediente,
+    index?: number
+  ) => {
+    if (index !== undefined) {
+      const updatedIngredients = [...ingredients];
+      updatedIngredients[index] = {
+        ...ingrediente,
+        cantidad: updatedIngredients[index].cantidad,
+        precioUnitario: updatedIngredients[index].precioUnitario,
+      };
+      setIngredients(updatedIngredients);
+    } else {
+      const existe = ingredients.some((ing) => ing.id === ingrediente.id);
+      if (!existe) {
+        setIngredients((prev) => [
+          ...prev,
+          { ...ingrediente, cantidad: 0, precioUnitario: 0 },
+        ]);
+      }
+    }
+  };
 
-  // Verificar si la columna de filtro existe
-  const filterColumnExists = table.getAllColumns().some(
-    (column) => column.id === filterColumn
-  );
+  const handleRemoveIngredient = (id: number) => {
+    setIngredients((prev) => prev.filter((ing) => ing.id !== id));
+  };
+
+  const handleCantidadChange = (id: number, value: string) => {
+    const updatedIngredients = ingredients.map((ing) =>
+      ing.id === id ? { ...ing, cantidad: Number(value) } : ing
+    );
+    setIngredients(updatedIngredients);
+  };
+
+  const handlePrecioChange = (id: number, value: string) => {
+    const formattedValue = value.replace(",", ".");
+    if (/^[\d,.]*$/.test(value)) {
+      const updatedIngredients = ingredients.map((ing) =>
+        ing.id === id ? { ...ing, precioUnitario: Number(formattedValue) } : ing
+      );
+      setIngredients(updatedIngredients);
+    }
+  };
+
+  const calculateSubtotal = (ingredient: Ingrediente) => {
+    const cantidad = ingredient.cantidad || 0;
+    const precioUnitario = ingredient.precioUnitario || 0;
+    return cantidad * precioUnitario;
+  };
+
+  const calculateTotal = () => {
+    return ingredients.reduce(
+      (total, ing) => total + calculateSubtotal(ing),
+      0
+    );
+  };
 
   return (
-    <div className="w-full ">
-      {/* Filtro y visibilidad de columnas */}
-      <div className="flex items-center p-2">
-        {enableFilter && filterColumnExists && (
-          <Input
-            placeholder={filterPlaceholder}
-            value={
-              (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""
-            } // Usar filterColumn
-            onChange={
-              (event) =>
-                table
-                  .getColumn(filterColumn)
-                  ?.setFilterValue(event.target.value) // Usar filterColumn
-            }
-            className="max-w-sm"
-          />
-        )}
-        
-        {enableColumnVisibility && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columnas <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  // Obtener el header de la columna
-                  const header = column.columnDef.header;
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {/* Mostrar el header si existe, de lo contrario mostrar el ID */}
-                      {typeof header === "string" ? header : column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+    <div className="flex flex-col gap-4">
+      <ReusableDialogWidth
+        title="Crear Compra"
+        description="Aquí podrás crear una compra."
+        trigger={
+          <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+            <CirclePlus />
+            <span>Crear Compra</span>
+          </Button>
+        }
+        onSubmit={() => console.log("Crear Compra")}
 
-      {/* Tabla */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead className="text-center" key={header.id}   style={{
-                      width: header.getSize(), // Usar el ancho definido en la columna
-                      minWidth: header.column.columnDef.minSize, // Usar el ancho mínimo
-                    }}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell className="text-center" key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Paginación y selección de filas */}
-      <div className="flex items-center justify-end space-x-2 py-4">
-      {enableRowSelection && (
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} de{" "}
-            {table.getFilteredRowModel().rows.length} fila(s)
+      >
+        <div className="grid gap-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Fecha de la compra
+            </Label>
+            <Input id="name" type="date"  />
           </div>
-        )}
-        {enablePagination && (
-          <>
-            {/* Botones de paginación */}
-            <div className=" flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                Anterior
-              </Button>
-                {/* Números de página */}
-            <div className="text-sm text-muted-foreground">
-              Página {table.getState().pagination.pageIndex + 1} de{" "}
-              {table.getPageCount()}
-            </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                Siguiente
-              </Button>
-            </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+              Sucursal
+            </Label>
+            <Select>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Selecciona una sucursal" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Sucursales:</SelectLabel>
+                  <SelectItem value="apple">Radial 19</SelectItem>
+                  <SelectItem value="banana">Villa 1ro de mayo</SelectItem>
+                  <SelectItem value="blueberry">Radial 26</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid items-center gap-4"> <ScrollArea className="h-[300px]">
+            <Table >
+             
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]">N°</TableHead>
+                  <TableHead className="w-[220px]">Ingrediente</TableHead>
+                  <TableHead className="text-center w-[100px]">
+                    Cantidad
+                  </TableHead>
+                  <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
+                  <TableHead className="text-right">Subtotal</TableHead>
+                  <TableHead className="w-[40px]"></TableHead>
+                </TableRow>
+              </TableHeader>
+                <TableBody>
+                  {ingredients.map((ing, index) => (
+                    <TableRow key={ing.id}>
+                      
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>
+                        <ComboboxIngredients
+                          value={ing.nombre}
+                          onSelect={(ingrediente) =>
+                            handleAddOrUpdateIngredient(ingrediente, index)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          className="text-center"
+                          type="number"
+                          value={ing.cantidad || ""}
+                          onChange={(e) =>
+                            handleCantidadChange(ing.id, e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          className="text-center w-[120px]"
+                          type="text"
+                          onChange={(e) =>
+                            handlePrecioChange(ing.id, e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="text-right w-[100px]">
+                        Bs. {calculateSubtotal(ing).toFixed(2).replace(".", ",")}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveIngredient(ing.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow>
+                    <TableCell className="font-medium">
+                      {ingredients.length + 1}
+                    </TableCell>
+                    <TableCell>
+                      <ComboboxIngredients
+                        value=""
+                        onSelect={(ingrediente) =>
+                          handleAddOrUpdateIngredient(ingrediente)
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" disabled />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Input className="w-[120px]" type="text" disabled />
+                    </TableCell>
+                    <TableCell className="text-right w-[100px]">
+                      
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                </TableBody>
+              <TableFooter>
+                <TableRow>
+                  <TableCell colSpan={4}>Total</TableCell>
+                  <TableCell className="text-right">
+                    Bs. {calculateTotal().toFixed(2).replace(".", ",")}
+                  </TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableFooter>
 
-          
-          </>
-        )}
-      </div>
+            </Table>              </ScrollArea>
+          </div>
+        </div>
+      </ReusableDialogWidth>
     </div>
   );
 }

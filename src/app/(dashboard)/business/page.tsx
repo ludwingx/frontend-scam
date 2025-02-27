@@ -6,27 +6,28 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Business, columns } from "./columns";
+import { Business, columns } from "./columns"; // Ensure this import is correct
 import { DataTable } from "../../../components/data-table";
 import { BusinessActions } from "./BusinessActions";
-
-async function getData(): Promise<Business[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "1",
-      name: "Mil Sabores",
-    },
-    {
-      id: "2",
-      name: "Tortas Express",
-    },
-    // ...
-  ];
-}
+import { fetchBusinessData } from "@/services/fetchBusinessData";
 
 export default async function Page() {
-  const data = await getData();
+  let data: Business[] = [];
+  let errorMessage: string | null = null;
+
+  try {
+    // Fetch business data using the server action
+    const businesses = await fetchBusinessData();
+
+    if (businesses) {
+      data = businesses;
+    } else {
+      errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
@@ -64,15 +65,20 @@ export default async function Page() {
 
       {/* Content Container */}
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
-        <DataTable   columns={columns}
-                  data={data}
-                  enableFilter // Habilitar el filtro
-                  filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
-                  filterColumn="name" // Especificar la columna a filtrar
-                  enablePagination // Habilitar la paginación
-                  enableRowSelection // Habilitar la selección de filas
-                  enableColumnVisibility // Habilitar la visibilidad de columnas 
-                  />
+        {errorMessage ? (
+          <p className="text-red-500">{errorMessage}</p>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data}
+            enableFilter
+            filterPlaceholder="Filtrar por nombre..."
+            filterColumn="name"
+            enablePagination
+            enableRowSelection
+            enableColumnVisibility
+          />
+        )}
       </div>
     </div>
   );
