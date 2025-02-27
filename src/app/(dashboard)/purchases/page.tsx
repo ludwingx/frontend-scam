@@ -191,7 +191,7 @@ export default async function Page() {
 
       {/* Botón de acción (ej: Crear nueva compra) */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-        <PurchasesActions />
+        <PurchasesActions  />
       </div>
 
       {/* Tabla de compras */}

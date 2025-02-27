@@ -16,6 +16,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Toaster } from "sonner";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -64,6 +65,7 @@ export default function DashboardLayout({
               </div>
             </header>
             {children}
+            <Toaster richColors />
           </SidebarInset>
         </SidebarProvider>
       </body>
