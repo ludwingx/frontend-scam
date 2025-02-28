@@ -1,3 +1,5 @@
+"use client"; // Convertir en Client Component
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,28 +8,77 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Business, columns } from "./columns"; // Ensure this import is correct
 import { DataTable } from "../../../components/data-table";
 import { BusinessActions } from "./BusinessActions";
-import { fetchBusinessData } from "@/services/fetchBusinessData";
+import { columns } from "./columns";
+import { useEffect, useState } from "react";
+import { Business } from "@/types/business";
+import { toast } from "sonner";
+import { fetchBusinessData, updateBusiness, deleteBusiness } from "@/services/fetchBusinessData";
 
-export default async function Page() {
-  let data: Business[] = [];
-  let errorMessage: string | null = null;
-
-  try {
-    // Fetch business data using the server action
-    const businesses = await fetchBusinessData();
-
-    if (businesses) {
-      data = businesses;
-    } else {
-      errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
+export default function BusinessPage() {
+  const [data, setData] = useState<Business[]>([]); // Estado para almacenar los negocios
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
+  
+  // Función para cargar los negocios
+  const loadBusinesses = async () => {
+    try {
+      const businesses = await fetchBusinessData();
+      if (businesses) {
+        setData(businesses);
+      } else {
+        setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
     }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
-  }
+  };
+
+  // Cargar los negocios al montar el componente
+  useEffect(() => {
+    loadBusinesses();
+  }, []);
+
+  // Función para actualizar un negocio en la tabla (optimistic update)
+  const updateBusinessInTable = async (updatedBusiness: Business) => {
+    const previousData = [...data]; // Guardar el estado anterior
+    setData((prevData) =>
+      prevData.map((business) =>
+        business.id === updatedBusiness.id ? updatedBusiness : business
+      )
+    );
+
+    try {
+      const response = await updateBusiness(updatedBusiness); // Actualizar el negocio en el servidor
+      if (!response) {
+        throw new Error("No se pudo actualizar el negocio.");
+      }
+      toast.success(`Negocio "${updatedBusiness.name}" actualizado exitosamente.`);
+    } catch (error) {
+      console.error("Error updating business:", error);
+      toast.error("Error al actualizar el negocio. Por favor, inténtalo de nuevo.");
+      setData(previousData); // Revertir cambios en caso de error
+    }
+  };
+
+  // Función para eliminar un negocio de la tabla (optimistic update)
+  const deleteBusinessFromTable = async (businessId: number) => {
+    const previousData = [...data]; // Guardar el estado anterior
+    setData((prevData) => prevData.filter((business) => business.id !== businessId));
+
+    try {
+      const isDeleted = await deleteBusiness(businessId); // Eliminar el negocio en el servidor
+      if (!isDeleted) {
+        throw new Error("No se pudo eliminar el negocio.");
+      }
+      toast.success(`Negocio eliminado exitosamente.`);
+    } catch (error) {
+      console.error("Error deleting business:", error);
+      toast.error("Error al eliminar el negocio. Por favor, inténtalo de nuevo.");
+      setData(previousData); // Revertir cambios en caso de error
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
@@ -60,7 +111,7 @@ export default async function Page() {
 
       {/* Description and Action Button */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <BusinessActions />
+        <BusinessActions onRefresh={loadBusinesses} /> {/* Pasar loadBusinesses como prop */}
       </div>
 
       {/* Content Container */}
@@ -69,7 +120,7 @@ export default async function Page() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns}
+            columns={columns(updateBusinessInTable, deleteBusinessFromTable)} 
             data={data}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."

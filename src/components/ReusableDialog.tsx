@@ -1,4 +1,4 @@
-"use client"; // Marcar como Client Component
+"use client";
 
 import {
   Dialog,
@@ -14,10 +14,10 @@ import { ReactNode } from "react";
 
 interface ReusableDialogProps {
   title: string;
-  description: string | ReactNode; 
+  description: string | ReactNode;
   trigger: ReactNode;
   children: ReactNode;
-  onSubmit?: () => void;
+  onSubmit?: (e: React.FormEvent) => void;
   submitButtonText?: string;
 }
 
@@ -37,12 +37,12 @@ export function ReusableDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="pt-2">{description}</DialogDescription>
         </DialogHeader>
-        {children}
-        <DialogFooter>
-          <Button type="submit" onClick={onSubmit}>
-            {submitButtonText}
-          </Button>
-        </DialogFooter>
+        <form onSubmit={onSubmit}> {/* Formulario principal */}
+          {children}
+          <DialogFooter>
+            <Button type="submit">{submitButtonText}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
