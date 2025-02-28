@@ -7,32 +7,36 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { UsersActions } from "./UsersActions";
-import { columns, Users } from "./columns";
+import { columns, User } from "./columns";
+import { fetchUserData } from "@/services/fetchUserData";
+import { UsersActions } from "@/actions/userActions";
 
-async function getData(): Promise<Users[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      full_name: "Ludwing",
-      ci: "12345678",
-      rol_name: "Administrador",
-    }
-  ];
-}
 export default async function Page() {
-  
-  const data = await getData();
+  let data: User[] = [];
+  let errorMessage: string | null = null;
+
+  try {
+    // Fetch business data using the server action
+    const users = await fetchUserData();
+
+    if (users) {
+      data = users;
+    } else {
+      errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
+  }
+
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+      {/* Breadcrumb y título */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink
-                href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
+              <BreadcrumbLink href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -50,22 +54,29 @@ export default async function Page() {
           Aquí podrás gestionar los usuarios.
         </small>
       </div>
-      {/* Description and Action Button */}
+
+      {/* Botón de crear usuario */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-        <UsersActions />
+        
+        <UsersActions   />
       </div>
 
-      <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
-        <DataTable   columns={columns}
-                  data={data}
-                  enableFilter // Habilitar el filtro
-                  filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
-                  filterColumn="full_name" // Especificar la columna a filtrar
-                  enablePagination // Habilitar la paginación
-                  enableRowSelection // Habilitar la selección de filas
-                  enableColumnVisibility // Habilitar la visibilidad de columnas
-        
-        />
+      {/* Tabla de usuarios */}
+    <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
+        {errorMessage ? (
+          <p className="text-red-500">{errorMessage}</p>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data}
+            enableFilter
+            filterPlaceholder="Filtrar por nombre..."
+            filterColumn="full_name"
+            enablePagination
+            enableRowSelection
+            enableColumnVisibility
+          />
+        )}
       </div>
     </div>
   );

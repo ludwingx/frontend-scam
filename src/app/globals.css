@@ -41,6 +41,10 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    
+    --amber: 37.7 92.1% 50.2%;
+    --amber--foreground: 0 0% 98%;
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -53,6 +57,7 @@ body {
     --primary-foreground: 240 5.9% 10%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
+    --amber: 37.7 92.1% 50.2%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
     --accent: 240 3.7% 15.9%;
@@ -75,6 +80,9 @@ body {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --amber: 37.7 92.1% 50.2%;
+    --amber--foreground: 0 0% 98%;
   }
 }
 
@@ -96,4 +104,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+@theme inline {
+  --color-amber: var(--amber);
+  --color-amber-foreground: var(--amber-foreground);
 }

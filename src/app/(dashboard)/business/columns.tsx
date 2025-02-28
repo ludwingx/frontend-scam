@@ -6,10 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ColumnDef } from "@tanstack/react-table";
 import { Business } from "@/types/business";
-import { toast } from "sonner"; // For notifications
+import { toast } from "sonner";
 import { useState } from "react";
+import { updateBusiness, deleteBusiness } from "@/services/fetchBusinessData"; // Importar las funciones de servicio
 
-export const columns: ColumnDef<Business>[] = [
+export const columns = (
+  updateBusinessInTable: (updatedBusiness: Business) => Promise<void>, // Función para actualizar un negocio
+  deleteBusinessFromTable: (businessId: number) => Promise<void> // Función para eliminar un negocio
+): ColumnDef<Business>[] => [
   {
     id: "rowNumber",
     header: "N°",
@@ -26,7 +30,6 @@ export const columns: ColumnDef<Business>[] = [
     header: () => <div className="text-center">Acciones</div>,
     cell: ({ row }) => {
       const business = row.original;
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       const [name, setName] = useState(business.name); // State for editing business name
 
       const handleEditBusiness = async () => {
@@ -36,41 +39,9 @@ export const columns: ColumnDef<Business>[] = [
         }
 
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
-
-          if (!apiUrl) {
-            throw new Error("La URL de la API no está definida en las variables de entorno.");
-          }
-
-          const token = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("token="))
-            ?.split("=")[1];
-
-          if (!token) {
-            throw new Error("No se encontró un token de autenticación.");
-          }
-
-          const response = await fetch(`${apiUrl}/api/business/${business.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ name }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            throw new Error(
-              `Error al actualizar el negocio: ${response.status} ${response.statusText}. ${errorData?.message || ""}`
-            );
-          }
-
-          toast.success(`Negocio "${name}" actualizado exitosamente.`);         //despues de 3 segundos hacer reload de la pagina
-          setTimeout(() => {
-            window.location.reload(); // Refresh the page to reflect changes
-          }, 2000);
+          const updatedBusiness = { ...business, name }; // Crear el objeto actualizado
+          await updateBusinessInTable(updatedBusiness); // Actualizar el negocio en la tabla
+          toast.success(`Negocio "${name}" actualizado exitosamente.`);
         } catch (error) {
           console.error("Error updating business:", error);
           toast.error("Error al actualizar el negocio. Por favor, inténtalo de nuevo.");
@@ -79,43 +50,8 @@ export const columns: ColumnDef<Business>[] = [
 
       const handleDeleteBusiness = async () => {
         try {
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
-
-          if (!apiUrl) {
-            throw new Error("La URL de la API no está definida en las variables de entorno.");
-          }
-
-          const token = document.cookie
-            .split("; ")
-            .find((row) => row.startsWith("token="))
-            ?.split("=")[1];
-
-          if (!token) {
-            throw new Error("No se encontró un token de autenticación.");
-          }
-
-          const response = await fetch(`${apiUrl}/api/business/${business.id}`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            throw new Error(
-              `Error al eliminar el negocio: ${response.status} ${response.statusText}. ${errorData?.message || ""}`
-            );
-          }
-
+          await deleteBusinessFromTable(business.id); // Eliminar el negocio de la tabla
           toast.success(`Negocio "${business.name}" eliminado exitosamente.`);
-
-         //despues de 3 segundos hacer reload de la pagina
-          setTimeout(() => {
-            window.location.reload(); // Refresh the page to reflect changes
-          }, 2000);
-         
-          
         } catch (error) {
           console.error("Error deleting business:", error);
           toast.error("Error al eliminar el negocio. Por favor, inténtalo de nuevo.");

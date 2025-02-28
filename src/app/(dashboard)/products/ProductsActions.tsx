@@ -88,7 +88,7 @@ export function ProductsActions() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="sucursal" className="text-right">
-                Sucursal
+                Negocio
               </Label>
               <ReusableSelect
                 className="col-span-3"
