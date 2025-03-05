@@ -14,72 +14,72 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus, X } from "lucide-react";
-import { ComboboxIngredients } from "./ComboBoxIngredients";
+import { CirclePlus, X, Utensils, Box } from "lucide-react";
+import { Combobox } from "./Combobox"; // Importa el combobox reutilizable
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface Ingrediente {
+interface Item {
   id: number;
   nombre: string;
   cantidad?: number;
   precioUnitario?: number;
   subtotal?: number;
+  tipo?: "Comestible" | "No comestible"; // Tipo de ítem (opcional)
 }
 
-export function PurchasesActions() {
-  const [ingredients, setIngredients] = useState<Ingrediente[]>([]);
+// Datos de ejemplo
+const comestibles = [
+  { id: 1, nombre: "Harina", unit_measurement: "gramos" },
+  { id: 2, nombre: "Azúcar", unit_measurement: "gramos" },
+  { id: 3, nombre: "Huevo", unit_measurement: "unidad" },
+];
 
-  const handleAddOrUpdateIngredient = (
-    ingrediente: Ingrediente,
-    index?: number
-  ) => {
-    if (index !== undefined) {
-      const updatedIngredients = [...ingredients];
-      updatedIngredients[index] = {
-        ...ingrediente,
-        cantidad: updatedIngredients[index].cantidad,
-        precioUnitario: updatedIngredients[index].precioUnitario,
-      };
-      setIngredients(updatedIngredients);
-    } else {
-      const existe = ingredients.some((ing) => ing.id === ingrediente.id);
-      if (!existe) {
-        setIngredients((prev) => [
-          ...prev,
-          { ...ingrediente, cantidad: 0, precioUnitario: 0 },
-        ]);
-      }
+const noComestibles = [
+  { id: 4, nombre: "Cajas de cartón", unit_measurement: "unidades" },
+  { id: 5, nombre: "Lavandina", unit_measurement: "litros" },
+  { id: 6, nombre: "Stickers", unit_measurement: "unidades" },
+];
+
+export function PurchasesActions() {
+  const [ingredients, setIngredients] = useState<Item[]>([]);
+  const [selectedItem, setSelectedItem] = useState<{ id: number; nombre: string; unit_measurement?: string } | null>(null);
+  const [cantidad, setCantidad] = useState<number>(0);
+  const [precioUnitario, setPrecioUnitario] = useState<number>(0);
+
+  // Función para agregar un ítem a la lista
+  const handleAddItem = () => {
+    if (!selectedItem || cantidad <= 0 || precioUnitario <= 0) {
+      alert("Por favor, completa todos los campos correctamente.");
+      return;
     }
+
+    const newItem: Item = {
+      id: selectedItem.id,
+      nombre: selectedItem.nombre,
+      cantidad,
+      precioUnitario,
+    };
+
+    setIngredients((prev) => [...prev, newItem]);
+    setSelectedItem(null);
+    setCantidad(0);
+    setPrecioUnitario(0);
   };
 
-  const handleRemoveIngredient = (id: number) => {
+  // Función para eliminar un ítem
+  const handleRemoveItem = (id: number) => {
     setIngredients((prev) => prev.filter((ing) => ing.id !== id));
   };
 
-  const handleCantidadChange = (id: number, value: string) => {
-    const updatedIngredients = ingredients.map((ing) =>
-      ing.id === id ? { ...ing, cantidad: Number(value) } : ing
-    );
-    setIngredients(updatedIngredients);
-  };
-
-  const handlePrecioChange = (id: number, value: string) => {
-    const formattedValue = value.replace(",", ".");
-    if (/^[\d,.]*$/.test(value)) {
-      const updatedIngredients = ingredients.map((ing) =>
-        ing.id === id ? { ...ing, precioUnitario: Number(formattedValue) } : ing
-      );
-      setIngredients(updatedIngredients);
-    }
-  };
-
-  const calculateSubtotal = (ingredient: Ingrediente) => {
-    const cantidad = ingredient.cantidad || 0;
-    const precioUnitario = ingredient.precioUnitario || 0;
+  // Función para calcular el subtotal de un ítem
+  const calculateSubtotal = (item: Item) => {
+    const cantidad = item.cantidad || 0;
+    const precioUnitario = item.precioUnitario || 0;
     return cantidad * precioUnitario;
   };
 
+  // Función para calcular el total de la compra
   const calculateTotal = () => {
     return ingredients.reduce(
       (total, ing) => total + calculateSubtotal(ing),
@@ -99,14 +99,13 @@ export function PurchasesActions() {
           </Button>
         }
         onSubmit={() => console.log("Crear Compra")}
-
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               Fecha de la compra
             </Label>
-            <Input id="name" type="date"  />
+            <Input id="name" type="date" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
@@ -119,58 +118,97 @@ export function PurchasesActions() {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Sucursales:</SelectLabel>
-                  <SelectItem value="apple">Radial 19</SelectItem>
-                  <SelectItem value="banana">Villa 1ro de mayo</SelectItem>
-                  <SelectItem value="blueberry">Radial 26</SelectItem>
+                  <SelectItem value="radial19">Radial 19</SelectItem>
+                  <SelectItem value="villa1ro">Villa 1ro de mayo</SelectItem>
+                  <SelectItem value="radial26">Radial 26</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
           </div>
-          <div className="grid items-center gap-4"> <ScrollArea className="h-[300px]">
-            <Table >
-             
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[40px]">N°</TableHead>
-                  <TableHead className="w-[220px]">Ingrediente</TableHead>
-                  <TableHead className="text-center w-[100px]">
-                    Cantidad
-                  </TableHead>
-                  <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
-                  <TableHead className="text-right">Subtotal</TableHead>
-                  <TableHead className="w-[40px]"></TableHead>
-                </TableRow>
-              </TableHeader>
+
+          {/* Tabla de ítems */}
+          <div className="grid items-center gap-4">
+            <ScrollArea className="h-[300px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[40px]">N°</TableHead>
+                    <TableHead className="w-[220px]">Ítem</TableHead>
+                    <TableHead className="text-center w-[100px]">Cantidad</TableHead>
+                    <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                    <TableHead className="w-[40px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
                   {ingredients.map((ing, index) => (
                     <TableRow key={ing.id}>
-                      
                       <TableCell className="font-medium">{index + 1}</TableCell>
                       <TableCell>
-                        <ComboboxIngredients
-                          value={ing.nombre}
-                          onSelect={(ingrediente) =>
-                            handleAddOrUpdateIngredient(ingrediente, index)
-                          }
-                        />
+                        {/* Botones para seleccionar el tipo de ítem */}
+                        {!ing.tipo ? (
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const updatedItems = [...ingredients];
+                                updatedItems[index].tipo = "Comestible";
+                                setIngredients(updatedItems);
+                              }}
+                            >
+                              <Utensils className="w-4 h-4 mr-2" />
+                              Comestible
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const updatedItems = [...ingredients];
+                                updatedItems[index].tipo = "No comestible";
+                                setIngredients(updatedItems);
+                              }}
+                            >
+                              <Box className="w-4 h-4 mr-2" />
+                              No comestible
+                            </Button>
+                          </div>
+                        ) : (
+                          <Combobox
+                            value={ing.nombre}
+                            onSelect={(item) => {
+                              const updatedItems = [...ingredients];
+                              updatedItems[index].nombre = item.nombre;
+                              updatedItems[index].id = item.id;
+                              setIngredients(updatedItems);
+                            }}
+                            options={ing.tipo === "Comestible" ? comestibles : noComestibles}
+                            placeholder="Seleccionar ítem"
+                          />
+                        )}
                       </TableCell>
                       <TableCell>
                         <Input
                           className="text-center"
                           type="number"
                           value={ing.cantidad || ""}
-                          onChange={(e) =>
-                            handleCantidadChange(ing.id, e.target.value)
-                          }
+                          onChange={(e) => {
+                            const updatedItems = [...ingredients];
+                            updatedItems[index].cantidad = Number(e.target.value);
+                            setIngredients(updatedItems);
+                          }}
                         />
                       </TableCell>
                       <TableCell className="text-right">
                         <Input
                           className="text-center w-[120px]"
-                          type="text"
-                          onChange={(e) =>
-                            handlePrecioChange(ing.id, e.target.value)
-                          }
+                          type="number"
+                          value={ing.precioUnitario || ""}
+                          onChange={(e) => {
+                            const updatedItems = [...ingredients];
+                            updatedItems[index].precioUnitario = Number(e.target.value);
+                            setIngredients(updatedItems);
+                          }}
                         />
                       </TableCell>
                       <TableCell className="text-right w-[100px]">
@@ -180,48 +218,69 @@ export function PurchasesActions() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleRemoveIngredient(ing.id)}
+                          onClick={() => handleRemoveItem(ing.id)}
                         >
                           <X className="h-4 w-4" />
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))}
+                  {/* Fila para agregar un nuevo ítem */}
                   <TableRow>
                     <TableCell className="font-medium">
                       {ingredients.length + 1}
                     </TableCell>
                     <TableCell>
-                      <ComboboxIngredients
-                        value=""
-                        onSelect={(ingrediente) =>
-                          handleAddOrUpdateIngredient(ingrediente)
-                        }
-                      />
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setIngredients((prev) => [
+                              ...prev,
+                              { id: Date.now(), nombre: "", tipo: "Comestible" },
+                            ]);
+                          }}
+                        >
+                          <Utensils className="w-4 h-4 mr-2" />
+                          Comestible
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setIngredients((prev) => [
+                              ...prev,
+                              { id: Date.now(), nombre: "", tipo: "No comestible" },
+                            ]);
+                          }}
+                        >
+                          <Box className="w-4 h-4 mr-2" />
+                          No comestible
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Input type="number" disabled />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Input className="w-[120px]" type="text" disabled />
+                      <Input className="w-[120px]" type="number" disabled />
                     </TableCell>
-                    <TableCell className="text-right w-[100px]">
-                      
-                    </TableCell>
+                    <TableCell className="text-right w-[100px]"></TableCell>
                     <TableCell></TableCell>
                   </TableRow>
                 </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={4}>Total</TableCell>
-                  <TableCell className="text-right">
-                    Bs. {calculateTotal().toFixed(2).replace(".", ",")}
-                  </TableCell>
-                  <TableCell></TableCell>
-                </TableRow>
-              </TableFooter>
-
-            </Table>              </ScrollArea>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell colSpan={4}>Total</TableCell>
+                    <TableCell className="text-right">
+                      Bs. {calculateTotal().toFixed(2).replace(".", ",")}
+                    </TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </ScrollArea>
           </div>
         </div>
       </ReusableDialogWidth>

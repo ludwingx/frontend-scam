@@ -175,6 +175,7 @@ export default async function Page() {
                       Negocio
                     </Label>
                     <ReusableSelect
+                      name={"negocio"}
                       placeholder="Selecciona un negocio"
                       label="Negocios:"
                       options={[
