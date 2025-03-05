@@ -10,8 +10,7 @@ import { toast } from "sonner";
 
 
 export function BusinessActions() {
-  const [businessName, setBusinessName] = useState(""); // State to store the business name
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog visibility
+  const [businessName, setBusinessName] = useState("");
 
   const handleCreateBusiness = async () => {
   if (!businessName.trim()) {
@@ -53,8 +52,6 @@ export function BusinessActions() {
 
     const data = await response.json();
     toast.success(`Negocio "${data.name}" creado exitosamente.`);
-
-    // Delay the page reload by 2 seconds (2000 milliseconds)
     setTimeout(() => {
           window.location.reload();
     }, 3000); // Adjust the delay as needed
@@ -67,7 +64,6 @@ export function BusinessActions() {
 
   return (
     <>
-      {/* Diálogo para crear negocio */}
       <ReusableDialog
         title="Crear Negocio"
         description="Aquí podrás crear un negocio."
@@ -78,8 +74,7 @@ export function BusinessActions() {
           </Button>
         }
         onSubmit={handleCreateBusiness}
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        submitButtonText="Crear Negocio"
       >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

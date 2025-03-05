@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, TableFooter, Table } from "@/components/ui/table";
 import { X } from "lucide-react";
-import { ComboboxIngredients } from "./ComboBoxIngredients";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
 import { ReusableSelect } from "@/components/ReusableSelect";
 
@@ -155,7 +154,7 @@ export const columns: ColumnDef<Purchases>[] = [
                 <Label htmlFor="sucursal" className="text-right">
                   Sucursal
                 </Label>
-                <ReusableSelect
+                <ReusableSelect name="Negocios"
                                      placeholder="Selecciona un negocio"
                                      label="Negocios:"
                                      options={[
@@ -188,11 +187,9 @@ export const columns: ColumnDef<Purchases>[] = [
                         <TableRow key={ing.id}>
                           <TableCell className="font-medium">{index + 1}</TableCell>
                           <TableCell>
-                            <ComboboxIngredients
-                              value={ing.nombre_ingrediente}
-                              onSelect={() => {
-                                // Aquí puedes manejar la actualización del ingrediente
-                              }}
+                            <Input
+                              className="text-center"
+                              type="text" 
                             />
                           </TableCell>
                           <TableCell>
@@ -237,12 +234,10 @@ export const columns: ColumnDef<Purchases>[] = [
                           {purchase.detalle_compra.length + 1}
                         </TableCell>
                         <TableCell>
-                          <ComboboxIngredients
-                            value=""
-                            onSelect={() => {
-                              // Aquí puedes manejar la adición de un nuevo ingrediente
-                            }}
-                          />
+                        <Input
+                              className="text-center"
+                              type="text" 
+                            />
                         </TableCell>
                         <TableCell>
                           <Input type="number" disabled />

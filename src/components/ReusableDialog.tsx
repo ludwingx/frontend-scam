@@ -16,9 +16,9 @@ interface ReusableDialogProps {
   title: string;
   description: string | ReactNode;
   trigger: ReactNode;
-  children: ReactNode;
   onSubmit?: (e: React.FormEvent) => void;
   submitButtonText?: string;
+  children: React.ReactNode;
 }
 
 export function ReusableDialog({
@@ -27,7 +27,7 @@ export function ReusableDialog({
   trigger,
   children,
   onSubmit,
-  submitButtonText = "Guardar",
+  submitButtonText,
 }: ReusableDialogProps) {
   return (
     <Dialog>

@@ -1,4 +1,4 @@
-"use client"; // Convertir en Client Component
+"use client";
 
 import {
   Breadcrumb,
@@ -17,10 +17,9 @@ import { toast } from "sonner";
 import { fetchBusinessData, updateBusiness, deleteBusiness } from "@/services/fetchBusinessData";
 
 export default function BusinessPage() {
-  const [data, setData] = useState<Business[]>([]); // Estado para almacenar los negocios
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
-  
-  // Función para cargar los negocios
+  const [data, setData] = useState<Business[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const loadBusinesses = async () => {
     try {
       const businesses = await fetchBusinessData();
@@ -35,14 +34,12 @@ export default function BusinessPage() {
     }
   };
 
-  // Cargar los negocios al montar el componente
   useEffect(() => {
     loadBusinesses();
   }, []);
 
-  // Función para actualizar un negocio en la tabla (optimistic update)
   const updateBusinessInTable = async (updatedBusiness: Business) => {
-    const previousData = [...data]; // Guardar el estado anterior
+    const previousData = [...data];
     setData((prevData) =>
       prevData.map((business) =>
         business.id === updatedBusiness.id ? updatedBusiness : business
@@ -50,7 +47,7 @@ export default function BusinessPage() {
     );
 
     try {
-      const response = await updateBusiness(updatedBusiness); // Actualizar el negocio en el servidor
+      const response = await updateBusiness(updatedBusiness);
       if (!response) {
         throw new Error("No se pudo actualizar el negocio.");
       }
@@ -58,17 +55,16 @@ export default function BusinessPage() {
     } catch (error) {
       console.error("Error updating business:", error);
       toast.error("Error al actualizar el negocio. Por favor, inténtalo de nuevo.");
-      setData(previousData); // Revertir cambios en caso de error
+      setData(previousData);
     }
   };
 
-  // Función para eliminar un negocio de la tabla (optimistic update)
   const deleteBusinessFromTable = async (businessId: number) => {
-    const previousData = [...data]; // Guardar el estado anterior
+    const previousData = [...data];
     setData((prevData) => prevData.filter((business) => business.id !== businessId));
 
     try {
-      const isDeleted = await deleteBusiness(businessId); // Eliminar el negocio en el servidor
+      const isDeleted = await deleteBusiness(businessId);
       if (!isDeleted) {
         throw new Error("No se pudo eliminar el negocio.");
       }
@@ -76,13 +72,12 @@ export default function BusinessPage() {
     } catch (error) {
       console.error("Error deleting business:", error);
       toast.error("Error al eliminar el negocio. Por favor, inténtalo de nuevo.");
-      setData(previousData); // Revertir cambios en caso de error
+      setData(previousData);
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
-      {/* Header */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
           <BreadcrumbList>
@@ -109,12 +104,10 @@ export default function BusinessPage() {
         </small>
       </div>
 
-      {/* Description and Action Button */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <BusinessActions onRefresh={loadBusinesses} /> {/* Pasar loadBusinesses como prop */}
+        <BusinessActions/> {/* Pasar loadBusinesses como prop */}
       </div>
 
-      {/* Content Container */}
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
         {errorMessage ? (
           <p className="text-red-500">{errorMessage}</p>

@@ -2,8 +2,6 @@
 import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   BriefcaseBusiness,
   Command,
   Container,
@@ -13,7 +11,6 @@ import {
   Settings2,
   ShoppingBasket,
   ShoppingCart,
-  SquareTerminal,
   Users,
 } from "lucide-react";
 import { NavProjects } from "@/components/nav-projects";
@@ -24,12 +21,11 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { fetchProfileData } from "@/actions/getDataUserID";
-
 import { User } from "@/types/user";
 import { NavMain } from "./nav-main";
+import Image from "next/image";
 
 // Datos de ejemplo
 const data = {
@@ -55,7 +51,6 @@ const data = {
       plan: "Free",
     },
   ],
- 
   projects: [
     {
       name: "Panel de Control",
@@ -80,15 +75,13 @@ const data = {
     {
       name: "Compras",
       url: "/purchases",
-      icon: ShoppingCart
+      icon: ShoppingCart,
     },
     {
       name: "Inventario",
       url: "/storage",
-      icon: Container
+      icon: Container,
     },
-    
-
     {
       name: "Iniciar Sesion",
       url: "/signin",
@@ -96,68 +89,6 @@ const data = {
     },
   ],
   navMain: [
-    // {
-    //   title: "Playground",
-    //   url: "#",
-    //   icon: SquareTerminal,
-    //   isActive: true,
-    //   items: [
-    //     {
-    //       title: "History",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Starred",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Settings",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Models",
-    //   url: "#",
-    //   icon: Bot,
-    //   items: [
-    //     {
-    //       title: "Genesis",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Explorer",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Quantum",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Documentation",
-    //   url: "#",
-    //   icon: BookOpen,
-    //   items: [
-    //     {
-    //       title: "Introduction",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Get Started",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Tutorials",
-    //       url: "#",
-    //     },
-    //     {
-    //       title: "Changelog",
-    //       url: "#",
-    //     },
-    //   ],
-    // },
     {
       title: "Usuarios",
       url: "/users",
@@ -166,50 +97,48 @@ const data = {
         {
           title: "Roles",
           url: "/roles",
-    
-        }
-
-      ]
+        },
+      ],
     },
   ],
 };
 
-  export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const [userData, setUserData] = React.useState<User | null>(null);
-  
-    React.useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const data = await fetchProfileData();
-          setUserData(data);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      };
-  
-      fetchData();
-    }, []); // El array vacío [] asegura que esto solo se ejecute una vez, al montar el componente
-  
-    return (
-      <Sidebar collapsible="icon" {...props}>
-        <SidebarHeader>
-          <img
-            src="/SCZ-Alimentos-Logo.svg"
-            className="flex justify-center items-center"
-            alt="Logo"
-            width={200}
-            height={200}
-          />
-        </SidebarHeader>
-        <SidebarContent>
-        <NavMain items={data.navMain} />
-          <NavProjects projects={data.projects} />
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [userData, setUserData] = React.useState<User | null>(null);
 
-        </SidebarContent>
-        <SidebarFooter>
-          {userData && <NavUser />}
-        </SidebarFooter>
-        <SidebarRail />
-      </Sidebar>
-    );
-  }
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetchProfileData();
+        setUserData(data);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchData();
+  }, []); // El array vacío [] asegura que esto solo se ejecute una vez, al montar el componente
+
+  return (
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
+        <Image
+          src="/SCZ-Alimentos-Logo.svg"
+          alt="Logo"
+          width={200}
+          height={200}
+          className="flex justify-center items-center"
+          priority // Asegura que la imagen se cargue con prioridad
+        />
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+        <NavProjects projects={data.projects} />
+      </SidebarContent>
+      <SidebarFooter>
+        {userData && <NavUser />}
+      </SidebarFooter>
+      <SidebarRail />
+    </Sidebar>
+  );
+}
