@@ -177,6 +177,7 @@ export const columns: ColumnDef<Purchases>[] = [
                         <TableHead className="text-center w-[100px] text-gray-900">
                           Cantidad
                         </TableHead>
+                        <TableHead className="text-center text-gray-900">Unidad de Medida</TableHead>
                         <TableHead className="text-center text-gray-900">Precio Unitario (Bs.)</TableHead>
                         <TableHead className="text-right text-gray-900">Subtotal</TableHead>
                         <TableHead className="w-[40px] text-gray-900"></TableHead>
@@ -208,7 +209,6 @@ export const columns: ColumnDef<Purchases>[] = [
                               type="text"
                               value={ing.precio_unitario || ""}
                               onChange={() => {
-                                // Aquí puedes manejar el cambio de precio
                               }}
                             />
                           </TableCell>
@@ -253,7 +253,7 @@ export const columns: ColumnDef<Purchases>[] = [
                     </TableBody>
                     <TableFooter>
                       <TableRow>
-                        <TableCell colSpan={4}>Total</TableCell>
+                        <TableCell colSpan={5}>Total</TableCell>
                         <TableCell className="text-right">
                           Bs. {purchase.total_compra.toFixed(2).replace(".", ",")}
                         </TableCell>
