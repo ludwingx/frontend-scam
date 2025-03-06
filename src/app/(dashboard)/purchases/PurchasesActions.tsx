@@ -14,7 +14,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus, X, Utensils, Box } from "lucide-react";
+import { CirclePlus, X, Utensils, Box, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -38,26 +38,26 @@ interface Item {
   tipo?: "Comestible" | "No comestible"; // Tipo de ítem (opcional)
 }
 
-// Datos de ejemplo
+// Datos de ejemplo (no se modifican)
 const comestibles = [
   {
     id: 1,
     nombre: "Harina",
-    cantidad: 1,
+    quantity: 1,
     unit_measurement: "kilo(s)",
     proveedor: "Proveedor A",
   },
   {
     id: 2,
     nombre: "Azúcar",
-    cantidad: 300,
+    quantity: 300,
     unit_measurement: "gramo(s)",
     proveedor: "Proveedor B",
   },
   {
     id: 3,
     nombre: "Huevo",
-    cantidad: 200,
+    quantity: 200,
     unit_measurement: "unidad(es)",
     proveedor: "Proveedor C",
   },
@@ -67,11 +67,11 @@ const noComestibles = [
   {
     id: 4,
     nombre: "Cajas de cartón",
-    cantidad: 100,
+    quantity: 100,
     unit_measurement: "unidad(es)",
   },
-  { id: 5, nombre: "Lavandina", cantidad: 100, unit_measurement: "litro(s)" },
-  { id: 6, nombre: "Stickers", cantidad: 100, unit_measurement: "unidad(es)" },
+  { id: 5, nombre: "Lavandina", quantity: 100, unit_measurement: "litro(s)" },
+  { id: 6, nombre: "Stickers", quantity: 100, unit_measurement: "unidad(es)" },
 ];
 
 export function PurchasesActions() {
@@ -180,9 +180,6 @@ export function PurchasesActions() {
                     <TableHead className="w-[100px] text-center">
                       Cantidad
                     </TableHead>
-                    <TableHead className="w-[100px] text-center">
-                      Unidad de Medida
-                    </TableHead>
                     <TableHead className="w-[120px] text-center">
                       Precio Unitario (Bs.)
                     </TableHead>
@@ -233,7 +230,15 @@ export function PurchasesActions() {
                               <div className="inline">
                                 {ing.nombre}{" "}
                                 <span className="text-sm text-gray-500">
-                                  - {ing.cantidad} {ing.unit_measurement}
+                                  -{" "}
+                                  {
+                                    (ing.tipo === "Comestible"
+                                      ? comestibles
+                                      : noComestibles
+                                    ).find((item) => item.id === ing.id)
+                                      ?.quantity
+                                  }{" "}
+                                  {ing.unit_measurement}
                                 </span>
                               </div>
                             }
@@ -256,7 +261,7 @@ export function PurchasesActions() {
                               <div className="flex justify-between w-full">
                                 <span>{item.nombre}</span>
                                 <span className="text-sm text-gray-500">
-                                  {item.cantidad} {item.unit_measurement}
+                                  {item.quantity} {item.unit_measurement}
                                 </span>
                               </div>
                             )}
@@ -277,9 +282,7 @@ export function PurchasesActions() {
                           }}
                         />
                       </TableCell>
-                      <TableCell className="w-[100px] text-center">
-                        {ing.unit_measurement || "N/A"}
-                      </TableCell>
+                 
                       <TableCell className="w-[120px] text-center">
                         <Input
                           className="text-center"
@@ -304,7 +307,7 @@ export function PurchasesActions() {
                           size="icon"
                           onClick={() => handleRemoveItem(ing.id)}
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="w-4 h-4 text-red-600 " />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -358,9 +361,7 @@ export function PurchasesActions() {
                     <TableCell className="w-[100px] text-center">
                       <Input type="text" disabled />
                     </TableCell>
-                    <TableCell className="w-[120px] text-center">
-                      <Input type="number" disabled />
-                    </TableCell>
+
                     <TableCell className="w-[100px] text-right"></TableCell>
                     <TableCell className="w-[40px]"></TableCell>
                   </TableRow>
@@ -368,7 +369,7 @@ export function PurchasesActions() {
                 <TableFooter>
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={4}
                       className="text-right font-bold bg-amber-100"
                     >
                       Total

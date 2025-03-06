@@ -1,3 +1,7 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -6,196 +10,102 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { IngredientsActions } from "./IngredientsActions";
 import { DataTable } from "../../../components/data-table";
-import { columns, Ingredients } from "./columns";
+import { IngredientsActions } from "./IngredientsActions";
+import { columns } from "./columns";
+import { fetchIngredientsData, updateIngredients, deleteIngredients } from "@/services/fetchIngredientsData"; // Importar funciones de servicio
+import { Ingredients } from "@/types/ingredients"; // Asegúrate de que esta interfaz esté definida
 
-async function getData(): Promise<Ingredients[]> {
-  // Fetch data from your API here.
-  return [
-    {
-      id: "1",
-      name: "Queso Criollo",
-      unit_measurement: "gr",
-    },
-    {
-      id: "2",
-      name: "Almidón",
-      unit_measurement: "gr",
-    },
-    {
-      id: "3",
-      name: "Mantequilla",
-      unit_measurement: "gr",
-    },
-    {
-      id: "4",
-      name: "Huevo",
-      unit_measurement: "Unidad",
-    },
-    {
-      id: "5",
-      name: "Yuca",
-      unit_measurement: "gr",
-    },
-    {
-      id: "6",
-      name: "Leche",
-      unit_measurement: "ml",
-    },
-    {
-      id: "7",
-      name: "Harina",
-      unit_measurement: "ml",
-    },
-    {
-      id: "8",
-      name: "Azucar",
-      unit_measurement: "gr",
-    },
-    {
-      id: "9",
-      name: "Sal",
-      unit_measurement: "gr",
-    },
-    {
-      id: "10",
-      name: "Aceite",
-      unit_measurement: "ml",
-    },
-    {
-      id: "11",
-      name: "Cafe",
-      unit_measurement: "gr",
-    },
-    {
-      id: "12",
-      name: "Azucares",
-      unit_measurement: "gr",
-    },
-    {
-      id: "13",
-      name: "Queso",
-      unit_measurement: "gr",
-    },
-    {
-      id: "14",
-      name: "Mantequilla",
-      unit_measurement: "gr",
-    },
-    {
-      id: "15",
-      name: "Harina",
-      unit_measurement: "gr",
-    },
-    {
-      id: "16",
-      name: "Azucar",
-      unit_measurement: "gr",
-    },
-    {
-      id: "17",
-      name: "Sal",
-      unit_measurement: "gr",
-    },
-    {
-      id: "18",
-      name: "Aceite",
-      unit_measurement: "ml",
-    },
-    {
-      id: "19",
-      name: "Cafe",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "20",
-      name: "Azucares",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "21",
-      name: "Queso",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "22",
-      name: "Mantequilla",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "23",
-      name: "Harina",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "24",
-      name: "Azucar",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "25",
-      name: "Sal",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "26",
-      name: "Aceite",
-      unit_measurement: "Ltr",
-    },
-    {
-      id: "27",
-      name: "Cafe",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "28",
-      name: "Azucares",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "29",
-      name: "Queso",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "30",
-      name: "Mantequilla",
-      unit_measurement: "Kg",
-    },
-    {
-      id: "31",
-      name: "Harina",
-      unit_measurement: "Kg",
+export default function IngredientsPage() {
+  const [data, setData] = useState<Ingredients[]>([]); // Estado para almacenar los ingredientes
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
+
+  // Función para cargar los ingredientes
+  const loadIngredients = async () => {
+    console.log("Cargando ingredientes..."); // Log para verificar la carga de datos
+    try {
+      const ingredients = await fetchIngredientsData();
+      if (ingredients) {
+        setData(ingredients);
+      } else {
+        setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
     }
-    // ...
-  ];
-}
+  };
 
-export default async function Page() {
-  const data = await getData();
+  // Cargar los ingredientes al montar el componente
+  useEffect(() => {
+    loadIngredients();
+  }, []);
+
+  // Función para actualizar un ingrediente en la tabla (optimistic update)
+  const updateIngredientsInTable = async (updatedIngredients: Ingredients) => {
+    console.log("Actualizando ingrediente en la tabla:", updatedIngredients.id, updatedIngredients.name); // Log para verificar la actualización
+    const previousData = [...data];
+    setData((prevData) =>
+      prevData.map((ingredient) =>
+        ingredient.id === updatedIngredients.id ? updatedIngredients : ingredient
+      )
+    );
+
+    try {
+      const response = await updateIngredients(updatedIngredients);
+      if (!response) {
+        throw new Error("No se pudo actualizar el ingrediente.");
+      }
+      toast.success(`Ingrediente "${updatedIngredients.name}" actualizado exitosamente.`);
+    } catch (error) {
+      console.error("Error updating ingredients:", error);
+      toast.error("Error al actualizar el ingrediente. Por favor, inténtalo de nuevo.");
+      setData(previousData); // Revertir los cambios en caso de error
+    }
+  };
+
+  // Función para eliminar un ingrediente de la tabla (optimistic update)
+  const deleteIngredientsFromTable = async (ingredientsId: string) => {
+    console.log("Eliminando ingrediente de la tabla:", ingredientsId); // Log para verificar la eliminación
+    const previousData = [...data];
+    setData((prevData) => prevData.filter((ingredient) => ingredient.id !== ingredientsId));
+  
+    try {
+      const isDeleted = await deleteIngredients(ingredientsId);
+      if (!isDeleted) {
+        throw new Error("No se pudo eliminar el ingrediente.");
+      }
+      toast.success("Ingrediente eliminado exitosamente.");
+    } catch (error) {
+      console.error("Error deleting ingredients:", error);
+      toast.error("Error al eliminar el ingrediente. Por favor, inténtalo de nuevo.");
+      setData(previousData); // Revertir los cambios en caso de error
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
-    <div className="flex flex-col gap-4 mb-6">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              href="/dashboard"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
-            >
-              Panel de Control
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator className="text-gray-400" />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="text-sm font-medium text-gray-900">
-              Ingredientes
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      {/* Header */}
+      <div className="flex flex-col gap-4 mb-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href="/dashboard"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Panel de Control
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+                Ingredientes
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
         <h2 className="text-3xl font-semibold text-gray-900">Ingredientes</h2>
         <small className="text-sm font-medium text-gray-600">
           Aquí podrás gestionar los ingredientes.
@@ -204,21 +114,25 @@ export default async function Page() {
 
       {/* Description and Action Button */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-        <IngredientsActions />
+        <IngredientsActions onRefresh={loadIngredients} /> {/* Pasar loadIngredients como prop */}
       </div>
 
       {/* Tabla con todas las funcionalidades */}
       <div className="flex flex-col gap-6 pr-4 pl-4 bg-white rounded-lg shadow">
-        <DataTable
-          columns={columns}
-          data={data}
-          enableFilter // Habilitar el filtro
-          filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
-          filterColumn="name" // Especificar la columna a filtrar
-          enablePagination // Habilitar la paginación
-          enableRowSelection // Habilitar la selección de filas
-          enableColumnVisibility // Habilitar la visibilidad de columnas
-        />
+        {errorMessage ? (
+          <p className="text-red-500">{errorMessage}</p>
+        ) : (
+          <DataTable
+            columns={columns(updateIngredientsInTable, deleteIngredientsFromTable)} // Pasar funciones como parámetros
+            data={data}
+            enableFilter // Habilitar el filtro
+            filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
+            filterColumn="name" // Especificar la columna a filtrar
+            enablePagination // Habilitar la paginación
+            enableRowSelection // Habilitar la selección de filas
+            enableColumnVisibility // Habilitar la visibilidad de columnas
+          />
+        )}
       </div>
     </div>
   );

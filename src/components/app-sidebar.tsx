@@ -100,6 +100,25 @@ const data = {
         },
       ],
     },
+    {
+      title: "Inventarios",
+      url: "/inventories",
+      icon: Container,
+      items: [
+        {
+          title: "Materias Primas",
+          url: "/inventories/raw-materials",
+        },
+        {
+          title: "Productos Bases",
+          url: "/inventories/base-products",
+        },
+        {
+          title: "Productos Finales",
+          url: "/inventories/final-products",
+        }
+      ],
+    }
   ],
 };
 

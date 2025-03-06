@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { CirclePlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { CreateUserForm } from "@/app/(dashboard)/users/createUserForm";
 import { createRole } from "@/services/fetchRoleData";
 
 interface RolesActionsProps {
@@ -16,7 +15,7 @@ interface RolesActionsProps {
 
 export function RolesActions({ onRefresh }: RolesActionsProps) {
   const [roleName, setRoleName] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // Estado para controlar la apertura/cierre del diálogo
 
   const handleCreateRole = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +31,8 @@ export function RolesActions({ onRefresh }: RolesActionsProps) {
       if (newRole) {
         toast.success(`Rol "${newRole.name}" creado exitosamente.`);
         onRefresh(); // Actualizar la tabla
-        setIsDialogOpen(false); // Cerrar el diálogo
+        setIsDialogOpen(false); // Cerrar el diálogo después de crear el rol
+        setRoleName(""); // Limpiar el campo del nombre del rol
       } else {
         throw new Error("No se pudo crear el rol.");
       }
@@ -54,9 +54,9 @@ export function RolesActions({ onRefresh }: RolesActionsProps) {
           </Button>
         }
         onSubmit={handleCreateRole}
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
         submitButtonText="Crear Rol"
+        onOpenChange={setIsDialogOpen} // Pasar la función para manejar el estado del diálogo
+        isOpen={isDialogOpen} // Pasar el estado actual del diálogo
       >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
