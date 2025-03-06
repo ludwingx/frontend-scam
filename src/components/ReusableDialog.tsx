@@ -1,43 +1,42 @@
-"use client";
-
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ReactNode } from "react";
+import { FormEvent } from "react";
 
 interface ReusableDialogProps {
   title: string;
-  description: string | ReactNode;
-  trigger: ReactNode;
-  onSubmit?: (e: React.FormEvent) => void;
-  submitButtonText?: string;
+  description: React.ReactNode;
+  trigger: React.ReactNode;
+  onSubmit: (e: FormEvent) => void;
+  submitButtonText: string;
   children: React.ReactNode;
+  onOpenChange?: (open: boolean) => void; // Nueva prop para manejar cambios de estado
+  isOpen?: boolean; // Nueva prop para controlar si el diálogo está abierto
 }
 
 export function ReusableDialog({
   title,
   description,
   trigger,
-  children,
   onSubmit,
   submitButtonText,
+  children,
+  onOpenChange,
+  isOpen
 }: ReusableDialogProps) {
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault(); // Prevenir el envío automático del formulario
+    onSubmit(e); // Llamar a la función onSubmit proporcionada
+  };
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-white">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="pt-2">{description}</DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmit}> {/* Formulario principal */}
+        <form onSubmit={handleSubmit}>
           {children}
           <DialogFooter>
             <Button type="submit">{submitButtonText}</Button>

@@ -9,7 +9,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { DataTable } from "../../../components/data-table";
-import { fetchRoleData, updateRole, deleteRole } from "@/services/fetchRoleData"; // Importar updateRole y deleteRole
+import {
+  fetchRoleData,
+  updateRole,
+  deleteRole,
+} from "@/services/fetchRoleData"; // Importar updateRole y deleteRole
 import { RolesActions } from "./RolesActions";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
@@ -27,11 +31,15 @@ export default function RolesPage() {
       if (roles) {
         setData(roles);
       } else {
-        setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
+        setErrorMessage(
+          "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
+        );
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
+      setErrorMessage(
+        "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
+      );
     }
   };
 
@@ -67,9 +75,11 @@ export default function RolesPage() {
       setData(previousData);
     }
   };
-
   // Función para eliminar un rol de la tabla (optimistic update)
   const deleteRoleFromTable = async (roleId: number) => {
+    // Buscar el rol que se va a eliminar para obtener su nombre
+    const roleToDelete = data.find((role) => role.id === roleId);
+
     // Guardar el estado anterior para poder revertir en caso de error
     const previousData = [...data];
 
@@ -84,7 +94,12 @@ export default function RolesPage() {
         throw new Error("No se pudo eliminar el rol.");
       }
 
-      toast.success(`Rol eliminado exitosamente.`);
+      // Mostrar el toast con el nombre del rol eliminado
+      if (roleToDelete) {
+        toast.success(`Rol "${roleToDelete.name}" eliminado exitosamente.`);
+      } else {
+        toast.success("Rol eliminado exitosamente.");
+      }
     } catch (error) {
       console.error("Error deleting role:", error);
       toast.error("Error al eliminar el rol. Por favor, inténtalo de nuevo.");
@@ -134,7 +149,7 @@ export default function RolesPage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateRoleInTable, deleteRoleFromTable)} 
+            columns={columns(updateRoleInTable, deleteRoleFromTable)}
             data={data}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."

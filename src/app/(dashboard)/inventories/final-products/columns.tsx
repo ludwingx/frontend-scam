@@ -9,7 +9,7 @@ import { ColumnDef } from "@tanstack/react-table";
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
 export type Storage = {
-  id: string;
+  id: number;
   name: string;
   unit_measurement: string;
 };
@@ -52,6 +52,7 @@ export const columns: ColumnDef<Storage>[] = [
               </Button>
             }
             submitButtonText="Guardar Cambios"
+            onSubmit={() => console.log("Formulario enviado")}
           >
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -87,6 +88,7 @@ export const columns: ColumnDef<Storage>[] = [
             trigger={<Button variant="destructive">Eliminar</Button>}
             // eslint-disable-next-line react/no-children-prop
             submitButtonText="Eliminar" children={undefined}
+            onSubmit={() => console.log("Formulario enviado")}
           ></ReusableDialog>
         </div>
       );

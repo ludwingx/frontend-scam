@@ -1,5 +1,3 @@
-"use client";
-
 import { ReusableDialog } from "@/components/ReusableDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,11 +6,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Business } from "@/types/business";
 import { toast } from "sonner";
 import { useState } from "react";
-import { updateBusiness, deleteBusiness } from "@/services/fetchBusinessData"; // Importar las funciones de servicio
 
 export const columns = (
-  updateBusinessInTable: (updatedBusiness: Business) => Promise<void>, // Función para actualizar un negocio
-  deleteBusinessFromTable: (businessId: number) => Promise<void> // Función para eliminar un negocio
+  updateBusinessInTable: (updatedBusiness: Business) => Promise<void>,
+  deleteBusinessFromTable: (businessId: number) => Promise<void>
 ): ColumnDef<Business>[] => [
   {
     id: "rowNumber",
@@ -30,17 +27,22 @@ export const columns = (
     header: () => <div className="text-center">Acciones</div>,
     cell: ({ row }) => {
       const business = row.original;
-      const [name, setName] = useState(business.name); // State for editing business name
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      const [name, setName] = useState(business.name);
 
-      const handleEditBusiness = async () => {
+      const handleEditBusiness = async (e: React.FormEvent) => {
+        console.log("Editando negocio:", business.id, business.name); // Log para verificar la edición
+        e.preventDefault(); // Prevenir el envío automático del formulario
+
         if (!name.trim()) {
           toast.error("El nombre del negocio no puede estar vacío.");
           return;
         }
 
         try {
-          const updatedBusiness = { ...business, name }; // Crear el objeto actualizado
-          await updateBusinessInTable(updatedBusiness); // Actualizar el negocio en la tabla
+          const updatedBusiness = { ...business, name };
+          console.log("Actualizando negocio en la tabla:", updatedBusiness); // Log para verificar la actualización
+          await updateBusinessInTable(updatedBusiness);
           toast.success(`Negocio "${name}" actualizado exitosamente.`);
         } catch (error) {
           console.error("Error updating business:", error);
@@ -48,9 +50,12 @@ export const columns = (
         }
       };
 
-      const handleDeleteBusiness = async () => {
+      const handleDeleteBusiness = async (e: React.FormEvent) => {
+        console.log("Eliminando negocio:", business.id, business.name); // Log para verificar la eliminación
+        e.preventDefault(); // Prevenir el envío automático del formulario
+
         try {
-          await deleteBusinessFromTable(business.id); // Eliminar el negocio de la tabla
+          await deleteBusinessFromTable(business.id);
           toast.success(`Negocio "${business.name}" eliminado exitosamente.`);
         } catch (error) {
           console.error("Error deleting business:", error);
@@ -75,6 +80,12 @@ export const columns = (
             }
             onSubmit={handleEditBusiness}
             submitButtonText="Guardar Cambios"
+            onOpenChange={(open) => {
+              if (!open) {
+                console.log("Diálogo de edición cerrado"); // Log para verificar el cierre del diálogo
+                setName(business.name); // Resetear el estado del nombre cuando el diálogo se cierra
+              }
+            }}
           >
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -102,6 +113,8 @@ export const columns = (
             trigger={<Button variant="destructive">Eliminar</Button>}
             onSubmit={handleDeleteBusiness}
             submitButtonText="Eliminar"
+            // eslint-disable-next-line react/no-children-prop
+            children={ null }
           />
         </div>
       );

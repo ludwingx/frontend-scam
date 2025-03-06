@@ -1,20 +1,17 @@
 'use server';
 
 import { cookies } from "next/headers";
+import { Ingredients } from "@/types/ingredients";
 
-type Business = {
-  id: number;
-  name: string;
-  // Otras propiedades del negocio
-};
+
 
 type ApiResponse = {
   success: boolean;
-  data: Business | null;
+  data: Ingredients | null;
   message: string;
 };
 
-export const fetchBusinessData = async (): Promise<Business[] | null> => {
+export const fetchIngredientsData = async (): Promise<Ingredients[] | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -23,7 +20,7 @@ export const fetchBusinessData = async (): Promise<Business[] | null> => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/business`, {
+    const response = await fetch(`${API_URL}/api/ingrediente`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -31,19 +28,19 @@ export const fetchBusinessData = async (): Promise<Business[] | null> => {
     });
 
     if (!response.ok) {
-      throw new Error("Error al obtener los datos de los negocios");
+      throw new Error("Error al obtener los datos de los ingredientes");
     }
 
     const apiResponse: ApiResponse = await response.json();
     
-    return apiResponse.data as unknown as Business[];
+    return apiResponse.data as unknown as Ingredients[];
   } catch (error) {
-    console.error("Error fetching business data:", error);
+    console.error("Error fetching ingredients data:", error);
     throw error;
   }
 };
 
-export const updateBusiness = async (business: Business): Promise<Business | null> => {
+export const updateIngredients = async (ingredients: Ingredients): Promise<Ingredients | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -52,13 +49,13 @@ export const updateBusiness = async (business: Business): Promise<Business | nul
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/business/${business.id}`, {
+    const response = await fetch(`${API_URL}/api/ingredients/${ingredients.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(business),
+      body: JSON.stringify(ingredients),
     });
 
     if (!response.ok) {
@@ -66,14 +63,14 @@ export const updateBusiness = async (business: Business): Promise<Business | nul
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as Business;
+    return apiResponse.data as Ingredients;
   } catch (error) {
-    console.error("Error updating business:", error);
+    console.error("Error updating ingredients:", error);
     throw error;
   }
 };
 
-export const deleteBusiness = async (businessId: number): Promise<boolean> => {
+export const deleteIngredients = async (ingredientsId: number): Promise<boolean> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -82,7 +79,7 @@ export const deleteBusiness = async (businessId: number): Promise<boolean> => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/business/${businessId}`, {
+    const response = await fetch(`${API_URL}/api/ingredients/${ingredientsId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -95,7 +92,7 @@ export const deleteBusiness = async (businessId: number): Promise<boolean> => {
 
     return true;
   } catch (error) {
-    console.error("Error deleting business:", error);
+    console.error("Error deleting ingredients:", error);
     throw error;
   }
 };

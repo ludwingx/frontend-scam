@@ -21,6 +21,7 @@ export default function BusinessPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const loadBusinesses = async () => {
+    console.log("Cargando negocios..."); // Log para verificar la carga de datos
     try {
       const businesses = await fetchBusinessData();
       if (businesses) {
@@ -39,6 +40,7 @@ export default function BusinessPage() {
   }, []);
 
   const updateBusinessInTable = async (updatedBusiness: Business) => {
+    console.log("Actualizando negocio en la tabla:", updatedBusiness.id, updatedBusiness.name); // Log para verificar la actualización
     const previousData = [...data];
     setData((prevData) =>
       prevData.map((business) =>
@@ -60,6 +62,7 @@ export default function BusinessPage() {
   };
 
   const deleteBusinessFromTable = async (businessId: number) => {
+    console.log("Eliminando negocio de la tabla:", businessId); // Log para verificar la eliminación
     const previousData = [...data];
     setData((prevData) => prevData.filter((business) => business.id !== businessId));
 
@@ -68,7 +71,6 @@ export default function BusinessPage() {
       if (!isDeleted) {
         throw new Error("No se pudo eliminar el negocio.");
       }
-      toast.success(`Negocio eliminado exitosamente.`);
     } catch (error) {
       console.error("Error deleting business:", error);
       toast.error("Error al eliminar el negocio. Por favor, inténtalo de nuevo.");
@@ -105,7 +107,7 @@ export default function BusinessPage() {
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <BusinessActions/> {/* Pasar loadBusinesses como prop */}
+        <BusinessActions onRefresh={loadBusinesses}   /> {/* Pasar loadBusinesses como prop */}
       </div>
 
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
@@ -113,7 +115,7 @@ export default function BusinessPage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateBusinessInTable, deleteBusinessFromTable)} 
+            columns={columns(updateBusinessInTable, deleteBusinessFromTable)}
             data={data}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."

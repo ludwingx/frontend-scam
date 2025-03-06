@@ -16,15 +16,17 @@ export function IngredientsActions() {
   return (
     <>
       {/* Diálogo para crear negocio */}
-      <ReusableDialog 
-        title="Crear Producto"
-        description="Aquí podrás crear un producto."
+      <ReusableDialog
+        
+        title="Crear Ingrediente"
+        description="Aquí podrás crear un ingrediente."
         trigger={
           <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
             <CirclePlus/><span>Crear Ingrediente</span>
           </Button>
         }
         onSubmit={handleCreateIngredient}
+        submitButtonText="Crear Ingrediente"
       >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -39,6 +41,16 @@ export function IngredientsActions() {
             </Label>
             <Input id="unidadMedida" placeholder="Ingresa la unidad de medida" className="col-span-3" />
           </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="cantidad" className="text-right">
+                  Cantidad
+                </Label>
+                <Input
+                  id="cantidad"
+                  placeholder="Ingresa la cantidad"
+                  className="col-span-3"
+                />
+              </div>
         </div>
       </ReusableDialog>
 

@@ -8,8 +8,11 @@ import { CirclePlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface BusinessActionsProps {
+  onRefresh: () => void; // Prop para actualizar la tabla
+}
 
-export function BusinessActions() {
+export function BusinessActions({ onRefresh }: BusinessActionsProps) {
   const [businessName, setBusinessName] = useState("");
 
   const handleCreateBusiness = async () => {
@@ -75,6 +78,7 @@ export function BusinessActions() {
         }
         onSubmit={handleCreateBusiness}
         submitButtonText="Crear Negocio"
+        
       >
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
