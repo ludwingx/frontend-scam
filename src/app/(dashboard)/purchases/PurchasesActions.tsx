@@ -15,35 +15,72 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { CirclePlus, X, Utensils, Box } from "lucide-react";
-import { Combobox } from "./Combobox"; // Importa el combobox reutilizable
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Combobox } from "./ComboBox";
 
 interface Item {
   id: number;
   nombre: string;
   cantidad?: number;
   precioUnitario?: number;
+  unit_measurement?: string;
+  proveedor?: string;
   subtotal?: number;
   tipo?: "Comestible" | "No comestible"; // Tipo de ítem (opcional)
 }
 
 // Datos de ejemplo
 const comestibles = [
-  { id: 1, nombre: "Harina", unit_measurement: "gramos" },
-  { id: 2, nombre: "Azúcar", unit_measurement: "gramos" },
-  { id: 3, nombre: "Huevo", unit_measurement: "unidad" },
+  {
+    id: 1,
+    nombre: "Harina",
+    cantidad: 1,
+    unit_measurement: "kilo(s)",
+    proveedor: "Proveedor A",
+  },
+  {
+    id: 2,
+    nombre: "Azúcar",
+    cantidad: 300,
+    unit_measurement: "gramo(s)",
+    proveedor: "Proveedor B",
+  },
+  {
+    id: 3,
+    nombre: "Huevo",
+    cantidad: 200,
+    unit_measurement: "unidad(es)",
+    proveedor: "Proveedor C",
+  },
 ];
 
 const noComestibles = [
-  { id: 4, nombre: "Cajas de cartón", unit_measurement: "unidades" },
-  { id: 5, nombre: "Lavandina", unit_measurement: "litros" },
-  { id: 6, nombre: "Stickers", unit_measurement: "unidades" },
+  {
+    id: 4,
+    nombre: "Cajas de cartón",
+    cantidad: 100,
+    unit_measurement: "unidad(es)",
+  },
+  { id: 5, nombre: "Lavandina", cantidad: 100, unit_measurement: "litro(s)" },
+  { id: 6, nombre: "Stickers", cantidad: 100, unit_measurement: "unidad(es)" },
 ];
 
 export function PurchasesActions() {
   const [ingredients, setIngredients] = useState<Item[]>([]);
-  const [selectedItem, setSelectedItem] = useState<{ id: number; nombre: string; unit_measurement?: string } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{
+    id: number;
+    nombre: string;
+    unit_measurement?: string;
+  } | null>(null);
   const [cantidad, setCantidad] = useState<number>(0);
   const [precioUnitario, setPrecioUnitario] = useState<number>(0);
 
@@ -57,8 +94,9 @@ export function PurchasesActions() {
     const newItem: Item = {
       id: selectedItem.id,
       nombre: selectedItem.nombre,
-      cantidad,
+      cantidad, // Usar la cantidad del input
       precioUnitario,
+      unit_measurement: selectedItem.unit_measurement,
     };
 
     setIngredients((prev) => [...prev, newItem]);
@@ -87,6 +125,11 @@ export function PurchasesActions() {
     );
   };
 
+  // Función para enviar el JSON por consola
+  const handleSubmit = () => {
+    console.log("Datos de la compra:", JSON.stringify(ingredients, null, 2));
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <ReusableDialogWidth
@@ -98,7 +141,7 @@ export function PurchasesActions() {
             <span>Crear Compra</span>
           </Button>
         }
-        onSubmit={() => console.log("Crear Compra")}
+        onSubmit={handleSubmit} // Enviar JSON por consola al hacer submit
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -134,18 +177,28 @@ export function PurchasesActions() {
                   <TableRow>
                     <TableHead className="w-[40px]">N°</TableHead>
                     <TableHead className="w-[220px]">Ítem</TableHead>
-                    <TableHead className="text-center w-[100px]">Cantidad</TableHead>
-                    <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
+                    <TableHead className="w-[100px] text-center">
+                      Cantidad
+                    </TableHead>
+                    <TableHead className="w-[100px] text-center">
+                      Unidad de Medida
+                    </TableHead>
+                    <TableHead className="w-[120px] text-center">
+                      Precio Unitario (Bs.)
+                    </TableHead>
+                    <TableHead className="w-[100px] text-right">
+                      Subtotal
+                    </TableHead>
                     <TableHead className="w-[40px]"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {ingredients.map((ing, index) => (
                     <TableRow key={ing.id}>
-                      <TableCell className="font-medium">{index + 1}</TableCell>
-                      <TableCell>
-                        {/* Botones para seleccionar el tipo de ítem */}
+                      <TableCell className="w-[40px] font-medium">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell className="w-[220px]">
                         {!ing.tipo ? (
                           <div className="flex gap-2">
                             <Button
@@ -161,6 +214,7 @@ export function PurchasesActions() {
                               Comestible
                             </Button>
                             <Button
+                              className="bg-red-600 text-white hover:bg-red-600/90"
                               variant="outline"
                               size="sm"
                               onClick={() => {
@@ -175,46 +229,76 @@ export function PurchasesActions() {
                           </div>
                         ) : (
                           <Combobox
-                            value={ing.nombre}
+                            value={
+                              <div className="inline">
+                                {ing.nombre}{" "}
+                                <span className="text-sm text-gray-500">
+                                  - {ing.cantidad} {ing.unit_measurement}
+                                </span>
+                              </div>
+                            }
                             onSelect={(item) => {
                               const updatedItems = [...ingredients];
                               updatedItems[index].nombre = item.nombre;
                               updatedItems[index].id = item.id;
+                              updatedItems[index].unit_measurement =
+                                item.unit_measurement;
+                              // No sobrescribir la cantidad del input
                               setIngredients(updatedItems);
                             }}
-                            options={ing.tipo === "Comestible" ? comestibles : noComestibles}
+                            options={
+                              ing.tipo === "Comestible"
+                                ? comestibles
+                                : noComestibles
+                            }
                             placeholder="Seleccionar ítem"
+                            renderOption={(item) => (
+                              <div className="flex justify-between w-full">
+                                <span>{item.nombre}</span>
+                                <span className="text-sm text-gray-500">
+                                  {item.cantidad} {item.unit_measurement}
+                                </span>
+                              </div>
+                            )}
                           />
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[100px]">
                         <Input
                           className="text-center"
                           type="number"
                           value={ing.cantidad || ""}
                           onChange={(e) => {
                             const updatedItems = [...ingredients];
-                            updatedItems[index].cantidad = Number(e.target.value);
+                            updatedItems[index].cantidad = Number(
+                              e.target.value
+                            );
                             setIngredients(updatedItems);
                           }}
                         />
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="w-[100px] text-center">
+                        {ing.unit_measurement || "N/A"}
+                      </TableCell>
+                      <TableCell className="w-[120px] text-center">
                         <Input
-                          className="text-center w-[120px]"
+                          className="text-center"
                           type="number"
                           value={ing.precioUnitario || ""}
                           onChange={(e) => {
                             const updatedItems = [...ingredients];
-                            updatedItems[index].precioUnitario = Number(e.target.value);
+                            updatedItems[index].precioUnitario = Number(
+                              e.target.value
+                            );
                             setIngredients(updatedItems);
                           }}
                         />
                       </TableCell>
-                      <TableCell className="text-right w-[100px]">
-                        Bs. {calculateSubtotal(ing).toFixed(2).replace(".", ",")}
+                      <TableCell className="w-[100px] text-right">
+                        Bs.{" "}
+                        {calculateSubtotal(ing).toFixed(2).replace(".", ",")}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-[40px]">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -227,10 +311,10 @@ export function PurchasesActions() {
                   ))}
                   {/* Fila para agregar un nuevo ítem */}
                   <TableRow>
-                    <TableCell className="font-medium">
+                    <TableCell className="w-[40px] font-medium">
                       {ingredients.length + 1}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="w-[220px]">
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
@@ -238,7 +322,11 @@ export function PurchasesActions() {
                           onClick={() => {
                             setIngredients((prev) => [
                               ...prev,
-                              { id: Date.now(), nombre: "", tipo: "Comestible" },
+                              {
+                                id: Date.now(),
+                                nombre: "",
+                                tipo: "Comestible",
+                              },
                             ]);
                           }}
                         >
@@ -251,7 +339,11 @@ export function PurchasesActions() {
                           onClick={() => {
                             setIngredients((prev) => [
                               ...prev,
-                              { id: Date.now(), nombre: "", tipo: "No comestible" },
+                              {
+                                id: Date.now(),
+                                nombre: "",
+                                tipo: "No comestible",
+                              },
                             ]);
                           }}
                         >
@@ -260,23 +352,31 @@ export function PurchasesActions() {
                         </Button>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="w-[100px]">
                       <Input type="number" disabled />
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Input className="w-[120px]" type="number" disabled />
+                    <TableCell className="w-[100px] text-center">
+                      <Input type="text" disabled />
                     </TableCell>
-                    <TableCell className="text-right w-[100px]"></TableCell>
-                    <TableCell></TableCell>
+                    <TableCell className="w-[120px] text-center">
+                      <Input type="number" disabled />
+                    </TableCell>
+                    <TableCell className="w-[100px] text-right"></TableCell>
+                    <TableCell className="w-[40px]"></TableCell>
                   </TableRow>
                 </TableBody>
                 <TableFooter>
                   <TableRow>
-                    <TableCell colSpan={4}>Total</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell
+                      colSpan={5}
+                      className="text-right font-bold bg-amber-100"
+                    >
+                      Total
+                    </TableCell>
+                    <TableCell className="w-[120px] text-right  bg-amber-100">
                       Bs. {calculateTotal().toFixed(2).replace(".", ",")}
                     </TableCell>
-                    <TableCell></TableCell>
+                    <TableCell className="w-[40px] bg-amber-100"></TableCell>
                   </TableRow>
                 </TableFooter>
               </Table>

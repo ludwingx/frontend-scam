@@ -21,11 +21,13 @@ import {
 interface Option {
   id: number;
   nombre: string;
+  cantidad?: number;
   unit_measurement?: string;
 }
 
 interface ComboboxProps {
-  value: string;
+  //value es para mostrar un div con el nombre y la cantidad JSX.IntrinsicElements.div: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+  value: string | Element;
   onSelect: (item: Option) => void;
   options: Option[];
   placeholder?: string;
@@ -43,7 +45,7 @@ export function Combobox({ value, onSelect, options, placeholder }: ComboboxProp
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value || placeholder || "Seleccionar..."}
+          {value || placeholder || "Seleccionar..." }
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -56,13 +58,18 @@ export function Combobox({ value, onSelect, options, placeholder }: ComboboxProp
               {options.map((item) => (
                 <CommandItem
                   key={item.id}
-                  value={item.nombre}
+                  value={`${item.nombre} ${item.cantidad} ${item.unit_measurement}`} // Valor para búsqueda
                   onSelect={() => {
                     onSelect(item);
                     setOpen(false);
                   }}
                 >
-                  {item.nombre}
+                  <div className="flex justify-between w-full">
+                    <span>{item.nombre}</span>
+                    <span className="text-sm text-gray-500">
+                      {item.cantidad} {item.unit_measurement}
+                    </span>
+                  </div>
                   <Check
                     className={cn(
                       "ml-auto",

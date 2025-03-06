@@ -32,7 +32,7 @@ export function ReusableDialogWidth({
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[700px] bg-white">
+      <DialogContent className="sm:max-w-[900px] bg-white">
         <DialogHeader >
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
