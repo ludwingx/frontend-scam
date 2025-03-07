@@ -5,16 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ColumnDef } from "@tanstack/react-table";
+import { RawMaterials } from "@/types/rawMaterials";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Storage = {
-  id: number;
-  name: string;
-  unit_measurement: string;
-};
-
-export const columns: ColumnDef<Storage>[] = [
+export const columns: ColumnDef<RawMaterials>[] = [
   {
     id: "rowNumber",
     header: "N°",
@@ -25,12 +18,23 @@ export const columns: ColumnDef<Storage>[] = [
   {
     accessorKey: "name",
     header: "Nombre",
+    cell: ({ row }) => {
+      const ingredients = row.original;
+      return (
+        <div>
+          {ingredients.name}{" - "}
+          <span className="text-sm text-gray-500">
+            {ingredients.quantity} {ingredients.unit_measurement}
+          </span>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "unit_measurement",
-    header: "Unidad de Medida",
+    accessorKey: "stock",
+    header: "Stock",
   },
-  //edit & delete opcion
+  // Edit & delete opción
   {
     id: "actions",
     header: () => <div className="text-center">Acciones</div>, // Centrar el header
@@ -38,20 +42,22 @@ export const columns: ColumnDef<Storage>[] = [
       const ingredients = row.original;
 
       return (
-        <div className=" flex gap-2 justify-center">
+        <div className="flex gap-2 justify-center">
           <ReusableDialog
             title="Editar Ingrediente"
             description={
               <>
-                Aquí podras modificar los datos del ingrediente <strong>{ingredients.name}</strong>
+                Aquí podrás modificar los datos del ingrediente{" "}
+                <strong>{ingredients.name}</strong>
               </>
-            } 
+            }
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-700">
                 Editar
               </Button>
             }
             submitButtonText="Guardar Cambios"
+            onSubmit={() => console.log("Formulario enviado")}
           >
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
@@ -70,7 +76,19 @@ export const columns: ColumnDef<Storage>[] = [
                 </Label>
                 <Input
                   id="unidadMedida"
+                  defaultValue={ingredients.unit_measurement}
                   placeholder="Ingresa la unidad de medida"
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="cantidad" className="text-right">
+                  Cantidad
+                </Label>
+                <Input
+                  id="cantidad"
+                  defaultValue={ingredients.quantity}
+                  placeholder="Ingresa la cantidad"
                   className="col-span-3"
                 />
               </div>
@@ -81,12 +99,15 @@ export const columns: ColumnDef<Storage>[] = [
             title="Eliminar Negocio"
             description={
               <>
-                ¿Estás seguro de eliminar el ingrediente <strong>{ingredients.name}</strong>?
+                ¿Estás seguro de eliminar el ingrediente{" "}
+                <strong>{ingredients.name}</strong>?
               </>
             }
             trigger={<Button variant="destructive">Eliminar</Button>}
+            submitButtonText="Eliminar"
+            onSubmit={() => console.log("Negocio eliminado")}
             // eslint-disable-next-line react/no-children-prop
-            submitButtonText="Eliminar" children={undefined}
+            children={null}
           ></ReusableDialog>
         </div>
       );
