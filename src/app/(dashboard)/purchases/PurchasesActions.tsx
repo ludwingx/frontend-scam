@@ -1,5 +1,4 @@
-"use client";
-
+'use client'
 import { useState } from "react";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus, X, Utensils, Box, Trash2 } from "lucide-react";
+import { CirclePlus,  Utensils, Box, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -76,34 +75,8 @@ const noComestibles = [
 
 export function PurchasesActions() {
   const [ingredients, setIngredients] = useState<Item[]>([]);
-  const [selectedItem, setSelectedItem] = useState<{
-    id: number;
-    nombre: string;
-    unit_measurement?: string;
-  } | null>(null);
-  const [cantidad, setCantidad] = useState<number>(0);
-  const [precioUnitario, setPrecioUnitario] = useState<number>(0);
 
-  // Función para agregar un ítem a la lista
-  const handleAddItem = () => {
-    if (!selectedItem || cantidad <= 0 || precioUnitario <= 0) {
-      alert("Por favor, completa todos los campos correctamente.");
-      return;
-    }
 
-    const newItem: Item = {
-      id: selectedItem.id,
-      nombre: selectedItem.nombre,
-      cantidad, // Usar la cantidad del input
-      precioUnitario,
-      unit_measurement: selectedItem.unit_measurement,
-    };
-
-    setIngredients((prev) => [...prev, newItem]);
-    setSelectedItem(null);
-    setCantidad(0);
-    setPrecioUnitario(0);
-  };
 
   // Función para eliminar un ítem
   const handleRemoveItem = (id: number) => {
@@ -128,6 +101,14 @@ export function PurchasesActions() {
   // Función para enviar el JSON por consola
   const handleSubmit = () => {
     console.log("Datos de la compra:", JSON.stringify(ingredients, null, 2));
+  };
+
+  // Filtrar los ingredientes disponibles
+  const getAvailableIngredients = (tipo: "Comestible" | "No comestible") => {
+    const allIngredients = tipo === "Comestible" ? comestibles : noComestibles;
+    return allIngredients.filter(
+      (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
+    );
   };
 
   return (
@@ -251,11 +232,7 @@ export function PurchasesActions() {
                               // No sobrescribir la cantidad del input
                               setIngredients(updatedItems);
                             }}
-                            options={
-                              ing.tipo === "Comestible"
-                                ? comestibles
-                                : noComestibles
-                            }
+                            options={getAvailableIngredients(ing.tipo)}
                             placeholder="Seleccionar ítem"
                             renderOption={(item) => (
                               <div className="flex justify-between w-full">

@@ -17,6 +17,7 @@ interface ReusableSelectProps {
   className?: string;
   name: string; // Asegúrate de agregar el atributo name
   onValueChange?: (value: string) => void; // Función para manejar cambios
+  disabled: boolean
 }
 
 export function ReusableSelect({
@@ -26,10 +27,11 @@ export function ReusableSelect({
   className,
   name,
   onValueChange,
+  disabled,
 }: ReusableSelectProps) {
   return (
     <div className={className}>
-      <Select name={name} onValueChange={onValueChange}>
+      <Select disabled={disabled} name={name} onValueChange={onValueChange} >
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
