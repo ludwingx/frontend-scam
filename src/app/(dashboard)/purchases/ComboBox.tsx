@@ -30,6 +30,7 @@ interface ComboboxProps {
   onSelect: (item: Option) => void;
   options?: Option[]; // `options` es opcional
   placeholder?: string;
+  renderOption?: (item: Option) => React.ReactNode;
 }
 
 export function Combobox({ value, onSelect, options = [], placeholder }: ComboboxProps) {
