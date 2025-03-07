@@ -146,6 +146,7 @@ export default async function Page() {
                 trigger={<Trash2 cursor={"pointer"} className="w-4 h-4 text-red-600 hover:text-red-600/80" />}
                 // eslint-disable-next-line react/no-children-prop
                 submitButtonText="Eliminar" children={undefined}
+                onSubmit={() => console.log("Producto eliminado")}
               ></ReusableDialog>
               <ReusableDialog
                 title="Editar Producto"
@@ -158,6 +159,7 @@ export default async function Page() {
                   />
                 }
                 submitButtonText="Guardar Cambios"
+                onSubmit={() => console.log("Formulario enviado")}
               >
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">

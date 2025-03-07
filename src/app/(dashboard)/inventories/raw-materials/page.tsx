@@ -7,15 +7,49 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-import { columns, Storage } from "./columns";
+import { columns,  } from "./columns";
 import { DataTable } from "../../../../components/data-table";
+import { RawMaterials } from "@/types/rawMaterials";
 
-async function getData(): Promise<Storage[]> {
+
+async function getData(): Promise<RawMaterials[]> {
   return [
     {
       id: 1,
-      name: "adaaw",
-      unit_measurement: "gramos", 
+      name: "Harina",
+      unit_measurement: "kilo(s)", 
+      quantity: 5,
+      stock: 3
+      
+    },
+    {
+      id: 2,
+      name: "Azúcar",
+      unit_measurement: "kilo(s)",
+      quantity: 5,
+      stock: 3
+
+    },
+    {
+      id: 3,
+      name: "Huevo",
+      unit_measurement: "unidad(es)",
+      quantity: 30,
+      stock: 4
+    },
+    {
+      id: 4,
+      name: "Leche",
+      unit_measurement: "litro(s)",
+      quantity: 5,
+      stock: 7
+    },
+    {
+      id: 5,
+      name: "Cafe",
+      unit_measurement: "gramo(s)",
+      quantity: 250,
+      stock: 8
     }
   ]
 }
@@ -46,7 +80,7 @@ export default async function Page() {
             <BreadcrumbSeparator className="text-gray-400" />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-gray-900">
-                Materias primas
+                Materias Primas
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>

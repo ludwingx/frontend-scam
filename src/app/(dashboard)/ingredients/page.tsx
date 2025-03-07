@@ -36,12 +36,10 @@ export default function IngredientsPage() {
     }
   };
 
-  // Cargar los ingredientes al montar el componente
   useEffect(() => {
     loadIngredients();
   }, []);
 
-  // Función para actualizar un ingrediente en la tabla (optimistic update)
   const updateIngredientsInTable = async (updatedIngredients: Ingredients) => {
     console.log("Actualizando ingrediente en la tabla:", updatedIngredients.id, updatedIngredients.name); // Log para verificar la actualización
     const previousData = [...data];
@@ -65,13 +63,13 @@ export default function IngredientsPage() {
   };
 
   // Función para eliminar un ingrediente de la tabla (optimistic update)
-  const deleteIngredientsFromTable = async (ingredientsId: string) => {
-    console.log("Eliminando ingrediente de la tabla:", ingredientsId); // Log para verificar la eliminación
+  const deleteIngredientsFromTable = async (ingredientsId : string) => {
+    console.log("Eliminando ingrediente de la tabla:", ingredientsId);
     const previousData = [...data];
-    setData((prevData) => prevData.filter((ingredient) => ingredient.id !== ingredientsId));
+    setData((prevData) => prevData.filter((ingredient) =>  ingredient.id !== Number(ingredientsId))); 
   
     try {
-      const isDeleted = await deleteIngredients(ingredientsId);
+      const isDeleted = await deleteIngredients(Number(ingredientsId));
       if (!isDeleted) {
         throw new Error("No se pudo eliminar el ingrediente.");
       }
@@ -114,7 +112,7 @@ export default function IngredientsPage() {
 
       {/* Description and Action Button */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-        <IngredientsActions onRefresh={loadIngredients} /> {/* Pasar loadIngredients como prop */}
+        <IngredientsActions  /> {/* Pasar loadIngredients como prop */}
       </div>
 
       {/* Tabla con todas las funcionalidades */}

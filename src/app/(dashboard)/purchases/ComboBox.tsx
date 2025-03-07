@@ -26,15 +26,15 @@ interface Option {
 }
 
 interface ComboboxProps {
-  //value es para mostrar un div con el nombre y la cantidad JSX.IntrinsicElements.div: DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
-  value: string;
+  value: React.ReactNode; // Cambiado a React.ReactNode para manejar JSX
   onSelect: (item: Option) => void;
-  options: Option[];
+  options?: Option[]; // `options` es opcional
   placeholder?: string;
 }
 
-export function Combobox({ value, onSelect, options, placeholder }: ComboboxProps) {
+export function Combobox({ value, onSelect, options = [], placeholder }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
+  const [searchValue, setSearchValue] = React.useState("");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,13 +45,17 @@ export function Combobox({ value, onSelect, options, placeholder }: ComboboxProp
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {value || placeholder || "Seleccionar..."  }
+          {value || placeholder || "Seleccionar..."}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Buscar..." />
+          <CommandInput
+            placeholder="Buscar..."
+            value={searchValue}
+            onValueChange={(value) => setSearchValue(value)}
+          />
           <CommandList>
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
             <CommandGroup>
@@ -61,7 +65,8 @@ export function Combobox({ value, onSelect, options, placeholder }: ComboboxProp
                   value={`${item.nombre} ${item.quantity} ${item.unit_measurement}`} // Valor para búsqueda
                   onSelect={() => {
                     onSelect(item);
-                    setOpen(false);
+                    setOpen(false); // Cierra el popover después de seleccionar
+                    setSearchValue(""); // Reinicia el valor de búsqueda
                   }}
                 >
                   <div className="flex justify-between w-full">
