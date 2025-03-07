@@ -13,7 +13,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus,  Utensils, Box, Trash2 } from "lucide-react";
+import { CirclePlus, Utensils, Box, Trash2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -75,8 +75,6 @@ const noComestibles = [
 
 export function PurchasesActions() {
   const [ingredients, setIngredients] = useState<Item[]>([]);
-
-
 
   // Función para eliminar un ítem
   const handleRemoveItem = (id: number) => {
