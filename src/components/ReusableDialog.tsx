@@ -26,7 +26,9 @@ export function ReusableDialog({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault(); // Prevenir el envío automático del formulario
     onSubmit(e); // Llamar a la función onSubmit proporcionada
+    onOpenChange?.(false);
   };
+  
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -34,7 +36,7 @@ export function ReusableDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogDescription >{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           {children}

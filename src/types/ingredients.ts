@@ -1,6 +1,7 @@
-export type Ingredients = {
+export type Ingredient= {
     id: number;
     name: string;
-    unit_measurement: string;
     quantity: number;
+    unit_measurement: string;
+
 };

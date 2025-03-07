@@ -90,13 +90,17 @@ const data = {
   ],
   navMain: [
     {
-      title: "Usuarios",
-      url: "/users",
+      title: "Gestion de Usuarios",
+      url: "/user-management",
       icon: Users,
       items: [
         {
+          title: "Usuarios",
+          url: "/user-management/users",
+        },
+        {
           title: "Roles",
-          url: "/roles",
+          url: "/user-management/roles",
         },
       ],
     },

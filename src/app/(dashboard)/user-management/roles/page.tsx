@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { DataTable } from "../../../components/data-table";
+import { DataTable } from "../../../../components/data-table";
 import {
   fetchRoleData,
   updateRole,
