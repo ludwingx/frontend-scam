@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 
 interface ReusableSelectProps {
+  value?: string;
   placeholder: string;
   label: string;
   options: { value: string; label: string }[];
@@ -21,6 +22,7 @@ interface ReusableSelectProps {
 }
 
 export function ReusableSelect({
+  value,
   placeholder,
   label,
   options,
@@ -31,7 +33,7 @@ export function ReusableSelect({
 }: ReusableSelectProps) {
   return (
     <div className={className}>
-      <Select disabled={disabled} name={name} onValueChange={onValueChange} >
+      <Select disabled={disabled} name={name} onValueChange={onValueChange}  value={value}  >
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

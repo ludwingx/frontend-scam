@@ -14,10 +14,10 @@ import { DataTable } from "../../../components/data-table";
 import { IngredientsActions } from "./IngredientsActions";
 import { columns } from "./columns";
 import { fetchIngredientsData, updateIngredients, deleteIngredients } from "@/services/fetchIngredientsData"; // Importar funciones de servicio
-import { Ingredients } from "@/types/ingredients"; // Asegúrate de que esta interfaz esté definida
+import { Ingredient } from "@/types/ingredients"; // Asegúrate de que esta interfaz esté definida
 
 export default function IngredientsPage() {
-  const [data, setData] = useState<Ingredients[]>([]); // Estado para almacenar los ingredientes
+  const [data, setData] = useState<Ingredient[]>([]); // Estado para almacenar los ingredientes
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
 
   // Función para cargar los ingredientes
@@ -27,6 +27,7 @@ export default function IngredientsPage() {
       const ingredients = await fetchIngredientsData();
       if (ingredients) {
         setData(ingredients);
+        console.log("Ingredientes cargados:", ingredients);
       } else {
         setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
       }
@@ -34,13 +35,14 @@ export default function IngredientsPage() {
       console.error("Error fetching data:", error);
       setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
     }
+    
   };
 
   useEffect(() => {
     loadIngredients();
   }, []);
 
-  const updateIngredientsInTable = async (updatedIngredients: Ingredients) => {
+  const updateIngredientsInTable = async (updatedIngredients: Ingredient) => {
     console.log("Actualizando ingrediente en la tabla:", updatedIngredients.id, updatedIngredients.name); // Log para verificar la actualización
     const previousData = [...data];
     setData((prevData) =>

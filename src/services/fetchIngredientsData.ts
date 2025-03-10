@@ -1,17 +1,17 @@
 'use server';
 
 import { cookies } from "next/headers";
-import { Ingredients } from "@/types/ingredients";
+import { Ingredient } from "@/types/ingredients";
 
 
 
 type ApiResponse = {
   success: boolean;
-  data: Ingredients | null;
+  data: Ingredient | null;
   message: string;
 };
 
-export const fetchIngredientsData = async (): Promise<Ingredients[] | null> => {
+export const fetchIngredientsData = async (): Promise<Ingredient[] | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -33,14 +33,14 @@ export const fetchIngredientsData = async (): Promise<Ingredients[] | null> => {
 
     const apiResponse: ApiResponse = await response.json();
     
-    return apiResponse.data as unknown as Ingredients[];
+    return apiResponse.data as unknown as Ingredient[];
   } catch (error) {
     console.error("Error fetching ingredients data:", error);
     throw error;
   }
 };
 
-export const updateIngredients = async (ingredients: Ingredients): Promise<Ingredients | null> => {
+export const updateIngredients = async (ingredients: Ingredient): Promise<Ingredient | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -59,11 +59,12 @@ export const updateIngredients = async (ingredients: Ingredients): Promise<Ingre
     });
 
     if (!response.ok) {
-      throw new Error("Error al actualizar el negocio");
+      const errorResponse = await response.json(); // Captura la respuesta de error
+      throw new Error(`Error al actualizar el ingrediente: ${errorResponse.message || "Error desconocido"}`);
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as Ingredients;
+    return apiResponse.data as Ingredient;
   } catch (error) {
     console.error("Error updating ingredients:", error);
     throw error;

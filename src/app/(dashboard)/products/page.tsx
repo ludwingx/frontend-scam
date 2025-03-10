@@ -24,9 +24,9 @@ async function getData(): Promise<Product[]> {
       status: "active",
       img: "/cuñape.png",
       ingredients: [
-        { id: 1, name: "Harina", quantity: 500, unit_measurement: "gramo(s)" },
-        { id: 3, name: "Leche", quantity: 200, unit_measurement: "gramo(s)" },
-        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+        { id: 1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
+        { id: 3, name: "Leche", cantidad: 200, unidad: "gramo(s)" },
+        { id: 5, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
       ]
     },
     {
@@ -37,9 +37,9 @@ async function getData(): Promise<Product[]> {
       status: "inactive",
       img: "/tortaChocolate.png",
       ingredients: [
-        { id: 3, name: "Harina", quantity: 500, unit_measurement: "gramo(s)" },
-        { id: 5, name: "Chocolate", quantity: 300, unit_measurement: "gramo(s)" },
-        { id: 8, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+        { id: 1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
+        { id: 2, name: "Chocolate", cantidad: 300, unidad: "gramo(s)" },
+        { id: 3, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
       ],
     },
     {
@@ -50,11 +50,11 @@ async function getData(): Promise<Product[]> {
       status: "active",
       img: "/empanadaQueso.png",
       ingredients: [
-        { id: 8, name: "Harina", quantity: 500, unit_measurement: "gramo(s)" },
-        { id: 4, name: "Queso", quantity: 200, unit_measurement: "gramo(s)" },
-        { id: 3, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
-        { id: 6, name: "Azúcar", quantity: 100, unit_measurement: "gramo(s)" },
-        { id: 8, name: "Vainilla", quantity: 50, unit_measurement: "gramo(s)" },
+        { id: 1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
+        { id: 2, name: "Queso", cantidad: 200, unidad: "gramo(s)" },
+        { id: 3, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
+        { id: 4, name: "Azúcar", cantidad: 100, unidad: "gramo(s)" },
+        { id: 5, name: "Vainilla", cantidad: 50, unidad: "gramo(s)" },
       ],
     },
     {
@@ -65,11 +65,16 @@ async function getData(): Promise<Product[]> {
       status: "active",
       img: "/tortaVainilla.png",
       ingredients: [
-        { id:3, name: "Harina", quantity: 500, unit_measurement: "gramo(s)" },
-        { id: 9, name: "Frutas", quantity: 300, unit_measurement: "gramo(s)" },
-        { id: 8, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
-        { id: 4, name: "Azúcar", quantity: 100, unit_measurement: "gramo(s)" },
-        { id: 6, name: "Vainilla", quantity: 50, unit_measurement: "gramo(s)" },
+        { id:1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
+        { id: 2, name: "Frutas", cantidad: 300, unidad: "gramo(s)" },
+        { id: 3, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
+        { id: 4, name: "Azúcar", cantidad: 100, unidad: "gramo(s)" },
+        { id: 5, name: "Vainilla", cantidad: 50, unidad: "gramo(s)" },
+        { id: 6, name: "Leche", cantidad: 200, unidad: "gramo(s)" },
+        { id: 7, name: "Chocolate", cantidad: 300, unidad: "gramo(s)" },
+        { id: 8, name: "Queso", cantidad: 200, unidad: "gramo(s)" },
+        { id: 9, name: "Mantequilla", cantidad: 100, unidad: "gramo(s)" },
+        { id: 10, name: "Azucares", cantidad: 100, unidad: "gramo(s)" },
       ],
     },
   ];

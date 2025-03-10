@@ -27,20 +27,19 @@ export function ReusableDialogWidth({
   trigger,
   children,
   onSubmit,
-  submitButtonText = "Crear compra",
 }: ReusableDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] sm:max-h-[550px] bg-white">
+      <DialogContent className="sm:max-w-[900px] sm:max-h-auto bg-white">
         <DialogHeader >
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         {children}
-        <DialogFooter>
+        <DialogFooter className="flex justify-end" >
           <Button type="submit" onClick={onSubmit}>
-            {submitButtonText}
+            {title}
           </Button>
         </DialogFooter>
       </DialogContent>

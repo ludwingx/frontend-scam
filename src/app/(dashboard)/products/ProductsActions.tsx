@@ -66,6 +66,10 @@ const comestibles = [
 
 export function ProductsActions() {
   const [ingredients, setIngredients] = useState<Item[]>([]);
+  const [nombre, setNombre] = useState(""); // Estado para el nombre del producto
+  const [negocio, setNegocio] = useState(""); // Estado para el negocio
+  const [precio, setPrecio] = useState(""); // Estado para el precio
+  const [tipo, setTipo] = useState(""); // Estado para el tipo de producto
 
   const handleAddOrUpdateIngredient = (ingrediente: Item, index?: number) => {
     if (index !== undefined) {
@@ -93,8 +97,27 @@ export function ProductsActions() {
     setIngredients(ingredients.filter((ing) => ing.id !== id));
   };
 
+  const handleSubmit = () => {
+    // Crear el objeto con los datos del formulario
+    const producto = {
+      nombre,
+      negocio,
+      precio: parseFloat(precio), // Convertir a número
+      tipo,
+      ingredientes: ingredients.map((ing) => ({
+        id: ing.id,
+        nombre: ing.nombre,
+        cantidad: ing.cantidad,
+        unidad: ing.selectedUnit,
+      })),
+    };
+
+    // Imprimir los datos en la consola
+    console.log("Datos del producto:", producto);
+  };
+
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       <ReusableDialogWidth
         title="Crear Producto"
         description="Llena el formulario para crear un producto"
@@ -104,7 +127,7 @@ export function ProductsActions() {
             <span>Crear Producto</span>
           </Button>
         }
-        onSubmit={() => console.log("Crear Producto")}
+        onSubmit={handleSubmit} // Usar handleSubmit para enviar los datos
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-2 items-center gap-2">
@@ -116,6 +139,8 @@ export function ProductsActions() {
                 id="name"
                 placeholder="Ingresa el nombre del producto"
                 className="col-span-3"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)} // Actualizar el estado del nombre
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -132,6 +157,8 @@ export function ProductsActions() {
                   { value: "Tortas Express", label: "Tortas Express" },
                 ]}
                 disabled={false}
+                value={negocio}
+                onValueChange={setNegocio} // Actualizar el estado del negocio
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -143,6 +170,8 @@ export function ProductsActions() {
                 type="number"
                 placeholder="Bs."
                 className="col-span-1"
+                value={precio}
+                onChange={(e) => setPrecio(e.target.value)} // Actualizar el estado del precio
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -159,6 +188,8 @@ export function ProductsActions() {
                   { value: "Producto Base", label: "Producto Base" },
                 ]}
                 disabled={false}
+                value={tipo}
+                onValueChange={setTipo} // Actualizar el estado del tipo
               />
             </div>
           </div>
@@ -193,7 +224,6 @@ export function ProductsActions() {
                           value={
                             <div className="inline">
                               {ing.nombre}{" "}
-                            
                             </div>
                           }
                           onSelect={(ingrediente) =>

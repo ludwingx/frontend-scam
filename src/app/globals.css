@@ -5,7 +5,36 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
+.submenu-icon {
+  color: hsl(var(--sidebar-foreground)); /* Mismo color que los iconos principales */
+  width: 1rem; /* Ajusta el tamaño si es necesario */
+  height: 1rem; /* Ajusta el tamaño si es necesario */
+  margin-right: 0.5rem; /* Espaciado entre el icono y el texto */
 
+}
+.submenu-icon:hover {
+
+
+
+  color: hsl(var(--sidebar-accent-foreground)); /* Mismo color que los iconos principales */
+
+}
+.sidebar-menu-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Estilo para el ícono de despliegue */
+.sidebar-menu-action {
+  transition: transform 0.2s ease;
+}
+
+.sidebar-menu-action[data-state="open"] {
+  transform: rotate(90deg);
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { fetchRoleData } from "@/services/fetchRoleData";
 import { toast } from "sonner";
 import { RefreshCcw, UserRoundPlus } from "lucide-react";
-import { CreateUserForm } from "@/app/(dashboard)/user-management/users/createUserForm";
+import { CreateUserForm } from "@/app/(dashboard)/users-management/users/createUserForm";
 import { createUser } from "@/services/fetchUserData";
 import { User } from "@/types/user";
 

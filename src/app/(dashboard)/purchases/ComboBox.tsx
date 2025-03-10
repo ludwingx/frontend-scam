@@ -44,7 +44,7 @@ export function Combobox({ value, onSelect, options = [], placeholder }: Combobo
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[270px] justify-between"
         >
           {value || placeholder || "Seleccionar..."}
           <ChevronsUpDown className="opacity-50" />

@@ -7,10 +7,11 @@ interface ReusableDialogProps {
   description: React.ReactNode;
   trigger: React.ReactNode;
   onSubmit: (e: FormEvent) => void;
-  submitButtonText: string;
+  submitButtonText?: string;
   children: React.ReactNode;
-  onOpenChange?: (open: boolean) => void; // Nueva prop para manejar cambios de estado
-  isOpen?: boolean; // Nueva prop para controlar si el diálogo está abierto
+  onOpenChange?: (open: boolean) => void; // Prop para manejar cambios de estado
+  isOpen?: boolean; // Prop para controlar si el diálogo está abierto
+  showSubmitButton?: boolean; // Nueva prop para controlar si se muestra el botón de envío
 }
 
 export function ReusableDialog({
@@ -18,31 +19,34 @@ export function ReusableDialog({
   description,
   trigger,
   onSubmit,
-  submitButtonText,
+  submitButtonText = "Cerrar", // Valor por defecto para submitButtonText
   children,
   onOpenChange,
-  isOpen
+  isOpen,
+  showSubmitButton = true, // Valor por defecto para showSubmitButton
 }: ReusableDialogProps) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault(); // Prevenir el envío automático del formulario
     onSubmit(e); // Llamar a la función onSubmit proporcionada
-    onOpenChange?.(false);
+    onOpenChange?.(false); // Cerrar el diálogo después de enviar
   };
-  
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-h-[600px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="pt-3" >{description}</DialogDescription>
+          <DialogDescription className="pt-3">{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           {children}
-          <DialogFooter>
-            <Button type="submit">{submitButtonText}</Button>
-          </DialogFooter>
+          {/* Renderizar el DialogFooter y el botón solo si showSubmitButton es true */}
+          {showSubmitButton && (
+            <DialogFooter>
+              <Button type="submit">{submitButtonText}</Button>
+            </DialogFooter>
+          )}
         </form>
       </DialogContent>
     </Dialog>

@@ -273,8 +273,11 @@ export const columns: ColumnDef<Purchases>[] = [
             description={"¿Estás seguro de que deseas eliminar la compra N° " + purchase.id + "?"}
             trigger={<Button variant="destructive">Eliminar</Button>}
             submitButtonText="Eliminar"
+            onSubmit={() => console.log("Compra eliminada")}
+            // eslint-disable-next-line react/no-children-prop
+            children={null}
           >
-            <span className="text-red-600 font-semibold">Esta acción no se puede deshacer.</span>
+            
           </ReusableDialog>
         </div>
       );
