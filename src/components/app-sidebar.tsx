@@ -1,17 +1,25 @@
 "use client";
 import * as React from "react";
 import {
+  AlignVerticalSpaceAround,
   AudioWaveform,
+  Box,
   BriefcaseBusiness,
+  Building2,
+  Cake,
   Command,
   Container,
   GalleryVerticalEnd,
   LayoutDashboard,
+  NotepadText,
   Package,
+  ScanFace,
   Settings2,
   ShoppingBasket,
   ShoppingCart,
+  UserRoundCog,
   Users,
+  Wheat,
 } from "lucide-react";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
@@ -78,11 +86,6 @@ const data = {
       icon: ShoppingCart,
     },
     {
-      name: "Inventario",
-      url: "/storage",
-      icon: Container,
-    },
-    {
       name: "Iniciar Sesion",
       url: "/signin",
       icon: Settings2,
@@ -91,18 +94,44 @@ const data = {
   navMain: [
     {
       title: "Gestion de Usuarios",
-      url: "/user-management",
-      icon: Users,
+      url: "/users-management",
+      icon: UserRoundCog,
       items: [
         {
           title: "Usuarios",
-          url: "/user-management/users",
+          url: "/users-management/users",
+          icon: Users
         },
         {
           title: "Roles",
-          url: "/user-management/roles",
+          url: "/users-management/roles",
+          icon: ScanFace
         },
       ],
+    },
+    {
+      title: "Gestión de Items",
+      url: "/items-management",
+      icon: Box,
+      items: [
+        {
+          title: "Ingredientes",
+          url: "/ingredients",
+          icon: ShoppingBasket
+
+        },
+        {
+          title: "Productos",
+          url: "/products",
+          icon: Package
+        },
+        {
+          title: "Recetas",
+          url: "/recipes",
+          icon: NotepadText
+        
+      }]
+
     },
     {
       title: "Inventarios",
@@ -112,16 +141,36 @@ const data = {
         {
           title: "Materias Primas",
           url: "/inventories/raw-materials",
+          icon: Wheat
         },
         {
           title: "Productos Bases",
           url: "/inventories/base-products",
+          icon: AlignVerticalSpaceAround
         },
         {
           title: "Productos Finales",
           url: "/inventories/final-products",
+          icon: Cake
         }
       ],
+    },
+    {
+      title: "Organización",
+      url: "/organization",
+      icon: Building2,
+      items: [
+        {
+          title: "Negocios",
+          url: "/organization/businesses",
+          icon: Users
+        },
+        {
+          title: "sucursales",
+          url: "/organization/branches",
+          icon: Users
+        },
+      ]
     }
   ],
 };
@@ -155,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={data.navMain}  />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>

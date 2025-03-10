@@ -30,6 +30,7 @@ export function NavMain({
     items?: {
       title: string;
       url: string;
+      icon: LucideIcon;
     }[];
   }[];
 }) {
@@ -41,14 +42,12 @@ export function NavMain({
           <Collapsible key={item.title} asChild defaultOpen={item.isActive}>
             <SidebarMenuItem>
               {/* Enlace principal */}
-              <Link href={item.url} passHref legacyBehavior>
-                <SidebarMenuButton asChild tooltip={item.title}>
+              <SidebarMenuButton  asChild tooltip={item.title}>
                   <a>
                     <item.icon />
                     <span>{item.title}</span>
                   </a>
                 </SidebarMenuButton>
-              </Link>
 
               {/* Submenú (si existe) */}
               {item.items?.length ? (
@@ -65,7 +64,8 @@ export function NavMain({
                         <SidebarMenuSubItem key={subItem.title}>
                           <Link href={subItem.url} passHref legacyBehavior>
                             <SidebarMenuSubButton asChild>
-                              <a>
+                              <a >
+                                 <subItem.icon className="submenu-icon"  /> {/* Icono del submenú */}
                                 <span>{subItem.title}</span>
                               </a>
                             </SidebarMenuSubButton>

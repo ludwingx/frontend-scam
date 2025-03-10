@@ -208,8 +208,9 @@ export function PurchasesActions() {
                             value={
                               <div className="inline">
                                 {ing.nombre}{" "}
-                                <span className="text-sm text-gray-500">
-                                  -{" "}
+                                <span  className="text-sm text-gray-500">
+                                  {/* Muestra "Seleccionar un item" si no selecciono nada */}
+                                  { ing.nombre === "" ?   "Seleccionar un item" : ""}
                                   {
                                     (ing.tipo === "Comestible"
                                       ? comestibles

@@ -40,17 +40,6 @@ interface Item {
   selectedUnit?: string;
 }
 
-const noComestibles = [
-  {
-    id: 4,
-    nombre: "Cajas de cartón",
-    quantity: 100,
-    unit_measurement: "unidad(es)",
-  },
-  { id: 5, nombre: "Lavandina", quantity: 100, unit_measurement: "litro(s)" },
-  { id: 6, nombre: "Stickers", quantity: 100, unit_measurement: "unidad(es)" },
-];
-
 const comestibles = [
   {
     id: 1,
@@ -76,7 +65,7 @@ const comestibles = [
 ];
 
 export function ProductCard({ product }: { product: Product }) {
-  const [ingredients, setIngredients] = useState<Item[]>(product.ingredients);
+  const [ingredients, setIngredients] = useState<Item[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
     name: product.name,
@@ -157,6 +146,7 @@ export function ProductCard({ product }: { product: Product }) {
             }
             submitButtonText="Eliminar"
             onSubmit={() => console.log("Producto eliminado")}
+            // eslint-disable-next-line react/no-children-prop
             children={null}
           />
           <ReusableDialogWidth
@@ -174,7 +164,7 @@ export function ProductCard({ product }: { product: Product }) {
           >
             <div className="grid gap-4">
               <div className="grid grid-cols-2 items-center gap-2">
-                <div className="grid grid-cols-4 items-center gap-4">
+                <div className="grid grid-cols-4 items-center">
                   <Label htmlFor="name" className="text-right">
                     Nombre
                   </Label>
@@ -202,7 +192,6 @@ export function ProductCard({ product }: { product: Product }) {
                       { value: "Tortas Express", label: "Tortas Express" },
                     ]}
                     disabled={false}
-                    value={editData.business}
                     onValueChange={(value) =>
                       setEditData({ ...editData, business: value })
                     }
@@ -302,7 +291,6 @@ export function ProductCard({ product }: { product: Product }) {
                                 { value: "piezas", label: "Piezas" },
                               ]}
                               name="unidad"
-                              value={ing.selectedUnit}
                               onValueChange={(value) =>
                                 handleAddOrUpdateIngredient(
                                   { ...ing, selectedUnit: value },
@@ -333,53 +321,41 @@ export function ProductCard({ product }: { product: Product }) {
         {/* Botón para ver detalles */}
         <ReusableDialog
           title="Detalles del Producto"
-          description={
-            <>
-              Aquí podrás ver los detalles del producto{" "}
-              <strong>{product.name}</strong>
-            </>
-          }
+          description="Aquí podrás ver los detalles del producto"
           trigger={
             <Label className="text-primary-600 hover:text-primary-900 cursor-pointer bg-green-100 hover:bg-green-200 rounded-lg px-3 py-1">
               Ver Detalles
             </Label>
           }
-          submitButtonText="Cerrar"
           onSubmit={() => console.log("Detalles cerrados")}
           isOpen={isDialogOpen}
           onOpenChange={setIsDialogOpen}
+          showSubmitButton={false}
         >
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2">
-              <div className="flex flex-col items-center justify-center">
+          <div className="grid gap-2 py-4">
+            <h3 className="scroll-m-20 text-2xl text-center font-semibold tracking-tight ">
+              {product.name}
+            </h3>
+            <div className="grid grid-cols-2 p-4">
+              <div className="flex flex-col items-center justify-center ">
                 <div className="flex items-center justify-center">
                   <Image
-                    width={150}
-                    height={100}
+                    width={180}
+                    height={180}
                     src={product.img}
                     alt={product.name}
                     className="rounded-lg object-cover"
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-3">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right font-bold">
-                    Nombre:
-                  </Label>
-                  <Label className="col-span-3 pl-2">{product.name}</Label>
+              <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-4 items-center gap-2">
+                  <p className="col-span-3 pl-2 text-gray-600 font-semibold leading-7 [&:not(:first-child)]:mt-6">
+                    {product.business}
+                  </p>
                 </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="business" className="text-right font-bold">
-                    Negocio:
-                  </Label>
-                  <Label className="col-span-3 pl-2">{product.business}</Label>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="price" className="text-right font-bold">
-                    Precio:
-                  </Label>
-                  <Label className="col-span-3 pl-2">
+                <div className="grid grid-cols-4 items-center gap-2">
+                  <Label className="col-span-3 pl-2 text-lg text-amber-600 font-semibold">
                     Bs. {product.price.toFixed(2)}
                   </Label>
                 </div>
@@ -390,18 +366,21 @@ export function ProductCard({ product }: { product: Product }) {
             <div className="flex flex-col">
               <Label
                 htmlFor="ingredients"
-                className="text-start font-bold col-span-1"
+                className="text-start font-bold col-span-1 pb-2"
               >
                 Ingredientes:
               </Label>
-              <ul className="text-sm text-gray-600 col-span-3 pl-2 list-disc list-inside mt-2">
-                {product.ingredients.map((ingredient) => (
-                  <li key={ingredient.id}>
-                    {ingredient.name} | {ingredient.quantity}{" "}
-                    {ingredient.unit_measurement}
-                  </li>
-                ))}
-              </ul>
+                {/* Ajusta la altura según tus necesidades */}
+                <ul className="text-sm text-gray-600 col-span-3 pl-2 list-disc list-inside mt-2">
+                <ScrollArea className="h-48">
+                  {product.ingredients.map((ingredient) => (
+                    <li key={ingredient.id}>
+                      {ingredient.name} | {ingredient.cantidad}{" "}
+                      {ingredient.unidad}
+                    </li>
+                  ))}
+              </ScrollArea>
+                </ul>
             </div>
           </div>
         </ReusableDialog>
