@@ -5,16 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ColumnDef } from "@tanstack/react-table";
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FinalsProducts } from "@/types/FinalsProducts";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-export type Storage = {
-  id: number;
-  name: string;
-  unit_measurement: string;
-};
-
-export const columns: ColumnDef<Storage>[] = [
+export const columns: ColumnDef<FinalsProducts>[] = [
   {
     id: "rowNumber",
     header: "N°",
@@ -24,13 +19,75 @@ export const columns: ColumnDef<Storage>[] = [
   },
   {
     accessorKey: "name",
-    header: "Nombre",
+    header: "Item",
+    cell: ({ row }) => {
+      const ingredients = row.original;
+      return (
+        <div>
+          {ingredients.name}{" - "}
+          <span className="text-sm text-gray-500">
+            {ingredients.quantity} {ingredients.unit_measurement}
+          </span>
+        </div>
+      );
+    },
   },
   {
-    accessorKey: "unit_measurement",
-    header: "Unidad de Medida",
+    accessorKey: "detalle_compra",
+    header: "Detalle del Producto Base",
+    cell: ({ row }) => {
+      const detalles = row.original.ingredients;
+
+      return (
+        <Sheet >
+          <SheetTrigger  asChild>
+            <Button variant="outline" className="w-full bg-green-100 hover:bg-green-200" >Ver Ingredientes</Button>
+          </SheetTrigger>
+          <SheetContent className="sm:max-w-2xl ">
+            <SheetHeader>
+              <SheetTitle>Ingredientes del Producto Base</SheetTitle>
+              <SheetDescription className="pb-6">
+                Aquí puedes ver el detalle de los ingredientes del producto base
+              </SheetDescription>
+            </SheetHeader>
+            <ScrollArea className="h-[calc(100vh-200px)] p-2">
+              <table className="w-full text-sm pr-4">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-center  p-2">N°</th>
+                    <th className="text-center p-2">Ítem</th>
+                    <th className="text-center p-2">Cantidad</th>
+                    <th className="text-center p-2">Unidad de Medida</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detalles.map((detalle) => (
+                    <tr key={detalle.id} className="border-b">
+                      <td className="text-center p-2">{detalles.indexOf(detalle) + 1}</td>
+                      <td className="text-center p-2">{detalle.name}</td>
+                      <td className="text-center p-2">{detalle.quantity}</td>
+                      <td className="text-center p-2">{detalle.unit_measurement}</td>
+                    </tr>
+                  ))}
+                  {/* Fila para el total */}
+                </tbody>
+              </table>
+            </ScrollArea>
+            <SheetFooter className="pt-8">
+              <SheetClose asChild>
+                <Button type="button">Cerrar</Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      );
+    },
   },
-  //edit & delete opcion
+  {
+    accessorKey: "stock",
+    header: "Stock",
+  },
+  // Edit & delete opción
   {
     id: "actions",
     header: () => <div className="text-center">Acciones</div>, // Centrar el header
@@ -38,14 +95,15 @@ export const columns: ColumnDef<Storage>[] = [
       const ingredients = row.original;
 
       return (
-        <div className=" flex gap-2 justify-center">
+        <div className="flex gap-2 justify-center">
           <ReusableDialog
             title="Editar Ingrediente"
             description={
               <>
-                Aquí podras modificar los datos del ingrediente <strong>{ingredients.name}</strong>
+                Aquí podrás modificar los datos del ingrediente{" "}
+                <strong>{ingredients.name}</strong>
               </>
-            } 
+            }
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-700">
                 Editar
@@ -71,7 +129,19 @@ export const columns: ColumnDef<Storage>[] = [
                 </Label>
                 <Input
                   id="unidadMedida"
+                  defaultValue={ingredients.unit_measurement}
                   placeholder="Ingresa la unidad de medida"
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="cantidad" className="text-right">
+                  Cantidad
+                </Label>
+                <Input
+                  id="cantidad"
+                  defaultValue={ingredients.quantity}
+                  placeholder="Ingresa la cantidad"
                   className="col-span-3"
                 />
               </div>
@@ -79,16 +149,18 @@ export const columns: ColumnDef<Storage>[] = [
           </ReusableDialog>
 
           <ReusableDialog
-            title="Eliminar Negocio"
+            title="Eliminar Producto Base"
             description={
               <>
-                ¿Estás seguro de eliminar el ingrediente <strong>{ingredients.name}</strong>?
+                ¿Estás seguro de eliminar el producto base{" "}
+                <strong>{ingredients.name}</strong>?
               </>
             }
             trigger={<Button variant="destructive">Eliminar</Button>}
+            submitButtonText="Eliminar"
+            onSubmit={() => console.log("Producto Base eliminado")}
             // eslint-disable-next-line react/no-children-prop
-            submitButtonText="Eliminar" children={undefined}
-            onSubmit={() => console.log("Formulario enviado")}
+            children={null}
           ></ReusableDialog>
         </div>
       );

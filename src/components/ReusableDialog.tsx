@@ -36,7 +36,7 @@ export function ReusableDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription >{description}</DialogDescription>
+          <DialogDescription className="pt-3" >{description}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           {children}

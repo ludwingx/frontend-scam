@@ -157,6 +157,7 @@ export const columns: ColumnDef<Purchases>[] = [
                 <ReusableSelect name="Negocios"
                                      placeholder="Selecciona un negocio"
                                      label="Negocios:"
+                                     disabled={false}
                                      options={[
                                        
                         { value: "Radial 26", label: "Radial 26" },
