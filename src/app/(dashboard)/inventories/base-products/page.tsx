@@ -7,15 +7,36 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-import { columns, Storage } from "./columns";
+import { columns} from "./columns";
 import { DataTable } from "../../../../components/data-table";
+import { ProductsBase } from "@/types/productsBases";
 
-async function getData(): Promise<Storage[]> {
+async function getData(): Promise<ProductsBase[]> {
   return [
     {
       id: 1,
-      name: "adaaw",
-      unit_measurement: "gramos",
+      name: "Base sabor chocolate",
+      unit_measurement: "gramo(s)", 
+      quantity: 300,
+      stock: 3,
+      ingredients: [
+        { id: 1, name: "Harina", quantity: 250, unit_measurement: "gramo(s)" },
+        { id: 3, name: "Leche", quantity: 120, unit_measurement: "gramo(s)" },
+        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+      ],
+    },
+    {
+      id: 2,
+      name: "Base sabor vainilla",
+      unit_measurement: "gramo(s)", 
+      quantity: 300,
+      stock: 3,
+      ingredients: [
+        { id: 1, name: "Harina", quantity: 250, unit_measurement: "gramo(s)" },
+        { id: 3, name: "Leche", quantity: 120, unit_measurement: "gramo(s)" },
+        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+        { id: 6, name: "Vainilla", quantity: 10, unit_measurement: "mililitro(s)" },
+      ],
     },
   ];
 }

@@ -17,7 +17,7 @@ export const columns: ColumnDef<RawMaterials>[] = [
   },
   {
     accessorKey: "name",
-    header: "Nombre",
+    header: "Item",
     cell: ({ row }) => {
       const ingredients = row.original;
       return (

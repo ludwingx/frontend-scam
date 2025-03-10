@@ -8,15 +8,35 @@ import {
 } from "@/components/ui/breadcrumb";
 
 
-import { columns, Storage } from "./columns";
+import { columns } from "./columns";
 import { DataTable } from "../../../../components/data-table";
+import { FinalsProducts } from "@/types/FinalsProducts";
 
-async function getData(): Promise<Storage[]> {
+async function getData(): Promise<FinalsProducts[]> {
   return [
     {
       id: 1,
-      name: "adaaw",
-      unit_measurement: "gramos", 
+      name: "Cuñape",
+      quantity: 100,
+      stock: 350,
+      unit_measurement: "gramo(s)",
+      ingredients: [
+        { id: 1, name: "Harina", quantity: 20, unit_measurement: "gramo(s)" },
+        { id: 3, name: "Leche", quantity: 200, unit_measurement: "gramo(s)" },
+        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+      ]
+    },    
+    {
+      id: 2,
+      name: "Torta de chocolate",
+      quantity: 750,
+      stock: 5,
+      unit_measurement: "gramo(s)",
+      ingredients: [
+        { id: 3, name: "Harina", quantity: 500, unit_measurement: "gramo(s)" },
+        { id: 5, name: "Chocolate", quantity: 300, unit_measurement: "gramo(s)" },
+        { id: 8, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+      ] 
     }
   ]
 }

@@ -18,7 +18,7 @@ async function getData(): Promise<RawMaterials[]> {
       id: 1,
       name: "Harina",
       unit_measurement: "kilo(s)", 
-      quantity: 5,
+      quantity: 1,
       stock: 3
       
     },
@@ -26,7 +26,7 @@ async function getData(): Promise<RawMaterials[]> {
       id: 2,
       name: "Azúcar",
       unit_measurement: "kilo(s)",
-      quantity: 5,
+      quantity: 1,
       stock: 3
 
     },
@@ -41,7 +41,7 @@ async function getData(): Promise<RawMaterials[]> {
       id: 4,
       name: "Leche",
       unit_measurement: "litro(s)",
-      quantity: 5,
+      quantity: 1,
       stock: 7
     },
     {
