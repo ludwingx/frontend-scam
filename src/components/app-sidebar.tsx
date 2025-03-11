@@ -5,6 +5,7 @@ import {
   AudioWaveform,
   Box,
   BriefcaseBusiness,
+  Building,
   Building2,
   Cake,
   Command,
@@ -64,21 +65,6 @@ const data = {
       name: "Panel de Control",
       url: "/",
       icon: LayoutDashboard,
-    },
-    {
-      name: "Negocios",
-      url: "/business",
-      icon: BriefcaseBusiness,
-    },
-    {
-      name: "Ingredientes",
-      url: "/ingredients",
-      icon: ShoppingBasket,
-    },
-    {
-      name: "Productos",
-      url: "/products",
-      icon: Package,
     },
     {
       name: "Compras",
@@ -162,13 +148,13 @@ const data = {
       items: [
         {
           title: "Negocios",
-          url: "/organization/businesses",
-          icon: Users
+          url: "/organization/business",
+          icon: BriefcaseBusiness
         },
         {
           title: "sucursales",
           url: "/organization/branches",
-          icon: Users
+          icon: Building
         },
       ]
     }

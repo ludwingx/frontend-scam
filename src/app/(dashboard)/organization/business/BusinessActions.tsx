@@ -12,7 +12,7 @@ interface BusinessActionsProps {
   onRefresh: () => void; // Prop para actualizar la tabla
 }
 
-export function BusinessActions({ onRefresh }: BusinessActionsProps) {
+export function BusinessActions({ }: BusinessActionsProps) {
   const [businessName, setBusinessName] = useState("");
 
   const handleCreateBusiness = async () => {

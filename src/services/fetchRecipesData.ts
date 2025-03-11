@@ -1,15 +1,18 @@
 'use server';
 
+import { Recipe } from "@/types/recipes";
 import { cookies } from "next/headers";
-import { Ingredient } from "@/types/ingredients";
+
+
+
 
 type ApiResponse = {
   success: boolean;
-  data: Ingredient | null;
+  data: Recipe | null;
   message: string;
 };
 
-export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> => {
+export const fetchRecipeData = async (): Promise<Recipe[] | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -18,7 +21,7 @@ export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> 
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/ingrediente`, {
+    const response = await fetch(`${API_URL}/api/receta`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,19 +29,19 @@ export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> 
     });
 
     if (!response.ok) {
-      throw new Error("Error al obtener los datos de los ingredientes");
+      throw new Error("Error al obtener los datos de los recetas");
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as unknown as Ingredient[]; // Devuelve `undefined` si no hay datos
+    
+    return apiResponse.data as unknown as Recipe[];
   } catch (error) {
-    console.error("Error fetching ingredients data:", error);
-    return undefined; // Devuelve `undefined` en caso de error
+    console.error("Error fetching Recipe data:", error);
+    throw error;
   }
 };
 
-
-export const updateIngredients = async (ingrediente: Ingredient): Promise<Ingredient | null> => {
+export const updateRecipe = async (Recipe: Recipe): Promise<Recipe | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -47,13 +50,13 @@ export const updateIngredients = async (ingrediente: Ingredient): Promise<Ingred
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/ingrediente/${ingrediente.id}`, {
+    const response = await fetch(`${API_URL}/api/receta/${Recipe.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(ingrediente),
+      body: JSON.stringify(Recipe),
     });
 
     if (!response.ok) {
@@ -61,14 +64,14 @@ export const updateIngredients = async (ingrediente: Ingredient): Promise<Ingred
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as Ingredient;
+    return apiResponse.data as Recipe;
   } catch (error) {
-    console.error("Error updating business:", error);
+    console.error("Error updating Recipe:", error);
     throw error;
   }
 };
 
-export const deleteIngredients = async (ingredientsId: number): Promise<boolean> => {
+export const deleteRecipe = async (RecipeId: number): Promise<boolean> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -77,7 +80,7 @@ export const deleteIngredients = async (ingredientsId: number): Promise<boolean>
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/ingrediente/${ingredientsId}`, {
+    const response = await fetch(`${API_URL}/api/receta/${RecipeId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -90,7 +93,7 @@ export const deleteIngredients = async (ingredientsId: number): Promise<boolean>
 
     return true;
   } catch (error) {
-    console.error("Error deleting ingrediente:", error);
+    console.error("Error deleting Recipe:", error);
     throw error;
   }
 };

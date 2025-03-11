@@ -1,12 +1,9 @@
 'use server';
 
 import { cookies } from "next/headers";
+import { Business } from "@/types/business";
 
-type Business = {
-  id: number;
-  name: string;
-  // Otras propiedades del negocio
-};
+
 
 type ApiResponse = {
   success: boolean;
