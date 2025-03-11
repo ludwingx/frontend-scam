@@ -35,6 +35,42 @@ body {
 .sidebar-menu-action[data-state="open"] {
   transform: rotate(90deg);
 }
+
+
+.table-container {
+  width: 100%;
+  overflow-x: auto; /* Permite el desplazamiento horizontal si la tabla es demasiado ancha */
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed; /* Fija el ancho de las columnas */
+}
+
+.table th,
+.table td {
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  overflow: hidden; /* Oculta el contenido que se desborda */
+  text-overflow: ellipsis; /* Muestra puntos suspensivos si el contenido es demasiado largo */
+}
+
+/* Agregar este estilo en tu archivo CSS global o en un módulo CSS */
+.compact-table {
+  width: 100%;
+  border-collapse: collapse; /* Reduce el espacio entre celdas */
+}
+
+.compact-table th,
+.compact-table td {
+  padding: 8px 12px; /* Reducir el padding */
+  font-size: 14px; /* Reducir el tamaño de la fuente */
+  border-bottom: 1px solid #e5e7eb; /* Línea divisoria entre filas */
+}
+
+.compact-table th {
+  background-color: #f9fafb; /* Fondo gris claro para los encabezados */
+  font-weight: 600; /* Texto en negrita para los encabezados */
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

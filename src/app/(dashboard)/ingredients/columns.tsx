@@ -7,15 +7,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState } from "react";
 import { ReusableSelect } from "@/components/ReusableSelect"; // Importa el componente ReusableSelect
+import { unitOptions } from "@/constants/unitOptions";
 
-// Opciones para el select de unidades de medida
-const unitOptions = [
-  { value: "gramos", label: "Gramos" },
-  { value: "kilogramos", label: "Kilogramos" },
-  { value: "litros", label: "Litros" },
-  { value: "mililitros", label: "Mililitros" },
-  { value: "unidades", label: "Unidades" },
-];
 
 // Componente para las acciones de edición y eliminación
 const ActionsCell = ({
@@ -28,19 +21,21 @@ const ActionsCell = ({
   deleteIngredientsFromTable: (ingredientsId: string) => Promise<void>;
 }) => {
   const [name, setName] = useState(ingredients.name);
+  const [quantity, setQuantity] = useState(ingredients.cantidad);
   const [unit, setUnit] = useState(ingredients.unidad); // Estado para la unidad de medida
 
   const handleEditIngredients = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!name.trim()) {
       toast.error("El nombre del ingrediente no puede estar vacío.");
       return;
     }
-
+  
     try {
-      const updatedIngredients = { ...ingredients, name, unit_measurement: unit };
+      const updatedIngredients = { ...ingredients, name, cantidad: quantity, unidad: unit }; // Asegúrate de que coincida con lo que espera el servidor
       await updateIngredientsInTable(updatedIngredients);
+      console.log("Actualizando ingrediente en la tabla:", updatedIngredients);
       toast.success(`Ingrediente "${name}" actualizado exitosamente.`);
     } catch (error) {
       console.error("Error updating ingredients:", error);
@@ -80,6 +75,7 @@ const ActionsCell = ({
         onOpenChange={(open) => {
           if (!open) {
             setName(ingredients.name); // Resetear el estado del nombre cuando el diálogo se cierra
+            setQuantity(ingredients.cantidad);
             setUnit(ingredients.unidad); // Resetear el estado de la unidad
           }
         }}
@@ -103,7 +99,9 @@ const ActionsCell = ({
                 </Label>
                 <Input
                   id="cantidad"
+                  name="cantidad"
                   defaultValue={ingredients.cantidad}
+                  onChange={(e) => setQuantity(Number(e.target.value))}
                   placeholder="Ingresa la cantidad"
                   className="col-span-3"
                 />
@@ -114,7 +112,7 @@ const ActionsCell = ({
             </Label>
             <ReusableSelect
               name="unit"
-              placeholder={ingredients.unidad}
+              placeholder={"Selecciona una unidad"}
               label="Unidad"
               options={unitOptions}
               onValueChange={setUnit}

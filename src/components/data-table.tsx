@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import {
   ColumnDef,
@@ -12,6 +11,7 @@ import {
   SortingState,
   ColumnFiltersState,
   VisibilityState,
+  PaginationState,
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,13 +33,13 @@ import { ChevronDown } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  enableFilter?: boolean; // Prop opcional para habilitar el filtro
-  filterPlaceholder?: string; // Texto del placeholder del filtro
-  filterColumn?: string; // Columna a filtrar (opcional, por defecto "name")
-  enablePagination?: boolean; // Prop opcional para habilitar la paginación
-  enableRowSelection?: boolean; // Prop opcional para habilitar la selección de filas
-  enableColumnVisibility?: boolean; // Prop opcional para habilitar la visibilidad de columnas
+  data: TData[] | undefined;
+  enableFilter?: boolean;
+  filterPlaceholder?: string;
+  filterColumn?: string;
+  enablePagination?: boolean;
+  enableRowSelection?: boolean;
+  enableColumnVisibility?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -47,60 +47,59 @@ export function DataTable<TData, TValue>({
   data,
   enableFilter = false,
   filterPlaceholder = "Filtrar...",
-  filterColumn = "name", // Columna a filtrar por defecto
+  filterColumn = "name",
   enablePagination = false,
   enableRowSelection = false,
   enableColumnVisibility = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  // Proporcionar un valor predeterminado para `data`
+  const tableData = data ?? [];
 
   const table = useReactTable({
-    data,
+    data: tableData, // Usar `tableData` en lugar de `data`
     columns,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
+      pagination,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: enableFilter ? getFilteredRowModel() : undefined,
-    getPaginationRowModel: enablePagination
-      ? getPaginationRowModel()
-      : undefined,
+    getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
     getSortedRowModel: getSortedRowModel(),
   });
 
   return (
-    <div className="w-full ">
+    <div className="w-full">
       {/* Filtro y visibilidad de columnas */}
       <div className="flex items-center p-2">
         {enableFilter && (
           <Input
             placeholder={filterPlaceholder}
-            value={
-              (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""
-            } // Usar filterColumn
-            onChange={
-              (event) =>
-                table
-                  .getColumn(filterColumn)
-                  ?.setFilterValue(event.target.value) // Usar filterColumn
+            value={(table.getColumn(filterColumn)?.getFilterValue() as string) ?? ""}
+            onChange={(event) =>
+              table.getColumn(filterColumn)?.setFilterValue(event.target.value)
             }
             className="max-w-sm"
           />
         )}
-        
+
         {enableColumnVisibility && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -113,18 +112,14 @@ export function DataTable<TData, TValue>({
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => {
-                  // Obtener el header de la columna
                   const header = column.columnDef.header;
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       className="capitalize"
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
+                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
                     >
-                      {/* Mostrar el header si existe, de lo contrario mostrar el ID */}
                       {typeof header === "string" ? header : column.id}
                     </DropdownMenuCheckboxItem>
                   );
@@ -140,47 +135,30 @@ export function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead className="text-center" key={header.id}   style={{
-                      width: header.getSize(), // Usar el ancho definido en la columna
-                      minWidth: header.column.columnDef.minSize, // Usar el ancho mínimo
-                    }}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead className="text-center" key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell className="text-center" key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
+                <TableCell colSpan={columns.length} className="h-24 text-center">
                   No results.
                 </TableCell>
               </TableRow>
@@ -191,40 +169,33 @@ export function DataTable<TData, TValue>({
 
       {/* Paginación y selección de filas */}
       <div className="flex items-center justify-end space-x-2 py-4">
-      {enableRowSelection && (
+        {enableRowSelection && (
           <div className="flex-1 text-sm text-muted-foreground">
             {table.getFilteredSelectedRowModel().rows.length} de{" "}
-            {table.getFilteredRowModel().rows.length} fila(s)
+            {table.getFilteredRowModel().rows.length} fila(s) seleccionadas
           </div>
         )}
         {enablePagination && (
           <>
-            {/* Botones de paginación */}
-            <div className=" flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                Anterior
-              </Button>
-                {/* Números de página */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Anterior
+            </Button>
             <div className="text-sm text-muted-foreground">
-              Página {table.getState().pagination.pageIndex + 1} de{" "}
-              {table.getPageCount()}
+              Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
             </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                Siguiente
-              </Button>
-            </div>
-
-          
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Siguiente
+            </Button>
           </>
         )}
       </div>

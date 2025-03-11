@@ -8,13 +8,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { DataTable } from "../../../components/data-table";
 import { BusinessActions } from "./BusinessActions";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
 import { Business } from "@/types/business";
 import { toast } from "sonner";
 import { fetchBusinessData, updateBusiness, deleteBusiness } from "@/services/fetchBusinessData";
+import { DataTable } from "@/components/data-table";
 
 export default function BusinessPage() {
   const [data, setData] = useState<Business[]>([]);
