@@ -1,3 +1,10 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { fetchProductData } from "@/services/fetchProductsData";
+import { fetchRecipeData } from "@/services/fetchRecipesData";
+import { ProductCard } from "./ProductCard";
+import { ProductsActions } from "./ProductsActions";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -6,82 +13,50 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { ProductsActions } from "./ProductsActions";
-import { ProductCard } from "./ProductCard";
 import { Product } from "@/types/products";
 
-// Definimos el tipo de datos de los productos
+export default function Page() {
+  const [productsWithRecipes, setProductsWithRecipes] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // Obtén los productos
+        const products = await fetchProductData();
 
-// Función para obtener los datos (simulada)
-async function getData(): Promise<Product[]> {
-  return [
-    {
-      id: 1,
-      name: "Cuñape",
-      price: 5.0,
-      business: "Mil Sabores",
-      status: "active",
-      img: "/cuñape.png",
-      ingredients: [
-        { id: 1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
-        { id: 3, name: "Leche", cantidad: 200, unidad: "gramo(s)" },
-        { id: 5, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
-      ]
-    },
-    {
-      id: 2,
-      name: "Torta de Chocolate",
-      price: 15.99,
-      business: "Tortas Express",
-      status: "inactive",
-      img: "/tortaChocolate.png",
-      ingredients: [
-        { id: 1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
-        { id: 2, name: "Chocolate", cantidad: 300, unidad: "gramo(s)" },
-        { id: 3, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
-      ],
-    },
-    {
-      id: 23,
-      name: "Empanada de Queso",
-      price: 8.99,
-      business: "Mil Sabores",
-      status: "active",
-      img: "/empanadaQueso.png",
-      ingredients: [
-        { id: 1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
-        { id: 2, name: "Queso", cantidad: 200, unidad: "gramo(s)" },
-        { id: 3, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
-        { id: 4, name: "Azúcar", cantidad: 100, unidad: "gramo(s)" },
-        { id: 5, name: "Vainilla", cantidad: 50, unidad: "gramo(s)" },
-      ],
-    },
-    {
-      id: 4,
-      name: "Torta de Vainilla",
-      price: 12.99,
-      business: "Tortas Express",
-      status: "active",
-      img: "/tortaVainilla.png",
-      ingredients: [
-        { id:1, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
-        { id: 2, name: "Frutas", cantidad: 300, unidad: "gramo(s)" },
-        { id: 3, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
-        { id: 4, name: "Azúcar", cantidad: 100, unidad: "gramo(s)" },
-        { id: 5, name: "Vainilla", cantidad: 50, unidad: "gramo(s)" },
-        { id: 6, name: "Leche", cantidad: 200, unidad: "gramo(s)" },
-        { id: 7, name: "Chocolate", cantidad: 300, unidad: "gramo(s)" },
-        { id: 8, name: "Queso", cantidad: 200, unidad: "gramo(s)" },
-        { id: 9, name: "Mantequilla", cantidad: 100, unidad: "gramo(s)" },
-        { id: 10, name: "Azucares", cantidad: 100, unidad: "gramo(s)" },
-      ],
-    },
-  ];
-}
+        // Obtén los detalles de la receta para cada producto
+        const productsWithRecipes = await Promise.all(
+          products.map(async (product) => {
+            if (product.recetaId) {
+              const recipe = await fetchRecipeData(product.recetaId); // Pasa el recetaId
+              return { ...product, recipe };
+            }
+            return product;
+          })
+        );
 
-export default async function Page() {
-  const data = await getData(); // Obtenemos los datos
+        setProductsWithRecipes(productsWithRecipes);
+        setLoading(false);
+        console.log("Productos cargados:", productsWithRecipes);
+      } catch (error) {
+        console.error("Error al obtener los productos:", error);
+        setError("Error al obtener los productos");
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return <div>Cargando productos...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
@@ -106,9 +81,9 @@ export default async function Page() {
           </BreadcrumbList>
         </Breadcrumb>
         <h2 className="text-3xl font-semibold text-gray-900">Productos</h2>
-        <small className="text-sm font-medium text-gray-600">
+        <p className="leading-7 [&:not(:first-child)]">
           Aquí podrás gestionar los productos.
-        </small>
+        </p>
       </div>
 
       {/* Descripción y botón de crear producto */}
@@ -117,8 +92,8 @@ export default async function Page() {
       </div>
 
       {/* Contenedor de las tarjetas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {data.map((product ) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        {productsWithRecipes.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>

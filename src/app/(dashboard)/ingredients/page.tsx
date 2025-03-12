@@ -15,24 +15,15 @@ import { IngredientsActions } from "./IngredientsActions";
 import { columns } from "./columns";
 import { fetchIngredientsData, updateIngredients, deleteIngredients } from "@/services/fetchIngredientsData"; // Importar funciones de servicio
 import { Ingredient } from "@/types/ingredients"; // Asegúrate de que esta interfaz esté definida
-import { PaginationState } from "@tanstack/react-table";
 
 export default function IngredientsPage() {
   const [data, setData] = useState<Ingredient[]>([]); // Estado para almacenar los ingredientes
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0, // Página inicial
-    pageSize: 10, // Tamaño de la página
-  });
-  const handlePaginationChange = (updaterOrValue: PaginationState | ((old: PaginationState) => PaginationState)) => {
-    if (typeof updaterOrValue === "function") {
-      // Si es una función de actualización, llámala con el estado actual
-      setPagination(updaterOrValue(pagination));
-    } else {
-      // Si es un valor directo, úsalo directamente
-      setPagination(updaterOrValue);
-    }
-  };
+
+  //funcion para ordenar de mayor id a menor id
+  const sortedData = data.sort((a, b) => b.id - a.id);
+  
+
   // Función para cargar los ingredientes
   const loadIngredients = async () => {
     console.log("Cargando ingredientes..."); // Log para verificar la carga de datos
@@ -57,7 +48,7 @@ export default function IngredientsPage() {
 
   const updateIngredientsInTable = async (updatedIngredients: Ingredient) => {
     console.log("Actualizando ingrediente en la tabla:", updatedIngredients.id, updatedIngredients.name);
-    const previousData = [...data];
+    const previousData = [...sortedData];
     setData((prevData) =>
       prevData.map((ingredient) =>
         ingredient.id === updatedIngredients.id ? updatedIngredients : ingredient
@@ -79,7 +70,7 @@ export default function IngredientsPage() {
   // Función para eliminar un ingrediente de la tabla (optimistic update)
   const deleteIngredientsFromTable = async (ingredientsId : string) => {
     console.log("Eliminando ingrediente de la tabla:", ingredientsId);
-    const previousData = [...data];
+    const previousData = [...sortedData];
     setData((prevData) => prevData.filter((ingredient) =>  ingredient.id !== Number(ingredientsId))); 
   
     try {
@@ -118,9 +109,9 @@ export default function IngredientsPage() {
         </Breadcrumb>
 
         <h2 className="text-3xl font-semibold text-gray-900">Ingredientes</h2>
-        <small className="text-sm font-medium text-gray-600">
+        <p className="leading-7 [&:not(:first-child)]">
           Aquí podrás gestionar los ingredientes.
-        </small>
+        </p>
       </div>
 
       {/* Description and Action Button */}
@@ -135,15 +126,14 @@ export default function IngredientsPage() {
         ) : (
           <DataTable
             columns={columns(updateIngredientsInTable, deleteIngredientsFromTable)} // Pasar funciones como parámetros
-            data={data}
+            data={sortedData}
             enableFilter // Habilitar el filtro
             filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
             filterColumn="name" // Especificar la columna a filtrar
             enablePagination // Habilitar la paginación
             enableRowSelection // Habilitar la selección de filas
             enableColumnVisibility // Habilitar la visibilidad de columnas
-            onPaginationChange={handlePaginationChange}
-            pagination={pagination} // Usa el estado de la paginación
+            
           />
         )}
       </div>

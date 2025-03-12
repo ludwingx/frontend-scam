@@ -19,10 +19,12 @@ import {
 } from "@/components/ui/popover";
 
 interface Option {
+  cantidad: number;
   id: number;
   nombre: string;
   quantity?: number;
-  unit_measurement?: string;
+  unidad?: string;
+
 }
 
 interface ComboboxProps {
@@ -50,13 +52,13 @@ export function Combobox({ value, onSelect, options = [], placeholder }: Combobo
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
-        <Command>
+        <Command >
           <CommandInput
             placeholder="Buscar..."
             value={searchValue}
             onValueChange={(value) => setSearchValue(value)}
           />
-          <CommandList>
+          <CommandList  >
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
             <CommandGroup>
               {options.map((item) => (

@@ -1,11 +1,13 @@
-import { Ingredient } from "./ingredients";
-
 export type Product = {
     id: number;
     name: string;
+    description: string;
     price: number;
-    business: string;
-    status: string;
-    img: string;
-    ingredients: Ingredient[]; // Use the correct type here
+    stock: number;
+    categoryId: number;
+    businessId: string;
+    business_name: string;
+    recetaId: number;
+    receta_name: string;
+    img?: string;
   };

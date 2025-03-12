@@ -19,7 +19,7 @@ export function ReusableDialog({
   description,
   trigger,
   onSubmit,
-  submitButtonText = "Cerrar", // Valor por defecto para submitButtonText
+  submitButtonText, // Valor por defecto para submitButtonText
   children,
   onOpenChange,
   isOpen,
