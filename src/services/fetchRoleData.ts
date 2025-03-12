@@ -1,12 +1,8 @@
 'use server'; // Marca esta función como una función de servidor
 
+import { Role } from "@/types/role";
 import { cookies } from "next/headers";
 
-type Role = {
-    id: number;
-    name: string;
-    // Agrega otras propiedades del rol aquí según la respuesta de la API
-};
 
 type ApiResponse = {
     success: boolean;
@@ -128,8 +124,7 @@ export const updateRole = async (role: Role): Promise<Role | null> => {
       if (!apiResponse.success || !apiResponse.data) {
         throw new Error("Respuesta del servidor no válida");
       }
-  
-      return apiResponse.data;
+      return apiResponse.data as Role;
     } catch (error) {
       console.error("Error updating role:", error);
       throw error;

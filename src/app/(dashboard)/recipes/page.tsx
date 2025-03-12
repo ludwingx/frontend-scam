@@ -19,8 +19,6 @@ import {
 import { toast } from "sonner";
 import { columns } from "./columns";
 
-// Definimos el tipo de datos de los productos
-
 export default function RecipePage() {
   const [data, setData] = useState<Recipe[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -28,10 +26,10 @@ export default function RecipePage() {
   const loadRecipe = async () => {
     console.log("Cargando recetas..."); // Log para verificar la carga de datos
     try {
-      const businesses = await fetchRecipeData();
-      if (businesses) {
-        setData(businesses);
-        console.log("Recetas cargadas:", businesses);
+      const recipes = await fetchRecipeData(); // Sin argumentos
+      if (recipes) {
+        setData(Array.isArray(recipes) ? recipes : [recipes]); // Asegúrate de que sea un array
+        console.log("Recetas cargadas:", recipes);
       } else {
         setErrorMessage(
           "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
@@ -51,54 +49,55 @@ export default function RecipePage() {
 
   const updateRecipeInTable = async (updatedRecipe: Recipe) => {
     console.log(
-      "Actualizando negocio en la tabla:",
+      "Actualizando receta en la tabla:",
       updatedRecipe.id,
       updatedRecipe.name
     ); // Log para verificar la actualización
     const previousData = [...data];
     setData((prevData) =>
-      prevData.map((business) =>
-        business.id === updatedRecipe.id ? updatedRecipe : business
+      prevData.map((recipe) =>
+        recipe.id === updatedRecipe.id ? updatedRecipe : recipe
       )
     );
 
     try {
       const response = await updateRecipe(updatedRecipe);
       if (!response) {
-        throw new Error("No se pudo actualizar el negocio.");
+        throw new Error("No se pudo actualizar la receta.");
       }
       toast.success(
-        `Negocio "${updatedRecipe.name}" actualizado exitosamente.`
+        `Receta "${updatedRecipe.name}" actualizada exitosamente.`
       );
     } catch (error) {
-      console.error("Error updating business:", error);
+      console.error("Error updating recipe:", error);
       toast.error(
-        "Error al actualizar el negocio. Por favor, inténtalo de nuevo."
+        "Error al actualizar la receta. Por favor, inténtalo de nuevo."
       );
       setData(previousData);
     }
   };
 
-  const deleteRecipeFromTable = async (businessId: number) => {
-    console.log("Eliminando negocio de la tabla:", businessId); // Log para verificar la eliminación
+  const deleteRecipeFromTable = async (recipeId: number) => {
+    console.log("Eliminando receta de la tabla:", recipeId); // Log para verificar la eliminación
     const previousData = [...data];
     setData((prevData) =>
-      prevData.filter((business) => business.id !== businessId)
+      prevData.filter((recipe) => recipe.id !== recipeId)
     );
 
     try {
-      const isDeleted = await deleteRecipe(businessId);
+      const isDeleted = await deleteRecipe(recipeId);
       if (!isDeleted) {
-        throw new Error("No se pudo eliminar el negocio.");
+        throw new Error("No se pudo eliminar la receta.");
       }
     } catch (error) {
-      console.error("Error deleting business:", error);
+      console.error("Error deleting recipe:", error);
       toast.error(
-        "Error al eliminar el negocio. Por favor, inténtalo de nuevo."
+        "Error al eliminar la receta. Por favor, inténtalo de nuevo."
       );
       setData(previousData);
     }
   };
+
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
       {/* Título de la página */}
@@ -132,12 +131,12 @@ export default function RecipePage() {
         </Breadcrumb>
         <h2 className="text-3xl font-semibold text-gray-900">Recetas</h2>
         <small className="text-sm font-medium text-gray-600">
-          Aquí podrás gestionar los recetas.
+          Aquí podrás gestionar las recetas.
         </small>
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <RecipeActions /> {/* Pasar loadRecipees como prop */}
+        <RecipeActions />
       </div>
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
         {errorMessage ? (

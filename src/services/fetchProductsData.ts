@@ -1,16 +1,16 @@
 'use server';
 
-import { Recipe } from "@/types/recipes";
+import { Product } from "@/types/products";
 import { cookies } from "next/headers";
 
 
 type ApiResponse = {
   success: boolean;
-  data: Recipe | null;
+  data: Product | null;
   message: string;
 };
 
-export const fetchRecipeData = async (recetaId?: number): Promise<Recipe[] | Recipe | null> => {
+export const fetchProductData = async (): Promise<Product[]> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -19,8 +19,7 @@ export const fetchRecipeData = async (recetaId?: number): Promise<Recipe[] | Rec
   }
 
   try {
-    const url = recetaId ? `${API_URL}/api/receta/${recetaId}` : `${API_URL}/api/receta`;
-    const response = await fetch(url, {
+    const response = await fetch(`${API_URL}/api/product`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -28,18 +27,19 @@ export const fetchRecipeData = async (recetaId?: number): Promise<Recipe[] | Rec
     });
 
     if (!response.ok) {
-      throw new Error("Error al obtener los datos de las recetas");
+      throw new Error("Error al obtener los datos de los products");
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data;
+    
+    return apiResponse.data as unknown as Product[];
   } catch (error) {
-    console.error("Error fetching Recipe data:", error);
+    console.error("Error fetching Product data:", error);
     throw error;
   }
 };
 
-export const updateRecipe = async (Recipe: Recipe): Promise<Recipe | null> => {
+export const updateProduct = async (Product: Product): Promise<Product | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,13 +48,13 @@ export const updateRecipe = async (Recipe: Recipe): Promise<Recipe | null> => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/receta/${Recipe.id}`, {
+    const response = await fetch(`${API_URL}/api/product/${Product.id}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(Recipe),
+      body: JSON.stringify(Product),
     });
 
     if (!response.ok) {
@@ -62,14 +62,14 @@ export const updateRecipe = async (Recipe: Recipe): Promise<Recipe | null> => {
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as Recipe;
+    return apiResponse.data as Product;
   } catch (error) {
-    console.error("Error updating Recipe:", error);
+    console.error("Error updating Product:", error);
     throw error;
   }
 };
 
-export const deleteRecipe = async (RecipeId: number): Promise<boolean> => {
+export const deleteProduct = async (ProductId: number): Promise<boolean> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -78,7 +78,7 @@ export const deleteRecipe = async (RecipeId: number): Promise<boolean> => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/receta/${RecipeId}`, {
+    const response = await fetch(`${API_URL}/api/product/${ProductId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -91,7 +91,7 @@ export const deleteRecipe = async (RecipeId: number): Promise<boolean> => {
 
     return true;
   } catch (error) {
-    console.error("Error deleting Recipe:", error);
+    console.error("Error deleting Product:", error);
     throw error;
   }
 };
