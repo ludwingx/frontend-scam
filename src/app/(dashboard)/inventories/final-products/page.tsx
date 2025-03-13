@@ -17,25 +17,25 @@ async function getData(): Promise<FinalsProducts[]> {
     {
       id: 1,
       name: "Cuñape",
-      quantity: 100,
       stock: 350,
-      unit_measurement: "gramo(s)",
+      cantidad: 1000,
+      unidad: "gramo(s)",
       ingredients: [
-        { id: 1, name: "Harina", quantity: 20, unit_measurement: "gramo(s)" },
-        { id: 3, name: "Leche", quantity: 200, unit_measurement: "gramo(s)" },
-        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+        { id: 1, name: "Harina", cantidad: 20, unidad: "gramo(s)" },
+        { id: 3, name: "Leche", cantidad: 200, unidad: "gramo(s)" },
+        { id: 5, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
       ]
     },    
     {
       id: 2,
       name: "Torta de chocolate",
-      quantity: 750,
+      cantidad: 750,
       stock: 5,
-      unit_measurement: "gramo(s)",
+      unidad: "gramo(s)",
       ingredients: [
-        { id: 3, name: "Harina", quantity: 500, unit_measurement: "gramo(s)" },
-        { id: 5, name: "Chocolate", quantity: 300, unit_measurement: "gramo(s)" },
-        { id: 8, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+        { id: 3, name: "Harina", cantidad: 500, unidad: "gramo(s)" },
+        { id: 5, name: "Chocolate", cantidad: 300, unidad: "gramo(s)" },
+        { id: 8, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
       ] 
     }
   ]

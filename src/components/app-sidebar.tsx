@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   NotepadText,
   Package,
+  PackagePlus,
   ScanFace,
   Settings2,
   ShoppingBasket,
@@ -72,6 +73,11 @@ const data = {
       icon: ShoppingCart,
     },
     {
+      name: "Producción",
+      url: "/production",
+      icon: PackagePlus,
+    },
+    {
       name: "Iniciar Sesion",
       url: "/signin",
       icon: Settings2,
@@ -106,17 +112,19 @@ const data = {
           icon: ShoppingBasket
 
         },
-        {
-          title: "Productos",
-          url: "/products",
-          icon: Package
-        },
+
         {
           title: "Recetas",
           url: "/recipes",
           icon: NotepadText
         
-      }]
+      },
+      {
+        title: "Productos",
+        url: "/products",
+        icon: Package
+      },
+    ]
 
     },
     {

@@ -26,11 +26,16 @@ export const columns: ColumnDef<FinalsProducts>[] = [
         <div>
           {ingredients.name}{" - "}
           <span className="text-sm text-gray-500">
-            {ingredients.quantity} {ingredients.unit_measurement}
+            {ingredients.cantidad} {ingredients.unidad}
           </span>
         </div>
       );
     },
+  },
+  
+  {
+    accessorKey: "stock",
+    header: "Stock",
   },
   {
     accessorKey: "detalle_compra",
@@ -39,7 +44,7 @@ export const columns: ColumnDef<FinalsProducts>[] = [
       const detalles = row.original.ingredients;
 
       return (
-        <Sheet >
+        <Sheet  >
           <SheetTrigger  asChild>
             <Button variant="outline" className="w-full bg-green-100 hover:bg-green-200" >Ver Ingredientes</Button>
           </SheetTrigger>
@@ -65,8 +70,8 @@ export const columns: ColumnDef<FinalsProducts>[] = [
                     <tr key={detalle.id} className="border-b">
                       <td className="text-center p-2">{detalles.indexOf(detalle) + 1}</td>
                       <td className="text-center p-2">{detalle.name}</td>
-                      <td className="text-center p-2">{detalle.quantity}</td>
-                      <td className="text-center p-2">{detalle.unit_measurement}</td>
+                      <td className="text-center p-2">{detalle.cantidad}</td>
+                      <td className="text-center p-2">{detalle.unidad}</td>
                     </tr>
                   ))}
                   {/* Fila para el total */}
@@ -82,10 +87,6 @@ export const columns: ColumnDef<FinalsProducts>[] = [
         </Sheet>
       );
     },
-  },
-  {
-    accessorKey: "stock",
-    header: "Stock",
   },
   // Edit & delete opción
   {
@@ -129,7 +130,7 @@ export const columns: ColumnDef<FinalsProducts>[] = [
                 </Label>
                 <Input
                   id="unidadMedida"
-                  defaultValue={ingredients.unit_measurement}
+                  defaultValue={ingredients.unidad}
                   placeholder="Ingresa la unidad de medida"
                   className="col-span-3"
                 />
@@ -140,7 +141,7 @@ export const columns: ColumnDef<FinalsProducts>[] = [
                 </Label>
                 <Input
                   id="cantidad"
-                  defaultValue={ingredients.quantity}
+                  defaultValue={ingredients.cantidad}
                   placeholder="Ingresa la cantidad"
                   className="col-span-3"
                 />

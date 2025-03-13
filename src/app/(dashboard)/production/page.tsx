@@ -8,24 +8,24 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { BusinessActions } from "./BusinessActions";
+import { ProductionActions } from "./ProductionActions";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
-import { Business } from "@/types/business";
+import { Production } from "@/types/production";
 import { toast } from "sonner";
-import { fetchBusinessData, updateBusiness, deleteBusiness } from "@/services/fetchBusinessData";
+import { fetchProductionData, updateProduction, deleteProduction } from "@/services/fetchProductionData";
 import { DataTable } from "@/components/data-table";
 
-export default function BusinessPage() {
-  const [data, setData] = useState<Business[]>([]);
+export default function ProductionPage() {
+  const [data, setData] = useState<Production[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadBusinesses = async () => {
+  const loadProductiones = async () => {
     console.log("Cargando negocios..."); // Log para verificar la carga de datos
     try {
-      const businesses = await fetchBusinessData();
-      if (businesses) {
-        setData(businesses);
+      const productiones = await fetchProductionData();
+      if (productiones) {
+        setData(productiones);
       } else {
         setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
       }
@@ -36,43 +36,43 @@ export default function BusinessPage() {
   };
 
   useEffect(() => {
-    loadBusinesses();
+    loadProductiones();
   }, []);
 
-  const updateBusinessInTable = async (updatedBusiness: Business) => {
-    console.log("Actualizando negocio en la tabla:", updatedBusiness.id, updatedBusiness.name); // Log para verificar la actualización
+  const updateProductionInTable = async (updatedProduction: Production) => {
+    console.log("Actualizando negocio en la tabla:", updatedProduction.id, updatedProduction.name); // Log para verificar la actualización
     const previousData = [...data];
     setData((prevData) =>
-      prevData.map((business) =>
-        business.id === updatedBusiness.id ? updatedBusiness : business
+      prevData.map((production) =>
+        production.id === updatedProduction.id ? updatedProduction : production
       )
     );
 
     try {
-      const response = await updateBusiness(updatedBusiness);
+      const response = await updateProduction(updatedProduction);
       if (!response) {
         throw new Error("No se pudo actualizar el negocio.");
       }
-      toast.success(`Negocio "${updatedBusiness.name}" actualizado exitosamente.`);
+      toast.success(`Producción "${updatedProduction.name}" actualizado exitosamente.`);
     } catch (error) {
-      console.error("Error updating business:", error);
+      console.error("Error updating production:", error);
       toast.error("Error al actualizar el negocio. Por favor, inténtalo de nuevo.");
       setData(previousData);
     }
   };
 
-  const deleteBusinessFromTable = async (businessId: number) => {
-    console.log("Eliminando negocio de la tabla:", businessId); // Log para verificar la eliminación
+  const deleteProductionFromTable = async (productionId: number) => {
+    console.log("Eliminando negocio de la tabla:", productionId); // Log para verificar la eliminación
     const previousData = [...data];
-    setData((prevData) => prevData.filter((business) => business.id !== businessId));
+    setData((prevData) => prevData.filter((production) => production.id !== productionId));
 
     try {
-      const isDeleted = await deleteBusiness(businessId);
+      const isDeleted = await deleteProduction(productionId);
       if (!isDeleted) {
         throw new Error("No se pudo eliminar el negocio.");
       }
     } catch (error) {
-      console.error("Error deleting business:", error);
+      console.error("Error deleting production:", error);
       toast.error("Error al eliminar el negocio. Por favor, inténtalo de nuevo.");
       setData(previousData);
     }
@@ -103,20 +103,20 @@ export default function BusinessPage() {
             <BreadcrumbSeparator className="text-gray-400" />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-gray-900">
-                Negocios
+                Producción
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        <h2 className="text-3xl font-semibold text-gray-900">Negocios</h2>
+        <h2 className="text-3xl font-semibold text-gray-900">Producción</h2>
         <small className="text-sm font-medium text-gray-600">
-          Aquí podrás gestionar los negocios.
+          Aquí podrás gestionar las producciones.
         </small>
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <BusinessActions onRefresh={loadBusinesses}   /> {/* Pasar loadBusinesses como prop */}
+        <ProductionActions onRefresh={loadProductiones}   /> {/* Pasar loadProductiones como prop */}
       </div>
 
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
@@ -124,7 +124,7 @@ export default function BusinessPage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateBusinessInTable, deleteBusinessFromTable)}
+            columns={columns(updateProductionInTable, deleteProductionFromTable)}
             data={data}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."

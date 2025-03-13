@@ -25,12 +25,15 @@ export default function Page() {
       try {
         // Obtén los productos
         const products = await fetchProductData();
+        if (!products) {
+          throw new Error("No se pudieron cargar los productos.");
+        }
 
         // Obtén los detalles de la receta para cada producto
         const productsWithRecipes = await Promise.all(
           products.map(async (product) => {
             if (product.recetaId) {
-              const recipe = await fetchRecipeData(product.recetaId); // Pasa el recetaId
+              const recipe = await fetchRecipeData(product.recetaId);
               return { ...product, recipe };
             }
             return product;
@@ -38,11 +41,11 @@ export default function Page() {
         );
 
         setProductsWithRecipes(productsWithRecipes);
-        setLoading(false);
         console.log("Productos cargados:", productsWithRecipes);
       } catch (error) {
         console.error("Error al obtener los productos:", error);
-        setError("Error al obtener los productos");
+        setError("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
+      } finally {
         setLoading(false);
       }
     };

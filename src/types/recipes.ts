@@ -1,12 +1,10 @@
-export type Recipe = {
-    id: number;
-    name: string;
-    detalleRecetas?: [
-        {
-            id?: number;
-            nombre_ingrediente?: string;
-            cantidad?: number;
-            unidad?: string
-        }
-    ];
-};
+export interface Recipe {
+  id: number;
+  name: string;
+  status: string;
+  ingredientes: Array<{
+    ingredienteId: number; // Cambiado a ingredienteId
+    cantidad: number;
+    unidad: string;
+  }>;
+}
