@@ -8,24 +8,24 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { BusinessActions } from "./BusinessActions";
+import { BrancheActions } from "./BrancheActions";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
-import { Business } from "@/types/business";
 import { toast } from "sonner";
-import { fetchBusinessData, updateBusiness, deleteBusiness } from "@/services/fetchBusinessData";
 import { DataTable } from "@/components/data-table";
+import { Branche } from "@/types/branche";
+import { deleteBranche, fetchBrancheData, updateBranche } from "@/services/fetchBrancheData";
 
-export default function BusinessPage() {
-  const [data, setData] = useState<Business[]>([]);
+export default function BranchePage() {
+  const [data, setData] = useState<Branche[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadBusinesses = async () => {
+  const loadBranchees = async () => {
     console.log("Cargando negocios..."); // Log para verificar la carga de datos
     try {
-      const businesses = await fetchBusinessData();
-      if (businesses) {
-        setData(businesses);
+      const branchees = await fetchBrancheData();
+      if (branchees) {
+        setData(branchees);
       } else {
         setErrorMessage("No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.");
       }
@@ -36,43 +36,43 @@ export default function BusinessPage() {
   };
 
   useEffect(() => {
-    loadBusinesses();
+    loadBranchees();
   }, []);
 
-  const updateBusinessInTable = async (updatedBusiness: Business) => {
-    console.log("Actualizando negocio en la tabla:", updatedBusiness.id, updatedBusiness.name); // Log para verificar la actualización
+  const updateBrancheInTable = async (updatedBranche: Branche) => {
+    console.log("Actualizando negocio en la tabla:", updatedBranche.id, updatedBranche.name); // Log para verificar la actualización
     const previousData = [...data];
     setData((prevData) =>
-      prevData.map((business) =>
-        business.id === updatedBusiness.id ? updatedBusiness : business
+      prevData.map((branche) =>
+        branche.id === updatedBranche.id ? updatedBranche : branche
       )
     );
 
     try {
-      const response = await updateBusiness(updatedBusiness);
+      const response = await updateBranche(updatedBranche);
       if (!response) {
         throw new Error("No se pudo actualizar el negocio.");
       }
-      toast.success(`Negocio "${updatedBusiness.name}" actualizado exitosamente.`);
+      toast.success(`Sucursal "${updatedBranche.name}" actualizado exitosamente.`);
     } catch (error) {
-      console.error("Error updating business:", error);
+      console.error("Error updating branche:", error);
       toast.error("Error al actualizar el negocio. Por favor, inténtalo de nuevo.");
       setData(previousData);
     }
   };
 
-  const deleteBusinessFromTable = async (businessId: number) => {
-    console.log("Eliminando negocio de la tabla:", businessId); // Log para verificar la eliminación
+  const deleteBrancheFromTable = async (brancheId: number) => {
+    console.log("Eliminando negocio de la tabla:", brancheId); // Log para verificar la eliminación
     const previousData = [...data];
-    setData((prevData) => prevData.filter((business) => business.id !== businessId));
+    setData((prevData) => prevData.filter((branche) => branche.id !== brancheId));
 
     try {
-      const isDeleted = await deleteBusiness(businessId);
+      const isDeleted = await deleteBranche(brancheId);
       if (!isDeleted) {
         throw new Error("No se pudo eliminar el negocio.");
       }
     } catch (error) {
-      console.error("Error deleting business:", error);
+      console.error("Error deleting branche:", error);
       toast.error("Error al eliminar el negocio. Por favor, inténtalo de nuevo.");
       setData(previousData);
     }
@@ -103,20 +103,20 @@ export default function BusinessPage() {
             <BreadcrumbSeparator className="text-gray-400" />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-gray-900">
-                Negocios
+                Sucursales
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        <h2 className="text-3xl font-semibold text-gray-900">Negocios</h2>
+        <h2 className="text-3xl font-semibold text-gray-900">Sucursales</h2>
         <small className="text-sm font-medium text-gray-600">
-          Aquí podrás gestionar los negocios.
+          Aquí podrás gestionar las sucursales.
         </small>
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <BusinessActions onRefresh={loadBusinesses}   /> {/* Pasar loadBusinesses como prop */}
+        <BrancheActions onRefresh={loadBranchees}   /> {/* Pasar loadBranchees como prop */}
       </div>
 
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
@@ -124,7 +124,7 @@ export default function BusinessPage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateBusinessInTable, deleteBusinessFromTable)}
+            columns={columns(updateBrancheInTable, deleteBrancheFromTable)}
             data={data}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."

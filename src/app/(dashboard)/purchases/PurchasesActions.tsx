@@ -114,6 +114,7 @@ export function PurchasesActions() {
       <ReusableDialogWidth
         title="Crear Compra"
         description="Aquí podrás crear una compra."
+        submitButtonText="Crear Compra"
         trigger={
           <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
             <CirclePlus />

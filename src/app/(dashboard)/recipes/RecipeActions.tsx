@@ -26,7 +26,6 @@ interface Item {
   proveedor?: string;
   subtotal?: number;
   tipo?: "Comestible" | "No comestible";
-  selectedUnit?: string;
 }
 
 export function RecipeActions() {
@@ -50,7 +49,7 @@ export function RecipeActions() {
       updatedIngredients[index] = {
         ...updatedIngredients[index],
         ...ingrediente,
-        selectedUnit: ingrediente.selectedUnit || undefined, // Asegúrate de que sea undefined si no se ha seleccionado
+        unidad: ingrediente.unidad || undefined, // Asegúrate de que sea undefined si no se ha seleccionado
       };
       setIngredients(updatedIngredients);
     } else {
@@ -59,7 +58,7 @@ export function RecipeActions() {
         {
           ...ingrediente,
           cantidad: 1,
-          selectedUnit: undefined, // Inicialmente no se ha seleccionado ninguna unidad
+          unidad: undefined, // Inicialmente no se ha seleccionado ninguna unidad
         },
       ]);
     }
@@ -75,7 +74,7 @@ export function RecipeActions() {
       detalles: ingredients.map((ing) => ({
         ingredienteId: ing.id,
         cantidad: ing.cantidad,
-        unidad: ing.selectedUnit || "unidad",
+        unidad: ing.unidad || "unidad",
       })),
     };
 
@@ -94,6 +93,7 @@ export function RecipeActions() {
           </Button>
         }
         onSubmit={handleSubmit}
+        submitButtonText="Crear Receta"
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-2 items-center gap-2">

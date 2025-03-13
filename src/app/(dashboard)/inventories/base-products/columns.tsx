@@ -65,8 +65,8 @@ export const columns: ColumnDef<ProductsBase>[] = [
                     <tr key={detalle.id} className="border-b">
                       <td className="text-center p-2">{detalles.indexOf(detalle) + 1}</td>
                       <td className="text-center p-2">{detalle.name}</td>
-                      <td className="text-center p-2">{detalle.quantity}</td>
-                      <td className="text-center p-2">{detalle.unit_measurement}</td>
+                      <td className="text-center p-2">{detalle.cantidad}</td>
+                      <td className="text-center p-2">{detalle.unidad}</td>
                     </tr>
                   ))}
                   {/* Fila para el total */}

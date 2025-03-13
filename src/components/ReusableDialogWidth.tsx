@@ -27,6 +27,7 @@ export function ReusableDialogWidth({
   trigger,
   children,
   onSubmit,
+  submitButtonText,
 }: ReusableDialogProps) {
   return (
     <Dialog>
@@ -39,7 +40,7 @@ export function ReusableDialogWidth({
         {children}
         <DialogFooter className="flex justify-end" >
           <Button type="submit" onClick={onSubmit}>
-            {title}
+            {submitButtonText}
           </Button>
         </DialogFooter>
       </DialogContent>

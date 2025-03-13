@@ -3,8 +3,8 @@ import { Ingredient } from "./ingredients";
 export type FinalsProducts = {
     id: number;
     name: string;
-    quantity: number;
+    cantidad: number;
     stock: number;
-    unit_measurement: string
+    unidad: string
     ingredients : Ingredient[]
 };

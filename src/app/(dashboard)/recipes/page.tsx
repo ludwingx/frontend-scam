@@ -48,32 +48,15 @@ export default function RecipePage() {
   }, []);
 
   const updateRecipeInTable = async (updatedRecipe: Recipe) => {
-    console.log(
-      "Actualizando receta en la tabla:",
-      updatedRecipe.id,
-      updatedRecipe.name
-    ); // Log para verificar la actualización
-    const previousData = [...data];
-    setData((prevData) =>
-      prevData.map((recipe) =>
-        recipe.id === updatedRecipe.id ? updatedRecipe : recipe
-      )
-    );
-
     try {
       const response = await updateRecipe(updatedRecipe);
       if (!response) {
         throw new Error("No se pudo actualizar la receta.");
       }
-      toast.success(
-        `Receta "${updatedRecipe.name}" actualizada exitosamente.`
-      );
+      return response;
     } catch (error) {
       console.error("Error updating recipe:", error);
-      toast.error(
-        "Error al actualizar la receta. Por favor, inténtalo de nuevo."
-      );
-      setData(previousData);
+      throw error;
     }
   };
 
@@ -136,7 +119,7 @@ export default function RecipePage() {
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <RecipeActions />
+        <RecipeActions  />
       </div>
       <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
         {errorMessage ? (
