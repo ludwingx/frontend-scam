@@ -17,21 +17,26 @@ import { CirclePlus, X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchIngredientsData } from "@/services/fetchIngredientsData";
 import { Combobox } from "./ComboBox";
+import { toast } from "sonner";
 
 interface Item {
   id: number;
   name: string;
-  cantidad: number; // Asegúrate de que no sea opcional
+  cantidad: number;
   unidad?: string;
-  proveedor?: string;
-  subtotal?: number;
-  tipo?: "Comestible" | "No comestible";
+  status: number;
 }
 
-export function RecipeActions() {
+interface RecipeActionsProps {
+  onRefresh: () => void; // Prop para actualizar la tabla
+  onToggleActiveRecipes: (showActive: boolean) => void; // Prop para alternar entre recetas activas e inactivas
+}
+
+export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeActionsProps) {
   const [ingredients, setIngredients] = useState<Item[]>([]);
   const [name, setNombre] = useState("");
   const [ingredientsData, setIngredientsData] = useState<Item[]>([]);
+  const [showActiveRecipes, setShowActiveRecipes] = useState(true); // Estado para controlar si se muestran recetas activas o inactivas
 
   useEffect(() => {
     // Cargar los datos de los ingredientes al montar el componente
@@ -44,52 +49,138 @@ export function RecipeActions() {
   }, []);
 
   const handleAddOrUpdateIngredient = (ingrediente: Item, index?: number) => {
-    if (index !== undefined) {
-      const updatedIngredients = [...ingredients];
-      updatedIngredients[index] = {
-        ...updatedIngredients[index],
-        ...ingrediente,
-        unidad: ingrediente.unidad || undefined, // Asegúrate de que sea undefined si no se ha seleccionado
-      };
-      setIngredients(updatedIngredients);
-    } else {
-      setIngredients([
-        ...ingredients,
-        {
-          ...ingrediente,
-          cantidad: 1,
-          unidad: undefined, // Inicialmente no se ha seleccionado ninguna unidad
-        },
-      ]);
+    const updatedIngredients = [...ingredients];
+
+    const isIngredientAlreadyAdded = updatedIngredients.some(
+      (ing) => ing.id === ingrediente.id
+    );
+
+    if (isIngredientAlreadyAdded) {
+      toast.error(`"${ingrediente.name}" ya está en la lista.`);
+      return;
     }
+
+    if (index !== undefined) {
+      updatedIngredients[index] = {
+        id: ingrediente.id,
+        name: ingrediente.name,
+        cantidad: updatedIngredients[index].cantidad,
+        unidad: ingrediente.unidad || "unidad",
+        status: ingrediente.status
+      };
+    } else {
+      updatedIngredients.push({
+        id: ingrediente.id,
+        name: ingrediente.name,
+        cantidad: 0,
+        unidad: ingrediente.unidad || "unidad",
+        status: ingrediente.status
+      });
+    }
+
+    setIngredients(updatedIngredients);
   };
 
   const handleRemoveIngredient = (id: number) => {
     setIngredients(ingredients.filter((ing) => ing.id !== id));
   };
 
-  const handleSubmit = () => {
-    const producto = {
+  const handleSubmit = async () => {
+    if (!name.trim()) {
+      toast.error("El nombre de la receta no puede estar vacío.");
+      return;
+    }
+
+    if (ingredients.length === 0) {
+      toast.error("Debes agregar al menos un ingrediente.");
+      return;
+    }
+
+    const recipeData = {
       name,
-      detalles: ingredients.map((ing) => ({
+      status: 1, // Asegúrate de incluir el status si es requerido
+      ingredientes: ingredients.map((ing) => ({
         ingredienteId: ing.id,
         cantidad: ing.cantidad,
-        unidad: ing.unidad || "unidad",
+        unidad: ing.unidad,
       })),
     };
 
-    console.log("Datos del producto:", producto);
+    console.log("datos de la receta:", recipeData); // Para depuración
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
+
+      if (!apiUrl) {
+        throw new Error("La URL de la API no está definida en las variables de entorno.");
+      }
+
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
+
+      if (!token) {
+        throw new Error("No se encontró un token de autenticación.");
+      }
+
+      const response = await fetch(`${apiUrl}/api/receta`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(recipeData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          `Error al crear la receta: ${response.status} ${response.statusText}. ${errorData?.message || ""}`
+        );
+      }
+
+      const data = await response.json();
+      toast.success(`Receta "${data.name}" creada exitosamente.`);
+
+      // Limpiar el formulario después de crear la receta
+      setNombre("");
+      setIngredients([]);
+
+      // Llamar a la función de actualización
+      if (onRefresh) {
+        onRefresh();
+      }
+    } catch (error) {
+      console.error("Error creating recipe:", error);
+      toast.error("Error al crear la receta. Por favor, inténtalo de nuevo.");
+    }
+  };
+
+  const handleToggleActiveRecipes = () => {
+    const newShowActiveRecipes = !showActiveRecipes;
+    setShowActiveRecipes(newShowActiveRecipes);
+    onToggleActiveRecipes(newShowActiveRecipes); // Notificar al componente padre
   };
 
   return (
-    <div>
+    <div className="flex items-center gap-2">
+      {/* Botón para alternar entre recetas activas e inactivas */}
+      <Button
+        onClick={handleToggleActiveRecipes}
+        className={showActiveRecipes ? "bg-blue-500 text-white hover:bg-blue-500/90" : "bg-violet-500 text-white hover:bg-violet-500/90"}
+      >
+        {showActiveRecipes ? "Ver Inactivas" : "Ver Activas"}
+      </Button>
+
+      {/* Diálogo para crear recetas */}
       <ReusableDialogWidth
         title="Crear Receta"
-        description="Llena el formulario para crear un receta"
+        description="Llena el formulario para crear una receta"
         trigger={
           <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
             <CirclePlus />
-            <span>Crear Producto</span>
+            <span>Crear Receta</span>
           </Button>
         }
         onSubmit={handleSubmit}
@@ -153,7 +244,7 @@ export function RecipeActions() {
                               index
                             )
                           }
-                          options={ingredientsData} // Pasa directamente ingredientsData
+                          options={ingredientsData}
                         />
                       </TableCell>
                       <TableCell>
@@ -161,6 +252,7 @@ export function RecipeActions() {
                           className="text-center w-full"
                           type="number"
                           name="cantidad"
+                          value={ing.cantidad}
                           onChange={(e) => {
                             const updatedIngredients = [...ingredients];
                             updatedIngredients[index].cantidad = parseFloat(
@@ -171,10 +263,8 @@ export function RecipeActions() {
                         />
                       </TableCell>
                       <TableCell className="text-center">
-                        {ing.unidad}{" "}
-                        {/* Mostrar la unidad del ingrediente seleccionado */}
+                        {ing.unidad}
                       </TableCell>
-                      
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -186,7 +276,6 @@ export function RecipeActions() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  {/* Fila para agregar un nuevo ingrediente */}
                   <TableRow>
                     <TableCell className="text-center font-medium">
                       {ingredients.length + 1}
@@ -209,17 +298,15 @@ export function RecipeActions() {
                       <Input
                         className="text-center w-full"
                         type="number"
-                        disabled
                         placeholder="0"
+                        disabled
                       />
                     </TableCell>
                     <TableCell className="text-center">
-                      {/* Mostrar la unidad del nuevo ingrediente seleccionado */}
                       {ingredientsData.find(
                         (ing) => ing.id === ingredients[ingredients.length]?.id
                       )?.unidad || ""}
                     </TableCell>
-                   
                     <TableCell>
                       <Button variant="ghost" size="icon" disabled>
                         <X className="h-4 w-4 text-red-500" />

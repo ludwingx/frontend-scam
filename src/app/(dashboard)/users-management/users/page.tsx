@@ -1,4 +1,5 @@
-import { DataTable } from "@/components/data-table";
+"use client";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,36 +8,71 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { columns, User } from "./columns";
+import { DataTable } from "../../../../components/data-table";
 import { fetchUserData } from "@/services/fetchUserData";
-import { UsersActions } from "@/actions/userActions";
+import { UsersActions } from "./UsersActions";
+import { columns } from "./columns";
+import { useEffect, useState } from "react";
+import { User } from "@/types/user";
 
-export default async function Page() {
-  let data: User[] = [];
-  let errorMessage: string | null = null;
+export default function UsersPage() {
+  const [data, setData] = useState<User[]>([]); // Estado para almacenar todos los usuarios
+  const [filteredData, setFilteredData] = useState<User[]>([]); // Estado para almacenar los usuarios filtrados
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
+  const [showActiveUsers, setShowActiveUsers] = useState(true); // Estado para controlar qué usuarios se muestran
 
-  try {
-    // Fetch business data using the server action
-    const users = await fetchUserData();
-
-    if (users) {
-      data = users;
-    } else {
-      errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
+  // Función para cargar los usuarios
+  const loadUsers = async () => {
+    try {
+      const users = await fetchUserData();
+      if (users) {
+        // Ordenar los usuarios por id de mayor a menor
+        const sortedUsers = users.sort((a, b) => b.id - a.id);
+        setData(sortedUsers);
+        // Filtrar los usuarios según el estado actual (activos o inactivos)
+        filterUsers(sortedUsers, showActiveUsers);
+      } else {
+        setErrorMessage(
+          "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setErrorMessage(
+        "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
+      );
     }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    errorMessage = "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde.";
-  }
+  };
+
+  // Función para filtrar los usuarios según el estado (activos o inactivos)
+  const filterUsers = (users: User[], showActive: boolean) => {
+    const filtered = users.filter((user) =>
+      showActive ? user.status === 1 : user.status === 0
+    );
+    setFilteredData(filtered);
+  };
+
+  // Cargar los usuarios al montar el componente
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  // Actualizar los usuarios filtrados cuando cambie el estado `showActiveUsers`
+  useEffect(() => {
+    filterUsers(data, showActiveUsers);
+  }, [showActiveUsers, data]);
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
-      {/* Breadcrumb y título */}
+      {/* Header */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+              <BreadcrumbLink
+                href="/dashboard"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
@@ -55,20 +91,23 @@ export default async function Page() {
         </small>
       </div>
 
-      {/* Botón de crear usuario */}
-      <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-        
-        <UsersActions   />
+      {/* Description and Action Button */}
+      <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
+        <UsersActions
+          onRefresh={loadUsers}
+          showActiveUsers={showActiveUsers}
+          setShowActiveUsers={setShowActiveUsers}
+        />
       </div>
 
-      {/* Tabla de usuarios */}
-    <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
+      {/* Content Container */}
+      <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
         {errorMessage ? (
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
             columns={columns}
-            data={data}
+            data={filteredData}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."
             filterColumn="full_name"

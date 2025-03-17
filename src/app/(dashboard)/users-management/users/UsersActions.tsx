@@ -1,108 +1,187 @@
-"use client"; // Marcar como Client Component
+"use client";
 
-import { useState, useEffect } from "react"; // Importar useState y useEffect
 import { ReusableDialog } from "@/components/ReusableDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CirclePlus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { createUser } from "@/services/fetchUserData";
+import { fetchRoleData } from "@/services/fetchRoleData";
 import { Label } from "@/components/ui/label";
-import { fetchRoleData } from "@/services/fetchRoleData"; // Importar la función para obtener roles
-import { ReusableSelect } from "@/components/ReusableSelect";
-import { toast } from "sonner"; // Para notificaciones
-import { UserRoundPlus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function UsersActions() {
-  const [showPassword, setShowPassword] = useState(false); // Estado para controlar la visibilidad de la contraseña
-  const [roles, setRoles] = useState<{ value: string; label: string }[]>([]); // Estado para almacenar los roles
+interface UsersActionsProps {
+  onRefresh: () => void;
+  showActiveUsers: boolean;
+  setShowActiveUsers: (showActive: boolean) => void;
+}
 
-  // Obtener los roles desde la API
+export function UsersActions({
+  onRefresh,
+  showActiveUsers,
+  setShowActiveUsers,
+}: UsersActionsProps) {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+  const [fullName, setFullName] = useState("");
+  const [ci, setCi] = useState("");
+  const [password, setPassword] = useState("");
+  const [roleId, setRoleId] = useState<number | null>(null);
+
+  // Fetch roles data when the component mounts
   useEffect(() => {
     const loadRoles = async () => {
       try {
-        const roles = await fetchRoleData(); // Obtener los roles desde la API
-        // Mapear los roles al formato esperado por ReusableSelect
-        const mappedRoles = roles.map((role) => ({
-          value: role.id.toString(), // Asegúrate de que el valor sea un string
-          label: role.name, // Usar el nombre del rol como etiqueta
-        }));
-        setRoles(mappedRoles); // Actualizar el estado con los roles mapeados
+        const rolesData = await fetchRoleData();
+        if (rolesData) {
+          setRoles(rolesData);
+        }
       } catch (error) {
         console.error("Error fetching roles:", error);
         toast.error("Error al cargar los roles. Por favor, inténtalo de nuevo.");
       }
     };
 
-    loadRoles(); // Llamar a la función para cargar los roles
+    loadRoles();
   }, []);
 
-  const handleCreateUser = () => {
-    console.log("Usuario creado");
+  // Función para crear un usuario
+  const handleCreateUser = async (userData: {
+    full_name: string;
+    ci: string;
+    password: string;
+    rol_id: number;
+    rol_name: string;
+    status: number;
+  }) => {
+    try {
+      const newUser = await createUser(userData);
 
-    // Lógica para crear un usuario
+      if (newUser) {
+        toast.success(`Usuario "${newUser.full_name}" creado exitosamente.`);
+        onRefresh(); // Actualizar la tabla
+        setIsDialogOpen(false); // Cerrar el diálogo después de crear el usuario
+        setFullName(""); // Limpiar el campo del nombre
+        setCi(""); // Limpiar el campo del CI
+        setPassword(""); // Limpiar el campo de la contraseña
+        setRoleId(null); // Limpiar el campo del rol
+      } else {
+        throw new Error("No se pudo crear el usuario.");
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      toast.error("Error al crear el usuario. Por favor, inténtalo de nuevo.");
+    }
+  };
 
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!fullName.trim() || !ci.trim() || !password.trim() || !roleId) {
+      toast.error("Todos los campos son obligatorios.");
+      return;
+    }
+
+    const role = roles.find((r) => r.id === roleId);
+    if (!role) {
+      toast.error("Rol no válido.");
+      return;
+    }
+
+    await handleCreateUser({
+      full_name: fullName,
+      ci,
+      password,
+      rol_id: roleId,
+      rol_name: role.name,
+      status: 1, // Enviar el valor 1 directamente
+    });
   };
 
   return (
     <>
-      {/* Diálogo para crear usuario */}
-      <ReusableDialog
-        title="Crear usuario"
-        description="Aquí podrás crear un usuario."
-        trigger={
-          <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
-            <UserRoundPlus />
-            <span>Crear Usuario</span>
-          </Button>
-        }
-        onSubmit={handleCreateUser}
-      >
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nombre
-            </Label>
-            <Input
-              id="name"
-              placeholder="Ingresa el nombre completo"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="ci" className="text-right">
-              C.I.
-            </Label>
-            <Input
-              id="ci"
-              placeholder="Ingresa el carnet de identidad"
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="password" className="text-right">
-              Contraseña
-            </Label>
-            <div className="col-span-3 flex items-center gap-2">
+      <div className="flex gap-2">
+        <Button
+          onClick={() => setShowActiveUsers(!showActiveUsers)}
+          className={showActiveUsers ? "bg-primary text-white  " : "bg-gray-200 text-gray-600"}
+        >
+          {showActiveUsers ? "Ver Inactivos" : "Ver Activos"}
+        </Button>
+        <ReusableDialog
+          title="Crear Usuario"
+          description="Aquí podrás crear un usuario."
+          trigger={
+            <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+              <CirclePlus />
+              <span>Crear Usuario</span>
+            </Button>
+          }
+          onSubmit={handleSubmit}
+          submitButtonText="Crear Usuario"
+          onOpenChange={setIsDialogOpen}
+          isOpen={isDialogOpen}
+        >
+          {/* Formulario para crear un usuario */}
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="fullName" className="text-right">
+                Nombre Completo
+              </Label>
               <Input
-                type={showPassword ? "text" : "password"} // Cambiar el tipo de input según el estado
-                id="password"
-                placeholder="Ingresa la contraseña"
-                className="flex-1"
+                id="fullName"
+                placeholder="Ingresa el nombre completo"
+                className="col-span-3"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
               />
-            
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="ci" className="text-right">
+                CI
+              </Label>
+              <Input
+                id="ci"
+                placeholder="Ingresa el CI"
+                className="col-span-3"
+                value={ci}
+                onChange={(e) => setCi(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Contraseña
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Ingresa la contraseña"
+                className="col-span-3"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="role" className="text-right">
+                Rol
+              </Label>
+              <Select onValueChange={(value) => setRoleId(Number(value))}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Selecciona un rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id.toString()}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="rol" className="text-right">
-              Rol
-            </Label>
-            <ReusableSelect
-              placeholder="Selecciona una opción"
-              label="Selecciona un rol"
-              options={roles} // Pasar los roles mapeados como opciones
-              className="col-span-3"
-            />
-          </div>
-        </div>
-      </ReusableDialog>
+        </ReusableDialog>
+      </div>
     </>
   );
 }

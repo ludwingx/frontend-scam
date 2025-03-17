@@ -22,6 +22,7 @@ export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> 
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 

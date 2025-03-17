@@ -5,6 +5,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Toaster } from "sonner";
 
 export default function DashboardLayout({
   children,
@@ -22,6 +23,8 @@ export default function DashboardLayout({
           </div>
         </header>
         {children} {/* Solo esto cambia al navegar entre páginas */}
+        
+        <Toaster richColors />
       </SidebarInset>
     </SidebarProvider>
   );

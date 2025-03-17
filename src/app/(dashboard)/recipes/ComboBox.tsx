@@ -23,7 +23,7 @@ import { Ingredient } from "@/types/ingredients";
 interface ComboboxProps {
   value: React.ReactNode; // Cambiado a React.ReactNode para manejar JSX
   onSelect: (item: Ingredient) => void;
-  options?: Ingredient[]; // `options` es opcional
+  options?:   Ingredient[]; // `options` es opcional
   placeholder?: string;
 }
 

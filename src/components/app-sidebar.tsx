@@ -32,7 +32,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { fetchProfileData } from "@/actions/getDataUserID";
+import { fetchProfileData } from "@/services/getDataUserID";
 import { User } from "@/types/user";
 import { NavMain } from "./nav-main";
 import Image from "next/image";

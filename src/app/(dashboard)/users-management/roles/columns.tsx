@@ -11,7 +11,7 @@ import { useState } from "react";
 
 export const columns = (
   updateRoleInTable: (updatedRole: Role) => Promise<void>, // Función para actualizar un rol
-  deleteRoleFromTable: (roleId: number) => Promise<void> // Función para eliminar un rol
+  toggleRoleStatus: (roleId: number, newStatus: number) => Promise<void> // Función para cambiar el estado del rol
 ): ColumnDef<Role>[] => [
   {
     id: "rowNumber",
@@ -23,12 +23,31 @@ export const columns = (
     header: "Nombre",
   },
   {
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }) => {
+      const status = row.original.status;
+
+      return (
+        <span
+          className={`px-2 py-1 rounded text-sm font-semibold ${
+            status === 1
+              ? "bg-green-100 text-green-800" // Estilo para "ACTIVO"
+              : "bg-red-100 text-red-800" // Estilo para "INACTIVO"
+          }`}
+        >
+          {status === 1 ? "ACTIVO" : "INACTIVO"}
+        </span>
+      );
+    },
+  },
+  {
     id: "actions",
     header: () => <div className="text-center">Acciones</div>,
     cell: ({ row }) => {
       const role = row.original;
-      const [name, setName] = useState(role.name); // State for editing role name
-      const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog visibility
+      const [name, setName] = useState(role.name);
+      const [isDialogOpen, setIsDialogOpen] = useState(false);
 
       const handleEditRole = async () => {
         if (!name.trim()) {
@@ -36,12 +55,13 @@ export const columns = (
           return;
         }
 
-        await updateRoleInTable({ ...role, name }); // Actualizar el rol
-        setIsDialogOpen(false); // Cerrar el diálogo
+        await updateRoleInTable({ ...role, name });
+        setIsDialogOpen(false);
       };
 
-      const handleDeleteRole = async () => {
-        await deleteRoleFromTable(role.id); // Eliminar el rol
+      const handleToggleStatus = async () => {
+        const newStatus = role.status === 1 ? 0 : 1;
+        await toggleRoleStatus(role.id, newStatus ); // Pasar el nombre del rol
       };
 
       return (
@@ -55,7 +75,7 @@ export const columns = (
               </>
             }
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
+              <Button className="bg-amber-400 text-white hover:bg-amber-400/90">
                 Editar
               </Button>
             }
@@ -79,18 +99,13 @@ export const columns = (
             </div>
           </ReusableDialog>
 
-          {/* Diálogo para eliminar rol */}
-          <ReusableDialog
-            title="Eliminar Rol"
-            description={
-              <>
-                ¿Estás seguro de eliminar el rol <strong>{role.name}</strong>?
-              </>
-            }
-            trigger={<Button variant="destructive">Eliminar</Button>}
-            onSubmit={handleDeleteRole}
-            submitButtonText="Eliminar"
-          />
+          {/* Botón para cambiar el estado del rol */}
+          <Button
+            className={role.status === 1 ? "bg-red-500 text-white hover:bg-red-500/90 " : "bg-green-500 text-white hover:bg-green-500/90"}
+            onClick={handleToggleStatus}
+          >
+            {role.status === 1 ? "Desactivar" : "Activar"}
+          </Button>
         </div>
       );
     },
