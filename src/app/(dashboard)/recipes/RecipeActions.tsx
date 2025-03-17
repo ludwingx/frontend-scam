@@ -18,6 +18,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchIngredientsData } from "@/services/fetchIngredientsData";
 import { Combobox } from "./ComboBox";
 import { toast } from "sonner";
+import { ReusableSelect } from "@/components/ReusableSelect"; // Importar ReusableSelect
+import { unitOptions } from "@/constants/unitOptions"; // Importar las opciones de unidades
 
 interface Item {
   id: number;
@@ -36,8 +38,8 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
   const [ingredients, setIngredients] = useState<Item[]>([]);
   const [name, setNombre] = useState("");
   const [ingredientsData, setIngredientsData] = useState<Item[]>([]);
-  const [showActiveRecipes, setShowActiveRecipes] = useState(true); // Estado para controlar si se muestran recetas activas o inactivas
-
+  const [showActiveRecipes, setShowActiveRecipes] = useState(true); 
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog open/close
   useEffect(() => {
     // Cargar los datos de los ingredientes al montar el componente
     const loadIngredients = async () => {
@@ -65,16 +67,16 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
         id: ingrediente.id,
         name: ingrediente.name,
         cantidad: updatedIngredients[index].cantidad,
-        unidad: ingrediente.unidad || "unidad",
-        status: ingrediente.status
+        unidad: updatedIngredients[index].unidad, // Mantener la unidad actual
+        status: ingrediente.status,
       };
     } else {
       updatedIngredients.push({
         id: ingrediente.id,
         name: ingrediente.name,
         cantidad: 0,
-        unidad: ingrediente.unidad || "unidad",
-        status: ingrediente.status
+        unidad: "", // Unidad por defecto
+        status: ingrediente.status,
       });
     }
 
@@ -151,6 +153,9 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
       if (onRefresh) {
         onRefresh();
       }
+
+      // Cerrar el diálogo
+      setIsDialogOpen(false);
     } catch (error) {
       console.error("Error creating recipe:", error);
       toast.error("Error al crear la receta. Por favor, inténtalo de nuevo.");
@@ -185,6 +190,9 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
         }
         onSubmit={handleSubmit}
         submitButtonText="Crear Receta"
+        onClose={() => setIsDialogOpen(false)} // Pass the close function
+        isOpen={isDialogOpen} // Pass the isOpen state
+
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-2 items-center gap-2">
@@ -239,7 +247,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                               {
                                 ...ingrediente,
                                 unidad:
-                                  ingrediente.unidad?.toLowerCase() || "unidad",
+                                  ingrediente.unidad?.toLowerCase() ,
                               },
                               index
                             )
@@ -263,7 +271,18 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                         />
                       </TableCell>
                       <TableCell className="text-center">
-                        {ing.unidad}
+                        <ReusableSelect
+                          onValueChange={(value) => {
+                            const updatedIngredients = [...ingredients];
+                            updatedIngredients[index].unidad = value;
+                            setIngredients(updatedIngredients);
+                          } }
+                          options={unitOptions}
+                          value={ing.unidad || ""} 
+                          placeholder="Seleccionar unidad"
+                          label={"Unidad"}
+                          disabled={false} name={"Unidad"}                          
+                        />
                       </TableCell>
                       <TableCell>
                         <Button
@@ -287,7 +306,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                           handleAddOrUpdateIngredient({
                             ...ingrediente,
                             unidad:
-                              ingrediente.unidad?.toLowerCase() || "unidad",
+                              ingrediente.unidad?.toLowerCase() || "unidad(es)",
                           })
                         }
                         options={ingredientsData}
@@ -303,9 +322,17 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                       />
                     </TableCell>
                     <TableCell className="text-center">
-                      {ingredientsData.find(
-                        (ing) => ing.id === ingredients[ingredients.length]?.id
-                      )?.unidad || ""}
+                      <ReusableSelect
+                        
+                        onValueChange={(value) => {
+                          const updatedIngredients = [...ingredients];
+                          if (updatedIngredients[ingredients.length]) {
+                            updatedIngredients[ingredients.length].unidad = value;
+                            setIngredients(updatedIngredients);
+                          }
+                        } }
+                        options={unitOptions}
+                        placeholder="Seleccionar unidad" label={""} name={""} disabled={true}                      />
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" disabled>

@@ -105,7 +105,7 @@ export function UsersActions({
       <div className="flex gap-2">
         <Button
           onClick={() => setShowActiveUsers(!showActiveUsers)}
-          className={showActiveUsers ? "bg-primary text-white  " : "bg-gray-200 text-gray-600"}
+          className={showActiveUsers ? "bg-blue-500 text-white hover:bg-blue-500/80  " : "bg-violet-500 text-white hover:bg-violet-500/80 "}
         >
           {showActiveUsers ? "Ver Inactivos" : "Ver Activos"}
         </Button>

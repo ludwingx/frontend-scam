@@ -18,19 +18,22 @@ import {
 } from "@/services/fetchRecipesData";
 import { toast } from "sonner";
 import { columns } from "./columns";
+import { fetchIngredientsData } from "@/services/fetchIngredientsData";
+import { Ingredient } from "@/types/ingredients";
 
 export default function RecipePage() {
   const [data, setData] = useState<Recipe[]>([]);
+  const [ingredientsData, setIngredientsData] = useState<Ingredient[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [showActiveRecipes, setShowActiveRecipes] = useState(true); // Estado para filtrar recetas activas/inactivas
+  const [showActiveRecipes, setShowActiveRecipes] = useState(true);
 
   // Función para cargar las recetas
   const loadRecipe = async () => {
-    console.log("Cargando recetas..."); // Log para verificar la carga de datos
+    console.log("Cargando recetas...");
     try {
-      const recipes = await fetchRecipeData(); // Obtener todas las recetas
+      const recipes = await fetchRecipeData();
       if (recipes) {
-        setData(Array.isArray(recipes) ? recipes : [recipes]); // Asegúrate de que sea un array
+        setData(Array.isArray(recipes) ? recipes : [recipes]);
         console.log("Recetas cargadas:", recipes);
       } else {
         setErrorMessage(
@@ -45,55 +48,64 @@ export default function RecipePage() {
     }
   };
 
-  // Cargar las recetas al montar el componente
+  // Función para cargar los ingredientes
+  const loadIngredients = async () => {
+    try {
+      const data = await fetchIngredientsData();
+      console.log("Datos de ingredientes cargados:", data);
+      setIngredientsData(data || []);
+    } catch (error) {
+      console.error("Error fetching ingredients:", error);
+      toast.error("Error al cargar los ingredientes. Por favor, inténtalo de nuevo.");
+    }
+  };
+
+  // Cargar las recetas y los ingredientes al montar el componente
   useEffect(() => {
     loadRecipe();
+    loadIngredients();
   }, []);
 
   // Función para actualizar una receta en la tabla
   const updateRecipeInTable = async (updatedRecipe: Recipe) => {
     try {
-      // Transformar detalleRecetas a la estructura que el backend espera
-      const ingredientes = updatedRecipe.detalleRecetas.map((ing) => ({
-        ingredienteId: ing.id, // Asegúrate de que `id` sea el ID del ingrediente
-        cantidad: ing.cantidad,
-        unidad: ing.unidad,
-      }));
-
-      const recipeToUpdate = {
-        ...updatedRecipe,
-        detalleRecetas: ingredientes,
+      const ingredientes = updatedRecipe.ingredientes || [];
+  
+      // Asegúrate de incluir el ID de la receta
+      const updatedRecipeWithId = {
         id: updatedRecipe.id,
         name: updatedRecipe.name,
         status: updatedRecipe.status,
+        ingredientes: ingredientes,
       };
-
-      const response = await updateRecipe(recipeToUpdate);
-      if (!response) {
-        throw new Error("No se pudo actualizar la receta.");
+  
+      console.log("Datos a enviar al backend:", updatedRecipeWithId); // Verifica los datos
+  
+      const response = await updateRecipe(updatedRecipeWithId);
+  
+      if (response) {
+        toast.success(`Receta "${updatedRecipe.name}" actualizada exitosamente.`);
+        loadRecipe(); // Recargar las recetas después de la actualización
       }
-      toast.success("Receta actualizada correctamente.");
-      await loadRecipe(); // Recargar las recetas después de la actualización
-      return response;
     } catch (error) {
       console.error("Error updating recipe:", error);
-      toast.error("Error al actualizar la receta. Por favor, inténtalo de nuevo.");
-      throw error;
+      if (error instanceof Error) {
+        toast.error(`Error al actualizar la receta: ${error.message}`);
+      } else {
+        toast.error("Error al actualizar la receta. Por favor, inténtalo de nuevo.");
+      }
     }
   };
 
   // Función para cambiar el estado de una receta (activar/inactivar)
   const toggleRecipeStatusInTable = async (recipeId: number, newStatus: number) => {
-    const previousData = [...data]; // Guardar los datos anteriores para revertir en caso de error
-
-    // Buscar la receta en la lista de datos
+    const previousData = [...data];
     const recipeToUpdate = data.find((recipe) => recipe.id === recipeId);
     if (!recipeToUpdate) {
       toast.error("Receta no encontrada.");
       return;
     }
 
-    // Actualizar la UI de inmediato (optimistic update)
     setData((prevData) =>
       prevData.map((recipe) =>
         recipe.id === recipeId ? { ...recipe, status: newStatus } : recipe
@@ -101,18 +113,15 @@ export default function RecipePage() {
     );
 
     try {
-      // Hacer la petición al servidor para cambiar el estado de la receta
       const response = await toggleRecipeStatus(recipeId, newStatus);
 
-      if (!response) {
-        throw new Error("No se pudo cambiar el estado de la receta.");
+      if (response) {
+        toast.success(
+          `Receta "${recipeToUpdate.name}" ha sido ${
+            newStatus === 1 ? "activada" : "inactivada"
+          } exitosamente.`
+        );
       }
-
-      toast.success(
-        `Receta "${recipeToUpdate.name}" ha sido ${
-          newStatus === 1 ? "activada" : "inactivada"
-        } exitosamente.`
-      );
     } catch (error) {
       console.error("Error toggling recipe status:", error);
       toast.error(
@@ -120,7 +129,7 @@ export default function RecipePage() {
           ? error.message
           : "Error al cambiar el estado de la receta. Por favor, inténtalo de nuevo."
       );
-      setData(previousData); // Revertir los cambios en la UI
+      setData(previousData);
     }
   };
 
@@ -174,7 +183,7 @@ export default function RecipePage() {
       {/* Acciones y tabla de recetas */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
         <RecipeActions
-          onToggleActiveRecipes={handleToggleActiveRecipes} // Pasar la función para alternar entre recetas activas e inactivas
+          onToggleActiveRecipes={handleToggleActiveRecipes}
           onRefresh={loadRecipe}
         />
       </div>
@@ -183,8 +192,8 @@ export default function RecipePage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateRecipeInTable, toggleRecipeStatusInTable)}
-            data={filteredData} // Usar los datos filtrados
+            columns={columns(updateRecipeInTable, toggleRecipeStatusInTable, ingredientsData)}
+            data={filteredData}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."
             filterColumn="name"
