@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState } from "react";
-import { ReusableSelect } from "@/components/ReusableSelect"; // Importa el componente ReusableSelect
+import { ReusableSelect } from "@/components/ReusableSelect";
 import { unitOptions } from "@/constants/unitOptions";
 
-
-// Componente para las acciones de edición y eliminación
+// Componente para las acciones de edición, activar/desactivar y eliminar
 const ActionsCell = ({
   ingredients,
   updateIngredientsInTable,
@@ -22,20 +21,24 @@ const ActionsCell = ({
 }) => {
   const [name, setName] = useState(ingredients.name);
   const [quantity, setQuantity] = useState(ingredients.cantidad);
-  const [unit, setUnit] = useState(ingredients.unidad); // Estado para la unidad de medida
+  const [unit, setUnit] = useState(ingredients.unidad);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [actionType, setActionType] = useState<"activate" | "deactivate" | "delete">(
+    ingredients.status === 1 ? "deactivate" : "activate"
+  );
 
+  // Función para editar ingrediente
   const handleEditIngredients = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (!name.trim()) {
       toast.error("El nombre del ingrediente no puede estar vacío.");
       return;
     }
-  
+
     try {
-      const updatedIngredients = { ...ingredients, name, cantidad: quantity, unidad: unit }; // Asegúrate de que coincida con lo que espera el servidor
+      const updatedIngredients = { ...ingredients, name, cantidad: quantity, unidad: unit };
       await updateIngredientsInTable(updatedIngredients);
-      console.log("Actualizando ingrediente en la tabla:", updatedIngredients);
       toast.success(`Ingrediente "${name}" actualizado exitosamente.`);
     } catch (error) {
       console.error("Error updating ingredients:", error);
@@ -43,21 +46,34 @@ const ActionsCell = ({
     }
   };
 
-  const handleDeleteIngredients = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  // Función para manejar la acción (activar/desactivar o eliminar)
+  const handleAction = async () => {
     try {
-      await deleteIngredientsFromTable(ingredients.id.toString());
-      toast.success(`Ingrediente "${ingredients.name}" eliminado exitosamente.`);
+      if (actionType === "delete") {
+        await deleteIngredientsFromTable(ingredients.id.toString());
+        toast.success(`Ingrediente "${ingredients.name}" eliminado exitosamente.`);
+      } else {
+        const newStatus = actionType === "activate" ? 1 : 0;
+        const updatedIngredients = { ...ingredients, status: newStatus };
+        await updateIngredientsInTable(updatedIngredients);
+        toast.success(
+          `Ingrediente "${ingredients.name}" ${
+            newStatus === 1 ? "activado" : "desactivado"
+          } exitosamente.`
+        );
+        // Cambiar el tipo de acción después de activar/desactivar
+        setActionType(newStatus === 1 ? "deactivate" : "activate");
+      }
+      setIsConfirmDialogOpen(false); // Cerrar el diálogo después de la acción
     } catch (error) {
-      console.error("Error deleting ingredients:", error);
-      toast.error("Error al eliminar el ingrediente. Por favor, inténtalo de nuevo.");
+      console.error("Error al realizar la acción:", error);
+      toast.error("Error al realizar la acción. Por favor, inténtalo de nuevo.");
     }
   };
 
   return (
     <div className="flex gap-2 justify-center">
-      {/* Edit Ingredients Dialog */}
+      {/* Diálogo para editar ingrediente */}
       <ReusableDialog
         title="Editar Ingrediente"
         description={
@@ -66,7 +82,7 @@ const ActionsCell = ({
           </>
         }
         trigger={
-          <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
+          <Button className="bg-amber-400 text-white hover:bg-amber-400/80">
             Editar
           </Button>
         }
@@ -74,9 +90,9 @@ const ActionsCell = ({
         submitButtonText="Guardar Cambios"
         onOpenChange={(open) => {
           if (!open) {
-            setName(ingredients.name); // Resetear el estado del nombre cuando el diálogo se cierra
+            setName(ingredients.name);
             setQuantity(ingredients.cantidad);
-            setUnit(ingredients.unidad); // Resetear el estado de la unidad
+            setUnit(ingredients.unidad);
           }
         }}
       >
@@ -86,7 +102,7 @@ const ActionsCell = ({
               Nombre
             </Label>
             <Input
-            placeholder="Ingresa el nombre del ingrediente"
+              placeholder="Ingresa el nombre del ingrediente"
               id="name"
               defaultValue={ingredients.name}
               className="col-span-3"
@@ -94,18 +110,18 @@ const ActionsCell = ({
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="cantidad" className="text-right">
-                  Cantidad
-                </Label>
-                <Input
-                  id="cantidad"
-                  name="cantidad"
-                  defaultValue={ingredients.cantidad}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  placeholder="Ingresa la cantidad"
-                  className="col-span-3"
-                />
-              </div>
+            <Label htmlFor="cantidad" className="text-right">
+              Cantidad
+            </Label>
+            <Input
+              id="cantidad"
+              name="cantidad"
+              defaultValue={ingredients.cantidad}
+              onChange={(e) => setQuantity(Number(e.target.value))}
+              placeholder="Ingresa la cantidad"
+              className="col-span-3"
+            />
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="unit" className="text-right">
               Unidad
@@ -113,6 +129,7 @@ const ActionsCell = ({
             <ReusableSelect
               name="unit"
               placeholder={"Selecciona una unidad"}
+              value={unit}
               label="Unidad"
               options={unitOptions}
               onValueChange={setUnit}
@@ -123,17 +140,48 @@ const ActionsCell = ({
         </div>
       </ReusableDialog>
 
-      {/* Delete Ingredients Dialog */}
-      <ReusableDialog 
-        title="Eliminar Ingrediente"
-        description={
-          <>
-            ¿Estás seguro de eliminar el ingrediente <strong>{ingredients.name}</strong>?
-          </>
+      {/* Diálogo para activar/desactivar o eliminar */}
+      <ReusableDialog
+        title={
+          actionType === "delete"
+            ? "Eliminar Ingrediente"
+            : actionType === "activate"
+            ? "Habilitar Ingrediente"
+            : "Deshabilitar Ingrediente"
         }
-        trigger={<Button variant="destructive">Eliminar</Button>}
-        onSubmit={handleDeleteIngredients}
-        submitButtonText="Eliminar"
+        description={
+          actionType === "delete"
+            ? `¿Estás seguro de eliminar el ingrediente "${ingredients.name}"?`
+            : `¿Estás seguro de que deseas ${
+                actionType === "activate" ? "activar" : "desactivar"
+              } el ingrediente "${ingredients.name}"?`
+        }
+        trigger={
+          <Button
+            className={
+              actionType === "delete" || actionType === "activate"
+                ? "bg-green-600 hover:bg-green-600/80"
+                : "bg-red-500 hover:bg-red-500/80"
+            }
+            onClick={() => setIsConfirmDialogOpen(true)}
+          >
+            {actionType === "delete"
+              ? "Eliminar"
+              : actionType === "activate"
+              ? "Habilitar"
+              : "Deshabilitar"}
+          </Button>
+        }
+        onSubmit={handleAction}
+        submitButtonText={
+          actionType === "delete"
+            ? "Eliminar"
+            : actionType === "activate"
+            ? "Habilitar"
+            : "Deshabilitar"
+        }
+        onOpenChange={setIsConfirmDialogOpen}
+        isOpen={isConfirmDialogOpen}
         // eslint-disable-next-line react/no-children-prop
         children={null}
       />
@@ -162,14 +210,14 @@ export const columns = (
     header: "Cantidad",
     cell: ({ row }) => {
       return <div>{row.original.cantidad}</div>;
-    }
+    },
   },
   {
     accessorKey: "unit_measurement",
     header: "Unidad",
     cell: ({ row }) => {
       return <div>{row.original.unidad}</div>;
-    }
+    },
   },
   {
     id: "actions",

@@ -1,5 +1,4 @@
 "use client";
-import { ReusableDialog } from "@/components/ReusableDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { X } from "lucide-react";
 import {
   Table,
@@ -35,7 +34,7 @@ import { Ingredient } from "@/types/ingredients";
 
 export const columns = (
   updateRecipeInTable: (updatedRecipe: Recipe) => Promise<void>,
-  deleteRecipeFromTable: (RecipeId: number) => Promise<void>
+  toggleRecipeStatus: (recipeId: number, newStatus: number) => Promise<void>
 ): ColumnDef<Recipe>[] => [
   {
     id: "rowNumber",
@@ -49,11 +48,29 @@ export const columns = (
     header: "Nombre",
   },
   {
-    accessorKey: "detalle_compra",
+    accessorKey: "status",
+    header: "Estado",
+    cell: ({ row }) => {
+      const status = row.original.status;
+
+      return (
+        <span
+          className={`px-2 py-1 rounded text-sm font-semibold ${
+            status === 1
+              ? "bg-green-100 text-green-800" // Estilo para "ACTIVO"
+              : "bg-red-100 text-red-800" // Estilo para "INACTIVO"
+          }`}
+        >
+          {status === 1 ? "ACTIVO" : "INACTIVO"}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "detalleRecetas",
     header: "Detalle de Compra",
     cell: ({ row }) => {
-      const detalles = row.original.detalleRecetas; // Cambiado a detalleRecetas
-      console.log("Detalles recibidos:", detalles); // Depuración
+      const detalles = row.original.detalleRecetas;
 
       return (
         <Sheet>
@@ -84,17 +101,16 @@ export const columns = (
                 </thead>
                 <tbody>
                   {detalles && detalles.length > 0 ? (
-                    detalles.map((detalle, index) => {
-                      console.log("Detalle del ingrediente:", detalle); // Depuración
-                      return (
-                        <tr key={detalle.id} className="border-b">
-                          <td className="text-center p-2">{index + 1}</td>
-                          <td className="text-center p-2">{detalle.nombre_ingrediente}</td>
-                          <td className="text-center p-2">{detalle.cantidad}</td>
-                          <td className="text-center p-2">{detalle.unidad}</td>
-                        </tr>
-                      );
-                    })
+                    detalles.map((detalle, index) => (
+                      <tr key={detalle.id} className="border-b">
+                        <td className="text-center p-2">{index + 1}</td>
+                        <td className="text-center p-2">
+                          {detalle.nombre_ingrediente}
+                        </td>
+                        <td className="text-center p-2">{detalle.cantidad}</td>
+                        <td className="text-center p-2">{detalle.unidad}</td>
+                      </tr>
+                    ))
                   ) : (
                     <tr>
                       <td colSpan={4} className="text-center p-2">
@@ -119,34 +135,19 @@ export const columns = (
     id: "actions",
     header: () => <div className="text-center">Acciones</div>,
     cell: ({ row }) => {
-      const Recipe = row.original;
-      const [name, setName] = useState(Recipe.name);
-      const [ingredients, setIngredients] = useState<
+      const recipe = row.original;
+      const [name, setName] = useState(recipe.name);
+      const [ingredientes, setIngredients] = useState<
         Array<{
           id: number;
           nombre_ingrediente: string;
           cantidad: number;
           unidad: string;
         }>
-      >([]);
+      >(recipe.detalleRecetas || []);
       const [ingredientsData, setIngredientsData] = useState<Ingredient[]>([]);
 
-      // Cargar los ingredientes de la receta al abrir el diálogo
-      useEffect(() => {
-        if (Recipe.detalleRecetas) {
-          console.log("Ingredientes de la receta:", Recipe.detalleRecetas); // Depuración
-          const initialIngredients = Recipe.detalleRecetas.map((detalle) => ({
-            id: detalle.id,
-            nombre_ingrediente: detalle.nombre_ingrediente,
-            cantidad: detalle.cantidad,
-            unidad: detalle.unidad,
-          }));
-          console.log("Ingredientes mapeados:", initialIngredients); // Depuración
-          setIngredients(initialIngredients);
-        }
-      }, [Recipe.detalleRecetas]);
-
-      // Carga de ingredientsData desde fetchIngredientData.ts donde esta el crud
+      // Cargar los datos de los ingredientes
       useEffect(() => {
         const loadIngredients = async () => {
           const data = await fetchIngredientsData();
@@ -157,48 +158,32 @@ export const columns = (
 
       const handleEditRecipe = async (e: React.FormEvent) => {
         e.preventDefault();
-      
         if (!name.trim()) {
-          toast.error("El nombre del receta no puede estar vacío.");
+          toast.error("El nombre de la receta no puede estar vacío.");
           return;
         }
-      
+
         try {
-          const { ...rest } = Recipe; // Elimina las propiedades duplicadas
+          // Transformar detalleRecetas a la estructura que el backend espera
+          const ingredientesTransformados = ingredientes.map((ing) => ({
+            ingredienteId: ing.id, // Asegúrate de que `id` sea el ID del ingrediente
+            cantidad: ing.cantidad,
+            unidad: ing.unidad,
+          }));
+
           const updatedRecipe = {
-            ...rest, // Copia el resto de las propiedades
-            name: name,
-            detalleRecetas: ingredients.map((ing) => ({
-              id: ing.id,
-              nombre_ingrediente: ing.nombre_ingrediente,
-              cantidad: ing.cantidad,
-              unidad: ing.unidad,
-            })),
+            ...recipe,
+            id: recipe.id,
+            name: recipe.name,
+            status: recipe.status,
+            ingredientes: ingredientesTransformados,
           };
-      
-          console.log("Objeto actualizado:", updatedRecipe); // Depuración
-      
-          await updateRecipeInTable(updatedRecipe as Recipe);
+
+          await updateRecipeInTable(updatedRecipe );
           toast.success(`Receta "${name}" actualizada exitosamente.`);
         } catch (error) {
-          console.error("Error updating Recipe:", error);
-          toast.error(
-            "Error al actualizar el receta. Por favor, inténtalo de nuevo."
-          );
-        }
-      };
-
-      const handleDeleteRecipe = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-          await deleteRecipeFromTable(Recipe.id);
-          toast.success(`Receta "${Recipe.name}" eliminada exitosamente.`);
-        } catch (error) {
-          console.error("Error deleting Recipe:", error);
-          toast.error(
-            "Error al eliminar el receta. Por favor, inténtalo de nuevo."
-          );
+          console.error("Error updating recipe:", error);
+          toast.error("Error al actualizar la receta. Por favor, inténtalo de nuevo.");
         }
       };
 
@@ -206,45 +191,61 @@ export const columns = (
         ingrediente: Ingredient,
         index?: number
       ) => {
-        const updatedIngredients = [...ingredients];
-        console.log("Ingrediente seleccionado:", ingrediente); // Depuración
-      
+        const updatedIngredients = [...ingredientes];
+
         const isIngredientAlreadyAdded = updatedIngredients.some(
-          (ing) =>
-            ing.id === ingrediente.id ||
-            ing.nombre_ingrediente.toLowerCase() === ingrediente.name.toLowerCase()
+          (ing) => ing.id === ingrediente.id
         );
-      
+
         if (isIngredientAlreadyAdded) {
           toast.error(`"${ingrediente.name}" ya está en la lista.`);
           return;
         }
-      
+
         if (index !== undefined) {
-          // Si se está actualizando un ingrediente existente, mantener la cantidad actual
           updatedIngredients[index] = {
             id: ingrediente.id,
-            nombre_ingrediente: ingrediente.name,
-            cantidad: updatedIngredients[index].cantidad, // Mantener la cantidad actual
+            nombre_ingrediente: ingrediente.name, // Asegúrate de asignar el nombre correctamente
+            cantidad: updatedIngredients[index].cantidad,
             unidad: ingrediente.unidad || "unidad",
           };
         } else {
-          // Si se está añadiendo un nuevo ingrediente, establecer la cantidad en 0
           updatedIngredients.push({
             id: ingrediente.id,
-            nombre_ingrediente: ingrediente.name,
-            cantidad: 0, // Inicializar la cantidad en 0
+            nombre_ingrediente: ingrediente.name, // Asegúrate de asignar el nombre correctamente
+            cantidad: 0,
             unidad: ingrediente.unidad || "unidad",
           });
         }
-      
-        console.log("Ingredientes actualizados:", updatedIngredients); // Depuración
+
         setIngredients(updatedIngredients);
       };
 
       const handleRemoveIngredient = (id: number) => {
-        const updatedIngredients = ingredients.filter((ing) => ing.id !== id);
+        const updatedIngredients = ingredientes.filter((ing) => ing.id !== id);
         setIngredients(updatedIngredients);
+      };
+
+      const handleToggleStatus = async () => {
+        const newStatus = recipe.status === 1 ? 0 : 1;
+        try {
+          await toggleRecipeStatus(recipe.id, newStatus);
+          toast.success(
+            `Receta "${recipe.name}" ha sido ${
+              newStatus === 1 ? "activada" : "inactivada"
+            } exitosamente.`
+          );
+          // Actualizar el estado local
+          recipe.status = newStatus;
+        } catch (error) {
+          console.log("datos de la receta: ", recipe);
+          console.error("Error toggling recipe status:", error);
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Error al cambiar el estado de la receta. Por favor, inténtalo de nuevo."
+          );
+        }
       };
 
       return (
@@ -252,7 +253,7 @@ export const columns = (
           {/* Edit Recipe Dialog */}
           <ReusableDialogWidth
             title="Editar receta"
-            description={"Ingresa los nuevos datos de la receta " + Recipe.name}
+            description={"Ingresa los nuevos datos de la receta " + recipe.name}
             trigger={
               <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
                 Editar
@@ -301,14 +302,14 @@ export const columns = (
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {ingredients.map((ing, index) => (
+                      {ingredientes.map((ing, index) => (
                         <TableRow key={ing.id}>
                           <TableCell className="text-center font-medium">
                             {index + 1}
                           </TableCell>
                           <TableCell className="text-center">
                             <Combobox
-                              value={ing.nombre_ingrediente} // Mostrar el nombre del ingrediente actual
+                              value={ing.nombre_ingrediente || ""} // Usar el nombre del ingrediente directamente
                               onSelect={(ingrediente) =>
                                 handleAddOrUpdateIngredient(
                                   {
@@ -322,7 +323,7 @@ export const columns = (
                               }
                               options={ingredientsData.filter(
                                 (ingOption) =>
-                                  !ingredients.some(
+                                  !ingredientes.some(
                                     (existingIng) =>
                                       existingIng.id === ingOption.id
                                   )
@@ -336,7 +337,7 @@ export const columns = (
                               type="number"
                               value={ing.cantidad}
                               onChange={(e) => {
-                                const updatedIngredients = [...ingredients];
+                                const updatedIngredients = [...ingredientes];
                                 updatedIngredients[index].cantidad = parseFloat(
                                   e.target.value
                                 );
@@ -360,7 +361,7 @@ export const columns = (
                       ))}
                       <TableRow>
                         <TableCell className="text-center font-medium">
-                          {ingredients.length + 1}
+                          {ingredientes.length + 1}
                         </TableCell>
                         <TableCell className="text-center">
                           <Combobox
@@ -374,7 +375,7 @@ export const columns = (
                             }
                             options={ingredientsData.filter(
                               (ingOption) =>
-                                !ingredients.some(
+                                !ingredientes.some(
                                   (existingIng) =>
                                     existingIng.id === ingOption.id
                                 )
@@ -387,21 +388,12 @@ export const columns = (
                             className="text-center w-full"
                             type="number"
                             placeholder="0"
-                            value={
-                              ingredients[ingredients.length]?.cantidad || ""
-                            }
-                            onChange={(e) => {
-                              const updatedIngredients = [...ingredients];
-                              updatedIngredients[ingredients.length].cantidad =
-                                parseFloat(e.target.value);
-                              setIngredients(updatedIngredients);
-                            }}
+                            disabled
                           />
                         </TableCell>
                         <TableCell className="text-center">
                           {ingredientsData.find(
-                            (ing) =>
-                              ing.id === ingredients[ingredients.length]?.id
+                            (ing) => ing.id === ingredientes[ingredientes.length]?.id
                           )?.unidad || ""}
                         </TableCell>
                         <TableCell>
@@ -417,21 +409,13 @@ export const columns = (
             </div>
           </ReusableDialogWidth>
 
-          {/* Delete Recipe Dialog */}
-          <ReusableDialog
-            title="Eliminar receta"
-            description={
-              <>
-                ¿Estás seguro de eliminar el receta{" "}
-                <strong>{Recipe.name}</strong>?
-              </>
-            }
-            trigger={<Button variant="destructive">Eliminar</Button>}
-            onSubmit={handleDeleteRecipe}
-            submitButtonText="Eliminar"
-            // eslint-disable-next-line react/no-children-prop
-            children={null}
-          />
+          {/* Botón para cambiar el estado de la receta */}
+          <Button
+            className={recipe.status === 1 ? "bg-red-500 text-white hover:bg-red-500/90" : "bg-green-500 text-white hover:bg-green-500/90"}
+            onClick={handleToggleStatus}
+          >
+            {recipe.status === 1 ? "Desactivar" : "Activar"}
+          </Button>
         </div>
       );
     },

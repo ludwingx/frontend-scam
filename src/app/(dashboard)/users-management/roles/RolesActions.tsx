@@ -11,9 +11,11 @@ import { createRole } from "@/services/fetchRoleData";
 
 interface RolesActionsProps {
   onRefresh: () => void; // Prop para actualizar la tabla
+  onToggleActiveRoles: (showActive: boolean) => void;
 }
 
-export function RolesActions({ onRefresh }: RolesActionsProps) {
+export function RolesActions({ onRefresh, onToggleActiveRoles }: RolesActionsProps) {
+  const [showActiveRoles, setShowActiveRoles] = useState(true);
   const [roleName, setRoleName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false); // Estado para controlar la apertura/cierre del diálogo
 
@@ -26,7 +28,7 @@ export function RolesActions({ onRefresh }: RolesActionsProps) {
     }
 
     try {
-      const newRole = await createRole({ name: roleName });
+      const newRole = await createRole({ name: roleName, status: 1 });
 
       if (newRole) {
         toast.success(`Rol "${newRole.name}" creado exitosamente.`);
@@ -41,9 +43,20 @@ export function RolesActions({ onRefresh }: RolesActionsProps) {
       toast.error("Error al crear el rol. Por favor, inténtalo de nuevo.");
     }
   };
-
+  const handleToggleActiveRoles = () => {
+    const newShowActiveRoles = !showActiveRoles;
+    setShowActiveRoles(newShowActiveRoles);
+    onToggleActiveRoles(newShowActiveRoles); // Notificar al componente padre
+  };
   return (
     <>
+      <div className="flex items-center gap-2">
+      <Button
+        onClick={handleToggleActiveRoles}
+        className={showActiveRoles ? "bg-blue-500 text-white hover:bg-blue-500/90" : "bg-violet-500 text-white hover:bg-violet-500/90"}
+      >
+        {showActiveRoles ? "Ver Inactivos" : "Ver Activos"}
+      </Button>
       <ReusableDialog
         title="Crear Rol"
         description="Aquí podrás crear un rol."
@@ -73,6 +86,8 @@ export function RolesActions({ onRefresh }: RolesActionsProps) {
           </div>
         </div>
       </ReusableDialog>
+      </div>
+     
     </>
   );
 }

@@ -20,9 +20,9 @@ async function getData(): Promise<ProductsBase[]> {
       quantity: 300,
       stock: 3,
       ingredients: [
-        { id: 1, name: "Harina", quantity: 250, unit_measurement: "gramo(s)" },
-        { id: 3, name: "Leche", quantity: 120, unit_measurement: "gramo(s)" },
-        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
+        { id: 1, name: "Harina", cantidad: 250, unidad: "gramo(s)" },
+        { id: 3, name: "Leche", cantidad: 120, unidad: "gramo(s)" },
+        { id: 5, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
       ],
     },
     {
@@ -32,10 +32,10 @@ async function getData(): Promise<ProductsBase[]> {
       quantity: 300,
       stock: 3,
       ingredients: [
-        { id: 1, name: "Harina", quantity: 250, unit_measurement: "gramo(s)" },
-        { id: 3, name: "Leche", quantity: 120, unit_measurement: "gramo(s)" },
-        { id: 5, name: "Huevo", quantity: 3, unit_measurement: "unidad(es)" },
-        { id: 6, name: "Vainilla", quantity: 10, unit_measurement: "mililitro(s)" },
+        { id: 1, name: "Harina", cantidad: 250, unidad: "gramo(s)" },
+        { id: 3, name: "Leche", cantidad: 120, unidad: "gramo(s)" },
+        { id: 5, name: "Huevo", cantidad: 3, unidad: "unidad(es)" },
+        { id: 6, name: "Vainilla", cantidad: 10, unidad: "mililitro(s)" },
       ],
     },
   ];
@@ -84,18 +84,20 @@ export default async function Page() {
       </div>
 
       {/* Content Container */}
-      <div className="flex flex-col gap-4 mb-6 md:mb-0 md:overflow-x-auto">
-        <DataTable
-          columns={columns}
-          data={data}
-          enableFilter // Habilitar el filtro
-          filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
-          filterColumn="name" // Especificar la columna a filtrar
-          enablePagination // Habilitar la paginación
-          enableRowSelection // Habilitar la selección de filas
-          enableColumnVisibility // Habilitar la visibilidad de columnas
-        />
-      </div>
+      <div className="flex flex-col items-center justify-center gap-2">
+              <div className="w-full lg:w-3/4 xl:w-2/3">
+                <DataTable  
+                  columns={columns}
+                  data={data}
+                  enableFilter // Habilitar el filtro
+                  filterPlaceholder="Filtrar por nombre..." // Personalizar el placeholder
+                  filterColumn="name" // Especificar la columna a filtrar
+                  enablePagination // Habilitar la paginación
+                  enableRowSelection // Habilitar la selección de filas
+                  enableColumnVisibility // Habilitar la visibilidad de columnas 
+                />
+              </div>
+            </div>
     </div>
   );
 }

@@ -9,11 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { DataTable } from "../../../../components/data-table";
-import {
-  fetchRoleData,
-  updateRole,
-  deleteRole,
-} from "@/services/fetchRoleData"; // Importar updateRole y deleteRole
+import { fetchRoleData, updateRole, toggleRoleStatus } from "@/services/fetchRoleData";
 import { RolesActions } from "./RolesActions";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
@@ -21,8 +17,9 @@ import { Role } from "@/types/role";
 import { toast } from "sonner";
 
 export default function RolesPage() {
-  const [data, setData] = useState<Role[]>([]); // Estado para almacenar los roles
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Estado para manejar errores
+  const [data, setData] = useState<Role[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showActiveRoles, setShowActiveRoles] = useState(true); // Estado para controlar qué roles se muestran
 
   // Función para cargar los roles
   const loadRoles = async () => {
@@ -31,15 +28,11 @@ export default function RolesPage() {
       if (roles) {
         setData(roles);
       } else {
-        setErrorMessage(
-          "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
-        );
+        setErrorMessage("No se pudieron cargar los datos.");
       }
     } catch (error) {
       console.error("Error fetching data:", error);
-      setErrorMessage(
-        "No se pudieron cargar los datos. Por favor, inténtalo de nuevo más tarde."
-      );
+      setErrorMessage("No se pudieron cargar los datos.");
     }
   };
 
@@ -48,19 +41,16 @@ export default function RolesPage() {
     loadRoles();
   }, []);
 
-  // Función para actualizar un rol en la tabla (optimistic update)
+  // Función para actualizar un rol en la tabla
   const updateRoleInTable = async (updatedRole: Role) => {
-    // Guardar el estado anterior para poder revertir en caso de error
     const previousData = [...data];
 
-    // Actualizar la UI de inmediato (optimistic update)
     setData((prevData) =>
       prevData.map((role) => (role.id === updatedRole.id ? updatedRole : role))
     );
 
     try {
-      // Hacer la petición al servidor para actualizar el rol
-      const response = await updateRole(updatedRole); // Usar updateRole importada
+      const response = await updateRole(updatedRole);
 
       if (!response) {
         throw new Error("No se pudo actualizar el rol.");
@@ -70,44 +60,56 @@ export default function RolesPage() {
     } catch (error) {
       console.error("Error updating role:", error);
       toast.error("Error al actualizar el rol. Por favor, inténtalo de nuevo.");
-
-      // Revertir los cambios en la UI si la petición falla
       setData(previousData);
     }
   };
-  // Función para eliminar un rol de la tabla (optimistic update)
-  const deleteRoleFromTable = async (roleId: number) => {
-    // Buscar el rol que se va a eliminar para obtener su nombre
-    const roleToDelete = data.find((role) => role.id === roleId);
 
-    // Guardar el estado anterior para poder revertir en caso de error
+  // Función para cambiar el estado de un rol
+  const toggleRoleStatusInTable = async (roleId: number, newStatus: number) => {
     const previousData = [...data];
-
+  
+    // Buscar el rol en la lista de datos
+    const roleToUpdate = data.find((role) => role.id === roleId);
+    if (!roleToUpdate) {
+      toast.error("Rol no encontrado.");
+      return;
+    }
+  
     // Actualizar la UI de inmediato (optimistic update)
-    setData((prevData) => prevData.filter((role) => role.id !== roleId));
-
+    setData((prevData) =>
+      prevData.map((role) =>
+        role.id === roleId ? { ...role, status: newStatus } : role
+      )
+    );
+  
     try {
-      // Hacer la petición al servidor para eliminar el rol
-      const isDeleted = await deleteRole(roleId); // Usar deleteRole importada
-
-      if (!isDeleted) {
-        throw new Error("No se pudo eliminar el rol.");
+      // Hacer la petición al servidor para cambiar el estado del rol
+      const response = await toggleRoleStatus(roleId, newStatus, roleToUpdate.name);
+  
+      if (!response) {
+        throw new Error("No se pudo cambiar el estado del rol.");
       }
-
-      // Mostrar el toast con el nombre del rol eliminado
-      if (roleToDelete) {
-        toast.success(`Rol "${roleToDelete.name}" eliminado exitosamente.`);
-      } else {
-        toast.success("Rol eliminado exitosamente.");
-      }
+  
+      toast.success(
+        `Rol "${roleToUpdate.name}" ha sido ${
+          newStatus === 1 ? "activado" : "desactivado"
+        } exitosamente.`
+      );
     } catch (error) {
-      console.error("Error deleting role:", error);
-      toast.error("Error al eliminar el rol. Por favor, inténtalo de nuevo.");
-
-      // Revertir los cambios en la UI si la petición falla
-      setData(previousData);
+      console.error("Error toggling role status:", error);
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Error al cambiar el estado del rol. Por favor, inténtalo de nuevo."
+      );
+      setData(previousData); // Revertir los cambios en la UI
     }
   };
+
+  // Filtrar roles según el estado
+  const filteredData = data.filter((role) =>
+    showActiveRoles ? role.status === 1 : role.status === 0
+  );
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
@@ -140,7 +142,10 @@ export default function RolesPage() {
 
       {/* Description and Action Button */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center pb-4">
-        <RolesActions onRefresh={loadRoles} /> {/* Pasar loadRoles como prop */}
+        <RolesActions
+          onRefresh={loadRoles}
+          onToggleActiveRoles={(showActive) => setShowActiveRoles(showActive)} // Pasar la función para alternar entre roles activos e inactivos
+        />
       </div>
 
       {/* Content Container */}
@@ -149,8 +154,8 @@ export default function RolesPage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateRoleInTable, deleteRoleFromTable)}
-            data={data}
+            columns={columns(updateRoleInTable, toggleRoleStatusInTable)}
+            data={filteredData}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."
             filterColumn="name"

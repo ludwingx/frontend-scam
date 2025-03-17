@@ -90,70 +90,79 @@ export const createRole = async (role: Omit<Role, 'id'>): Promise<Role | null> =
 };
 
 // Función para actualizar un rol
-
 export const updateRole = async (role: Role): Promise<Role | null> => {
-    const token = (await cookies()).get('token')?.value;
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  
-    if (!token || !API_URL) {
-      throw new Error("Faltan el token o la API_URL");
+  const token = (await cookies()).get('token')?.value;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!token || !API_URL) {
+    throw new Error("Faltan el token o la API_URL");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/rol/${role.id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(role),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al actualizar el rol");
     }
-  
-    console.log("Token:", token); // Verificar el token
-    console.log("API URL:", API_URL); // Verificar la URL de la API
-    console.log("Datos enviados:", JSON.stringify(role)); // Verificar los datos enviados
-  
-    try {
-      const response = await fetch(`${API_URL}/api/rol/${role.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(role),
-      });
-  
-      if (!response.ok) {
-        const errorText = await response.text(); // Obtener el texto del error
-        console.error("Error response from server:", errorText); // Registrar el error
-        throw new Error(`Error al actualizar el rol: ${errorText}`);
-      }
-  
-      const apiResponse: ApiResponse = await response.json();
-  
-      if (!apiResponse.success || !apiResponse.data) {
-        throw new Error("Respuesta del servidor no válida");
-      }
-      return apiResponse.data as Role;
-    } catch (error) {
-      console.error("Error updating role:", error);
-      throw error;
+
+    const apiResponse: ApiResponse = await response.json();
+
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error("Respuesta del servidor no válida");
     }
-  };
-  
-  export const deleteRole = async (roleId: number): Promise<boolean> => {
-    const token = (await cookies()).get('token')?.value;
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  
-    if (!token || !API_URL) {
-      throw new Error("Faltan el token o la API_URL");
+
+    return apiResponse.data as Role;
+  } catch (error) {
+    console.error("Error updating role:", error);
+    throw error;
+  }
+};
+
+// Función para cambiar el estado de un rol
+export const toggleRoleStatus = async (
+  roleId: number,
+  newStatus: number,
+  roleName?: string
+): Promise<Role | null> => {
+  const token = (await cookies()).get('token')?.value;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+  if (!token || !API_URL) {
+    throw new Error("Faltan el token o la API_URL");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/rol/${roleId}`, {
+      method: "PUT", // Asegúrate de que el método sea el correcto
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status: newStatus, name: roleName }), // Incluir el nuevo estado y el nombre del rol
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text(); // Obtener el mensaje de error del servidor
+      console.error("Error response from server:", errorText);
+      throw new Error(`Error al cambiar el estado del rol: ${errorText}`);
     }
-  
-    try {
-      const response = await fetch(`${API_URL}/api/rol/${roleId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      if (!response.ok) {
-        throw new Error("Error al eliminar el rol");
-      }
-  
-      return true;
-    } catch (error) {
-      console.error("Error deleting role:", error);
-      throw error;
+
+    const apiResponse: ApiResponse = await response.json();
+
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error("Respuesta del servidor no válida");
     }
-  };
+
+    return apiResponse.data as Role;
+  } catch (error) {
+    console.error("Error toggling role status:", error);
+    throw error;
+  }
+};

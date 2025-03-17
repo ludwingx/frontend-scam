@@ -9,5 +9,6 @@ export type Product = {
     business_name: string;
     recetaId: number;
     receta_name: string;
+    status: number;
     img?: string;
   };

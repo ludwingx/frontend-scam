@@ -6,4 +6,5 @@ export type User = {
     password: string;
     rol_id: number;
     rol_name: string;
+    status: number;
 };

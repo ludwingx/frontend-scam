@@ -4,4 +4,5 @@ export type Ingredient= {
     cantidad: number;
     unidad?: string;
     stock?: number;
+    status: number
 };
