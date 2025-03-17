@@ -132,7 +132,7 @@ export const columns: ColumnDef<User>[] = [
             title="Editar Usuario"
             description={`Aquí podrás modificar los datos del usuario ${user.full_name}.`}
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
+              <Button className="bg-amber-400 text-white hover:bg-amber-400/80">
                 Editar
               </Button>
             }
@@ -204,7 +204,7 @@ export const columns: ColumnDef<User>[] = [
             } al usuario "${user.full_name}"?`}
             trigger={
               <Button
-                variant={user.status === 1 ? "destructive" : "default"}
+                className={user.status === 1 ? "bg-red-500 text-white hover:bg-red-500/80" : "bg-green-500 text-white hover:bg-green-500/80"}
                 onClick={() => setIsConfirmDialogOpen(true)}
               >
                 {user.status === 1 ? "Desactivar" : "Activar"}

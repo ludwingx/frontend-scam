@@ -29,12 +29,14 @@ import {
 import { Recipe } from "@/types/recipes";
 import { Combobox } from "./ComboBox";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
-import { fetchIngredientsData } from "@/services/fetchIngredientsData";
 import { Ingredient } from "@/types/ingredients";
+import { ReusableSelect } from "@/components/ReusableSelect";
+import { unitOptions } from "@/constants/unitOptions";
 
 export const columns = (
   updateRecipeInTable: (updatedRecipe: Recipe) => Promise<void>,
-  toggleRecipeStatus: (recipeId: number, newStatus: number) => Promise<void>
+  toggleRecipeStatus: (recipeId: number, newStatus: number) => Promise<void>,
+  ingredientsData: Ingredient[] // <-- Se mantiene porque se usa en el Combobox
 ): ColumnDef<Recipe>[] => [
   {
     id: "rowNumber",
@@ -144,43 +146,41 @@ export const columns = (
           cantidad: number;
           unidad: string;
         }>
-      >(recipe.detalleRecetas || []);
-      const [ingredientsData, setIngredientsData] = useState<Ingredient[]>([]);
-
-      // Cargar los datos de los ingredientes
-      useEffect(() => {
-        const loadIngredients = async () => {
-          const data = await fetchIngredientsData();
-          setIngredientsData(data || []);
-        };
-        loadIngredients();
-      }, []);
+      >(
+        recipe.detalleRecetas.map((detalle) => ({
+          id: detalle.id,
+          nombre_ingrediente: detalle.nombre_ingrediente,
+          cantidad: detalle.cantidad,
+          unidad: detalle.unidad || "unidad", // Asignar un valor por defecto si no existe
+        }))
+      );
 
       const handleEditRecipe = async (e: React.FormEvent) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
         if (!name.trim()) {
           toast.error("El nombre de la receta no puede estar vacío.");
           return;
         }
-
+      
         try {
-          // Transformar detalleRecetas a la estructura que el backend espera
+          // Transformar ingredientes a la estructura que el backend espera
           const ingredientesTransformados = ingredientes.map((ing) => ({
             ingredienteId: ing.id, // Asegúrate de que `id` sea el ID del ingrediente
             cantidad: ing.cantidad,
             unidad: ing.unidad,
           }));
-
+      
+          // Asegúrate de incluir el ID de la receta
           const updatedRecipe = {
-            ...recipe,
-            id: recipe.id,
-            name: recipe.name,
+            id: recipe.id, // <-- Añade el ID aquí
+            name: name, // Usar el nombre actualizado
             status: recipe.status,
-            ingredientes: ingredientesTransformados,
+            ingredientes: ingredientesTransformados, // Enviar solo los ingredientes transformados
           };
-
-          await updateRecipeInTable(updatedRecipe );
-          toast.success(`Receta "${name}" actualizada exitosamente.`);
+      
+          console.log("Datos a enviar al backend:", updatedRecipe); // Verifica los datos
+      
+          await updateRecipeInTable(updatedRecipe as Recipe);
         } catch (error) {
           console.error("Error updating recipe:", error);
           toast.error("Error al actualizar la receta. Por favor, inténtalo de nuevo.");
@@ -192,32 +192,44 @@ export const columns = (
         index?: number
       ) => {
         const updatedIngredients = [...ingredientes];
-
+      
         const isIngredientAlreadyAdded = updatedIngredients.some(
           (ing) => ing.id === ingrediente.id
         );
-
+      
         if (isIngredientAlreadyAdded) {
           toast.error(`"${ingrediente.name}" ya está en la lista.`);
           return;
         }
-
+      
+        // Verifica que el ingrediente exista en la lista de ingredientes disponibles
+        const ingredienteExiste = ingredientsData.some(
+          (ing) => ing.id === ingrediente.id
+        );
+      
+        if (!ingredienteExiste) {
+          toast.error(`"${ingrediente.name}" no existe en la base de datos.`);
+          return;
+        }
+      
         if (index !== undefined) {
+          // Mantener la unidad de medida actual si ya existe
+          const currentUnidad = updatedIngredients[index].unidad;
           updatedIngredients[index] = {
             id: ingrediente.id,
-            nombre_ingrediente: ingrediente.name, // Asegúrate de asignar el nombre correctamente
+            nombre_ingrediente: ingrediente.name,
             cantidad: updatedIngredients[index].cantidad,
-            unidad: ingrediente.unidad || "unidad",
+            unidad: currentUnidad || ingrediente.unidad || "unidad", // Mantener la unidad actual o usar la del ingrediente si no existe
           };
         } else {
           updatedIngredients.push({
             id: ingrediente.id,
-            nombre_ingrediente: ingrediente.name, // Asegúrate de asignar el nombre correctamente
+            nombre_ingrediente: ingrediente.name,
             cantidad: 0,
-            unidad: ingrediente.unidad || "unidad",
+            unidad: ingrediente.unidad || "unidad", // Usar la unidad del ingrediente si no existe
           });
         }
-
+      
         setIngredients(updatedIngredients);
       };
 
@@ -260,7 +272,7 @@ export const columns = (
               </Button>
             }
             submitButtonText="Guardar Cambios"
-            onSubmit={handleEditRecipe as unknown as () => Promise<void>}
+            onSubmit={handleEditRecipe}
           >
             <div className="grid gap-4">
               <div className="grid grid-cols-2 items-center gap-2">
@@ -309,7 +321,7 @@ export const columns = (
                           </TableCell>
                           <TableCell className="text-center">
                             <Combobox
-                              value={ing.nombre_ingrediente || ""} // Usar el nombre del ingrediente directamente
+                              value={ing.nombre_ingrediente}
                               onSelect={(ingrediente) =>
                                 handleAddOrUpdateIngredient(
                                   {
@@ -321,13 +333,7 @@ export const columns = (
                                   index
                                 )
                               }
-                              options={ingredientsData.filter(
-                                (ingOption) =>
-                                  !ingredientes.some(
-                                    (existingIng) =>
-                                      existingIng.id === ingOption.id
-                                  )
-                              )}
+                              options={ingredientsData} // <-- Aquí se usa ingredientsData
                               placeholder="Seleccionar ingrediente"
                             />
                           </TableCell>
@@ -346,7 +352,19 @@ export const columns = (
                             />
                           </TableCell>
                           <TableCell className="text-center">
-                            {ing.unidad}
+                            <ReusableSelect
+                              onValueChange={(value) => {
+                                const updatedIngredients = [...ingredientes];
+                                updatedIngredients[index].unidad = value;
+                                setIngredients(updatedIngredients);
+                              }}
+                              options={unitOptions}
+                              value={ing.unidad || ""}
+                              placeholder="Seleccionar unidad"
+                              label=""
+                              name=""
+                              disabled={false}
+                            />
                           </TableCell>
                           <TableCell>
                             <Button
@@ -392,9 +410,22 @@ export const columns = (
                           />
                         </TableCell>
                         <TableCell className="text-center">
-                          {ingredientsData.find(
-                            (ing) => ing.id === ingredientes[ingredientes.length]?.id
-                          )?.unidad || ""}
+                          <ReusableSelect
+                            onValueChange={(value) => {
+                              const updatedIngredients = [...ingredientes];
+                              if (updatedIngredients[ingredientes.length]) {
+                                updatedIngredients[ingredientes.length].unidad =
+                                  value;
+                                setIngredients(updatedIngredients);
+                              }
+                            }}
+                            options={unitOptions}
+                            value=""
+                            placeholder="Seleccionar unidad"
+                            label=""
+                            name=""
+                            disabled={true}
+                          />
                         </TableCell>
                         <TableCell>
                           <Button variant="ghost" size="icon" disabled>
@@ -411,7 +442,11 @@ export const columns = (
 
           {/* Botón para cambiar el estado de la receta */}
           <Button
-            className={recipe.status === 1 ? "bg-red-500 text-white hover:bg-red-500/90" : "bg-green-500 text-white hover:bg-green-500/90"}
+            className={
+              recipe.status === 1
+                ? "bg-red-500 text-white hover:bg-red-500/90"
+                : "bg-green-500 text-white hover:bg-green-500/90"
+            }
             onClick={handleToggleStatus}
           >
             {recipe.status === 1 ? "Desactivar" : "Activar"}

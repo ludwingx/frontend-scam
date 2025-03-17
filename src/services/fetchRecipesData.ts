@@ -46,14 +46,13 @@ export const fetchRecipeData = async (
 
 // Función para actualizar una receta
 export const updateRecipe = async (recipe: {
-  id?: number;
+  id: number;
   name: string;
   status: number;
-  detalleRecetas: Array<{
+  ingredientes: Array<{
     ingredienteId: number;
     cantidad: number;
     unidad: string;
- 
   }>;
 }) => {
   const token = (await cookies()).get("token")?.value;
@@ -63,10 +62,13 @@ export const updateRecipe = async (recipe: {
   }
 
   try {
-    const url = recipe.id
-      ? `${API_URL}/api/receta/${recipe.id}`
-      : `${API_URL}/api/receta`;
-    const method = recipe.id ? "PUT" : "POST";
+    // Asegúrate de que el id esté definido
+    if (!recipe.id) {
+      throw new Error("El ID de la receta es requerido para actualizar.");
+    }
+
+    const url = `${API_URL}/api/receta/${recipe.id}`; // Usar PUT para actualizar
+    const method = "PUT"; // Siempre usar PUT para actualizar
 
     const response = await fetch(url, {
       method,
@@ -97,57 +99,30 @@ export const toggleRecipeStatus = async (
   newStatus: number
 ): Promise<Recipe> => {
   const token = (await cookies()).get("token")?.value;
-  
 
   if (!token || !API_URL) {
     throw new Error("Faltan el token o la API_URL");
   }
 
   try {
-    // Obtener la receta actual para asegurarnos de que los ingredientes estén presentes
-    const recipeResponse = await fetch(`${API_URL}/api/receta/${recipeId}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!recipeResponse.ok) {
-      throw new Error("No se pudo obtener la receta.");
-    }
-
-    const recipeData: Recipe = await recipeResponse.json();
-
-    // Construir el objeto de solicitud con los ingredientes
-    const requestBody = {
-      id: recipeId,
-      name: recipeData.name,
-      status: newStatus,
-      ingredientes: recipeData.detalleRecetas.map((ing) => ({
-        ingredienteId: ing.id,
-        cantidad: ing.cantidad,
-        unidad: ing.unidad,
-      })),
-    };
-
-    // Enviar la solicitud para cambiar el estado
-    const response = await fetch(`${API_URL}/api/receta/${recipeId}`, {
+    const url = `${API_URL}/api/receta/${recipeId}`; // Usar la URL completa
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({ status: newStatus }), // Envía el nuevo estado en el cuerpo
     });
 
     if (!response.ok) {
-      const errorText = await response.text(); // Obtener el mensaje de error del servidor
-      console.error("Error response from server:", errorText);
-      throw new Error(`Error al cambiar el estado de la receta: ${errorText}`);
+      const errorResponse = await response.json();
+      console.error("Error response from server:", errorResponse);
+      throw new Error("Error al cambiar el estado de la receta.");
     }
 
-    const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as Recipe;
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error("Error toggling recipe status:", error);
     throw error;
