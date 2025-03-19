@@ -21,7 +21,31 @@ const getApiUrl = (): string => {
   if (!API_URL) throw new Error("No se encontró la API_URL en las variables de entorno.");
   return API_URL;
 };
+export const login = async (ci: string, password: string) => {
+  const API_URL = getApiUrl();
 
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ci, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error en la autenticación');
+    }
+
+    const data = await response.json();
+    console.log("Respuesta del backend:", data); // Depuración
+    return data;
+  } catch (error) {
+    console.error("Error en la autenticación:", error);
+    throw error;
+  }
+};
 export const fetchUserData = async (): Promise<User[] | null> => {
   const token = await getAuthToken();
   const API_URL = getApiUrl();
@@ -53,6 +77,54 @@ export const fetchUserData = async (): Promise<User[] | null> => {
     throw error;
   }
 };
+
+export async function fetchProfileData(): Promise<User> {
+  const token = await getAuthToken();
+  const user_id = (await cookies()).get('user_id')?.value;
+  const API_URL = getApiUrl();
+
+  if (!user_id) {
+    throw new Error("No se encontró el user_id en las cookies.");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/user/${user_id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error al obtener el perfil: ${errorText}`);
+    }
+
+    const rawResponse = await response.json();
+    console.log("Raw API Response:", rawResponse);
+
+    const apiResponse: ApiResponse = rawResponse;
+
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error('Respuesta del servidor no válida');
+    }
+
+    // Handle both array and single object responses
+    const userData = Array.isArray(apiResponse.data) ? apiResponse.data[0] : apiResponse.data;
+
+    if (!userData) {
+      throw new Error('No se encontraron datos del perfil');
+    }
+
+    console.log("Perfil obtenido:", userData);
+    return userData;
+  } catch (error) {
+    console.error("Error al obtener el perfil:", error);
+    throw new Error(`Error al obtener el perfil: ${error instanceof Error ? error.message : "Error desconocido"}`);
+  }
+}
+
 
 export async function createUser(user: Omit<User, 'id'>): Promise<User> {
   const token = await getAuthToken();

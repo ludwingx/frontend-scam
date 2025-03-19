@@ -7,7 +7,7 @@ import { User } from "@/types/user";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { fetchRoleData } from "@/services/fetchRoleData";
-import { updateUser, deactivateUser } from "@/services/fetchUserData";
+import { updateUser, deactivateUser } from "@/services/userService";
 
 export const columns: ColumnDef<User>[] = [
   {

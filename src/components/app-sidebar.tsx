@@ -32,10 +32,10 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { fetchProfileData } from "@/services/getDataUserID";
 import { User } from "@/types/user";
 import { NavMain } from "./nav-main";
 import Image from "next/image";
+import { fetchProfileData } from "@/services/userService";
 
 // Datos de ejemplo
 const data = {
@@ -176,14 +176,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const fetchData = async () => {
       try {
         const data = await fetchProfileData();
+        console.log("📌 Datos obtenidos en AppSidebar:", data);
         setUserData(data);
+     
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("❌ Error fetching user data:", error);
       }
     };
-
+  
     fetchData();
-  }, []); // El array vacío [] asegura que esto solo se ejecute una vez, al montar el componente
+  }, []);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -202,7 +204,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
-        {userData && <NavUser />}
+        {userData && <NavUser/>}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

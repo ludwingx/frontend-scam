@@ -9,7 +9,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { DataTable } from "../../../../components/data-table";
-import { fetchUserData } from "@/services/fetchUserData";
+import { fetchUserData } from "@/services/userService";
 import { UsersActions } from "./UsersActions";
 import { columns } from "./columns";
 import { useEffect, useState } from "react";
