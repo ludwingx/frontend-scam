@@ -14,7 +14,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Función para obtener datos de una receta o todas las recetas
 export const fetchRecipeData = async (
   recetaId?: number
-): Promise<Recipe[] | Recipe | null> => {
+): Promise<Recipe | null> => {
   const token = (await cookies()).get("token")?.value;
 
   if (!token || !API_URL) {
@@ -37,19 +37,19 @@ export const fetchRecipeData = async (
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data;
+    return Array.isArray(apiResponse.data) ? apiResponse.data[0] : apiResponse.data; // <-- Asegúrate de devolver un solo objeto
   } catch (error) {
     console.error("Error fetching Recipe data:", error);
     throw error;
   }
 };
 
-// Función para actualizar una receta
 export const updateRecipe = async (recipe: {
-  id: number;
+  id: number; // Este campo no se enviará al backend
   name: string;
   status: number;
   ingredientes: Array<{
+    id: number;
     ingredienteId: number;
     cantidad: number;
     unidad: string;
@@ -62,13 +62,31 @@ export const updateRecipe = async (recipe: {
   }
 
   try {
-    // Asegúrate de que el id esté definido
-    if (!recipe.id) {
-      throw new Error("El ID de la receta es requerido para actualizar.");
+    // Validar datos antes de enviar
+    if (!recipe.name || !recipe.ingredientes) {
+      throw new Error("Datos de la receta incompletos.");
     }
 
-    const url = `${API_URL}/api/receta/${recipe.id}`; // Usar PUT para actualizar
-    const method = "PUT"; // Siempre usar PUT para actualizar
+    // Validar que los ingredientes tengan los campos requeridos
+    for (const ingrediente of recipe.ingredientes) {
+      if (!ingrediente.ingredienteId || !ingrediente.cantidad || !ingrediente.unidad) {
+        throw new Error("Datos de ingredientes incompletos.");
+      }
+    }
+
+    // Construir el objeto que el backend espera
+    const requestBody = {
+      name: recipe.name,
+      status: recipe.status,
+      ingredientes: recipe.ingredientes.map((ing) => ({
+        ingredienteId: ing.ingredienteId,
+        cantidad: ing.cantidad,
+        unidad: ing.unidad,
+      })),
+    };
+
+    const url = `${API_URL}/api/receta/${recipe.id}`; // El ID se usa en la URL, no en el cuerpo
+    const method = "PUT";
 
     const response = await fetch(url, {
       method,
@@ -76,13 +94,15 @@ export const updateRecipe = async (recipe: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(recipe),
+      body: JSON.stringify(requestBody), // Enviar solo los campos que el backend espera
     });
 
     if (!response.ok) {
       const errorResponse = await response.json();
       console.error("Error response from server:", errorResponse);
-      throw new Error("Error al actualizar la receta.");
+      throw new Error(
+        `Error al actualizar la receta: ${errorResponse.message || "Error desconocido"}`
+      );
     }
 
     const data = await response.json();
@@ -105,14 +125,31 @@ export const toggleRecipeStatus = async (
   }
 
   try {
-    const url = `${API_URL}/api/receta/${recipeId}`; // Usar la URL completa
+    // Obtener los datos completos de la receta
+    const recipe = await fetchRecipeData(recipeId);
+    if (!recipe) {
+      throw new Error("Receta no encontrada.");
+    }
+
+    // Construir el cuerpo de la solicitud con los datos completos
+    const requestBody = {
+      name: recipe.name, // Incluir el nombre de la receta
+      status: newStatus, // Nuevo estado
+      ingredientes: recipe.detalleRecetas.map((detalle) => ({
+        ingredienteId: detalle.ingredienteId,
+        cantidad: detalle.cantidad,
+        unidad: detalle.unidad,
+      })), // Incluir los ingredientes
+    };
+
+    const url = `${API_URL}/api/receta/${recipeId}`;
     const response = await fetch(url, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ status: newStatus }), // Envía el nuevo estado en el cuerpo
+      body: JSON.stringify(requestBody), // Enviar los datos completos
     });
 
     if (!response.ok) {

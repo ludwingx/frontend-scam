@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CirclePlus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { createUser } from "@/services/fetchUserData";
+import { createUser } from "@/services/userService";
 import { fetchRoleData } from "@/services/fetchRoleData";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";

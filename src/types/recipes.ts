@@ -4,6 +4,7 @@ export interface Recipe {
   status: number;
   detalleRecetas: Array<{
     id: number;
+    ingredienteId: number;
     nombre_ingrediente: string;
     cantidad: number;
     unidad: string;

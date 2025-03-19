@@ -71,12 +71,17 @@ export default function RecipePage() {
     try {
       const ingredientes = updatedRecipe.ingredientes || [];
   
-      // Asegúrate de incluir el ID de la receta
+      // Asegúrate de incluir el ID de la receta y el ID de cada ingrediente
       const updatedRecipeWithId = {
         id: updatedRecipe.id,
         name: updatedRecipe.name,
         status: updatedRecipe.status,
-        ingredientes: ingredientes,
+        ingredientes: ingredientes.map((ing) => ({
+          id: ing.ingredienteId, // <-- Añadir el campo `id` usando `ingredienteId`
+          ingredienteId: ing.ingredienteId,
+          cantidad: ing.cantidad,
+          unidad: ing.unidad,
+        })),
       };
   
       console.log("Datos a enviar al backend:", updatedRecipeWithId); // Verifica los datos

@@ -6,12 +6,12 @@ interface ReusableDialogProps {
   title: string;
   description: React.ReactNode;
   trigger: React.ReactNode;
-  onSubmit: (e: FormEvent) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void; // Tipo actualizado
   submitButtonText?: string;
   children: React.ReactNode;
-  onOpenChange?: (open: boolean) => void; // Prop para manejar cambios de estado
-  isOpen?: boolean; // Prop para controlar si el diálogo está abierto
-  showSubmitButton?: boolean; // Nueva prop para controlar si se muestra el botón de envío
+  onOpenChange?: (open: boolean) => void;
+  isOpen?: boolean;
+  showSubmitButton?: boolean;
 }
 
 export function ReusableDialog({
@@ -19,13 +19,13 @@ export function ReusableDialog({
   description,
   trigger,
   onSubmit,
-  submitButtonText, // Valor por defecto para submitButtonText
+  submitButtonText = "Guardar Cambios", // Valor por defecto
   children,
   onOpenChange,
   isOpen,
-  showSubmitButton = true, // Valor por defecto para showSubmitButton
+  showSubmitButton = true,
 }: ReusableDialogProps) {
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevenir el envío automático del formulario
     onSubmit(e); // Llamar a la función onSubmit proporcionada
     onOpenChange?.(false); // Cerrar el diálogo después de enviar
@@ -41,7 +41,6 @@ export function ReusableDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           {children}
-          {/* Renderizar el DialogFooter y el botón solo si showSubmitButton es true */}
           {showSubmitButton && (
             <DialogFooter>
               <Button type="submit">{submitButtonText}</Button>
