@@ -35,8 +35,7 @@ import { unitOptions } from "@/constants/unitOptions";
 
 export const columns = (
   updateRecipeInTable: (updatedRecipe: Recipe) => Promise<void>,
-  toggleRecipeStatus: (recipeId: number, newStatus: number) => Promise<void>,
-  ingredientsData: Ingredient[] // <-- Se mantiene porque se usa en el Combobox
+  ingredientsData: Ingredient[]
 ): ColumnDef<Recipe>[] => [
   {
     id: "rowNumber",
@@ -59,8 +58,8 @@ export const columns = (
         <span
           className={`px-2 py-1 rounded text-sm font-semibold ${
             status === 1
-              ? "bg-green-100 text-green-800" // Estilo para "ACTIVO"
-              : "bg-red-100 text-red-800" // Estilo para "INACTIVO"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
           }`}
         >
           {status === 1 ? "ACTIVO" : "INACTIVO"}
@@ -140,34 +139,33 @@ export const columns = (
       const recipe = row.original;
       const [name, setName] = useState(recipe.name);
       const [ingredientes, setIngredients] = useState<
-      Array<{
-        id: number; // Este es el IngredienteID
-        nombre_ingrediente: string;
-        cantidad: number;
-        unidad: string;
-      }>
-    >(
-      recipe.detalleRecetas.map((detalle) => ({
-        id: detalle.ingredienteId, // <-- Usar ingredienteId en lugar de detalle.id
-        nombre_ingrediente: detalle.nombre_ingrediente,
-        cantidad: detalle.cantidad,
-        unidad: detalle.unidad || "Seleccionar Unidad", // <-- Usar "Seleccionar Unidad" como valor por defecto
-      }))
-    );
-
+        Array<{
+          id: number;
+          nombre_ingrediente: string;
+          cantidad: number;
+          unidad: string;
+        }>
+      >(
+        recipe.detalleRecetas?.map((detalle) => ({
+          id: detalle.ingredienteId,
+          nombre_ingrediente: detalle.nombre_ingrediente,
+          cantidad: detalle.cantidad,
+          unidad: detalle.unidad || "Seleccionar Unidad",
+        })) || [] // Si detalleRecetas es undefined, usa un array vacío
+      );
       const handleEditRecipe = async (e: React.FormEvent) => {
-        e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+        e.preventDefault();
+
         if (!name.trim()) {
           toast.error("El nombre de la receta no puede estar vacío.");
           return;
         }
 
         try {
-          // Transformar ingredientes a la estructura que el backend espera
+          // Transformar ingredientes a la estructura esperada por el backend
           const ingredientesTransformados = ingredientes.map((ing) => {
-            // Buscar el ingrediente en la lista de ingredientes cargados
             const ingredienteEnLista = ingredientsData.find(
-              (ingrediente) => ingrediente.id === ing.id // <-- Usar ing.id (IngredienteID)
+              (ingrediente) => ingrediente.id === ing.id
             );
 
             if (!ingredienteEnLista) {
@@ -177,22 +175,21 @@ export const columns = (
             }
 
             return {
-              ingredienteId: ing.id, // <-- Usar ing.id (IngredienteID)
+              ingredienteId: ing.id,
               cantidad: ing.cantidad,
               unidad: ing.unidad,
             };
           });
 
-          // Asegúrate de incluir el ID de la receta
+          // Crear el objeto de receta actualizado
           const updatedRecipe = {
-            id: recipe.id, // <-- Añade el ID aquí
-            name: name, // Usar el nombre actualizado
+            id: recipe.id,
+            name: name,
             status: recipe.status,
-            ingredientes: ingredientesTransformados, // Enviar solo los ingredientes transformados
+            ingredientes: ingredientesTransformados,
           };
 
-          console.log("Datos a enviar al backend:", updatedRecipe); // Verifica los datos
-
+          // Llamar a la función para actualizar la receta
           await updateRecipeInTable(updatedRecipe as Recipe);
         } catch (error) {
           console.error("Error updating recipe:", error);
@@ -210,7 +207,6 @@ export const columns = (
       ) => {
         const updatedIngredients = [...ingredientes];
 
-        // Verificar si el ingrediente ya está en la lista
         const isIngredientAlreadyAdded = updatedIngredients.some(
           (ing) => ing.id === ingrediente.id
         );
@@ -220,7 +216,6 @@ export const columns = (
           return;
         }
 
-        // Verificar que el ingrediente exista en la lista de ingredientes disponibles
         const ingredienteExiste = ingredientsData.some(
           (ing) => ing.id === ingrediente.id
         );
@@ -231,20 +226,19 @@ export const columns = (
         }
 
         if (index !== undefined) {
-          // Mantener la unidad de medida actual si ya existe
           const currentUnidad = updatedIngredients[index].unidad;
           updatedIngredients[index] = {
             id: ingrediente.id,
             nombre_ingrediente: ingrediente.name,
             cantidad: updatedIngredients[index].cantidad,
-            unidad: currentUnidad || "Seleccionar Unidad", // <-- Usar "Seleccionar Unidad" si no hay unidad actual
+            unidad: currentUnidad || "Seleccionar Unidad",
           };
         } else {
           updatedIngredients.push({
             id: ingrediente.id,
             nombre_ingrediente: ingrediente.name,
             cantidad: 0,
-            unidad: "Seleccionar Unidad", // <-- Valor inicial para nuevos ingredientes
+            unidad: "Seleccionar Unidad",
           });
         }
 
@@ -252,43 +246,27 @@ export const columns = (
       };
 
       const handleRemoveIngredient = (id: number) => {
-        const updatedIngredients = ingredientes.filter((ing) => ing.id !== id); // <-- Usar ing.id (IngredienteID)
+        const updatedIngredients = ingredientes.filter((ing) => ing.id !== id);
         setIngredients(updatedIngredients);
       };
 
       const handleToggleStatus = async () => {
-        const newStatus = recipe.status === 1 ? 0 : 1; // Cambiar el estado
-      
-        // Guardar el estado anterior para revertir en caso de error
-        const previousData = [...data];
-      
+        const newStatus = recipe.status === 1 ? 0 : 1;
+
         try {
-          // Actualizar el estado local de manera inmutable
-          setData((prevData) =>
-            prevData.map((r) =>
-              r.id === recipe.id ? { ...r, status: newStatus } : r
-            )
-          );
-      
-          // Llamar a la función para cambiar el estado en el backend
-          const updatedRecipe = await toggleRecipeStatus(recipe.id, newStatus);
-      
-          // Mostrar mensaje de éxito
-          toast.success(
-            `Receta "${recipe.name}" ha sido ${
-              newStatus === 1 ? "activada" : "inactivada"
-            } exitosamente.`
-          );
-      
-          // Actualizar el estado local con los datos devueltos por el backend
-          setData((prevData) =>
-            prevData.map((r) => (r.id === updatedRecipe.id ? updatedRecipe : r))
-          );
+          const updatedRecipe = {
+            id: recipe.id,
+            name: recipe.name,
+            status: newStatus,
+            ingredientes: recipe.detalleRecetas.map((detalle) => ({
+              id: detalle.id,
+              ingredienteId: detalle.ingredienteId,
+              cantidad: detalle.cantidad,
+              unidad: detalle.unidad,
+            })),
+          };
+          await updateRecipeInTable(updatedRecipe as unknown as Recipe);
         } catch (error) {
-          // Revertir el estado local en caso de error
-          setData(previousData);
-      
-          // Mostrar mensaje de error
           console.error("Error toggling recipe status:", error);
           toast.error(
             error instanceof Error
@@ -300,7 +278,6 @@ export const columns = (
 
       return (
         <div className="flex gap-2 justify-center">
-          {/* Edit Recipe Dialog */}
           <ReusableDialogWidth
             title="Editar receta"
             description={"Ingresa los nuevos datos de la receta " + recipe.name}
@@ -371,7 +348,7 @@ export const columns = (
                                   index
                                 )
                               }
-                              options={ingredientsData} // <-- Aquí se usa ingredientsData
+                              options={ingredientsData}
                               placeholder="Seleccionar ingrediente"
                             />
                           </TableCell>
@@ -401,7 +378,7 @@ export const columns = (
                                 ing.unidad === "Seleccionar Unidad"
                                   ? ""
                                   : ing.unidad
-                              } // <-- Mostrar placeholder si el valor es "Seleccionar Unidad"
+                              }
                               placeholder="Seleccionar unidad"
                               label=""
                               name=""
@@ -482,7 +459,6 @@ export const columns = (
             </div>
           </ReusableDialogWidth>
 
-          {/* Botón para cambiar el estado de la receta */}
           <Button
             className={
               recipe.status === 1

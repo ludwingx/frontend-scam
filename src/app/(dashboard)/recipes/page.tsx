@@ -11,11 +11,7 @@ import { RecipeActions } from "./RecipeActions";
 import { DataTable } from "@/components/data-table";
 import { useEffect, useState } from "react";
 import { Recipe } from "@/types/recipes";
-import {
-  fetchRecipeData,
-  updateRecipe,
-  toggleRecipeStatus,
-} from "@/services/fetchRecipesData";
+import { fetchRecipeData, updateRecipe } from "@/services/fetchRecipesData";
 import { toast } from "sonner";
 import { columns } from "./columns";
 import { fetchIngredientsData } from "@/services/fetchIngredientsData";
@@ -69,74 +65,30 @@ export default function RecipePage() {
   // Función para actualizar una receta en la tabla
   const updateRecipeInTable = async (updatedRecipe: Recipe) => {
     try {
-      const ingredientes = updatedRecipe.ingredientes || [];
+      // Llamar a la API para actualizar la receta en el backend
+      const response = await updateRecipe(updatedRecipe);
   
-      // Asegúrate de incluir el ID de la receta y el ID de cada ingrediente
-      const updatedRecipeWithId = {
-        id: updatedRecipe.id,
-        name: updatedRecipe.name,
-        status: updatedRecipe.status,
-        ingredientes: ingredientes.map((ing) => ({
-          id: ing.ingredienteId, // <-- Añadir el campo `id` usando `ingredienteId`
-          ingredienteId: ing.ingredienteId,
-          cantidad: ing.cantidad,
-          unidad: ing.unidad,
-        })),
-      };
+      // Actualizar el estado de la lista de recetas
+      setData((prevRecipes) =>
+        prevRecipes.map((recipe) =>
+          recipe.id === updatedRecipe.id
+            ? { ...recipe, detalleRecetas: updatedRecipe.detalleRecetas } // Asegúrate de actualizar detalleRecetas
+            : recipe
+        )
+      );
   
-      console.log("Datos a enviar al backend:", updatedRecipeWithId); // Verifica los datos
-  
-      const response = await updateRecipe(updatedRecipeWithId);
-  
-      if (response) {
-        toast.success(`Receta "${updatedRecipe.name}" actualizada exitosamente.`);
-        loadRecipe(); // Recargar las recetas después de la actualización
-      }
+      // Mostrar toast de éxito
+      toast.success("Receta de '" + updatedRecipe.name + "' actualizada correctamente.");
+      setTimeout(() => {
+        loadRecipe();
+      })
     } catch (error) {
       console.error("Error updating recipe:", error);
-      if (error instanceof Error) {
-        toast.error(`Error al actualizar la receta: ${error.message}`);
-      } else {
-        toast.error("Error al actualizar la receta. Por favor, inténtalo de nuevo.");
-      }
+      toast.error("Error al actualizar la receta. Por favor, inténtalo de nuevo.");
     }
   };
-
   // Función para cambiar el estado de una receta (activar/inactivar)
-  const toggleRecipeStatusInTable = async (recipeId: number, newStatus: number) => {
-    const previousData = [...data];
-    const recipeToUpdate = data.find((recipe) => recipe.id === recipeId);
-    if (!recipeToUpdate) {
-      toast.error("Receta no encontrada.");
-      return;
-    }
 
-    setData((prevData) =>
-      prevData.map((recipe) =>
-        recipe.id === recipeId ? { ...recipe, status: newStatus } : recipe
-      )
-    );
-
-    try {
-      const response = await toggleRecipeStatus(recipeId, newStatus);
-
-      if (response) {
-        toast.success(
-          `Receta "${recipeToUpdate.name}" ha sido ${
-            newStatus === 1 ? "activada" : "inactivada"
-          } exitosamente.`
-        );
-      }
-    } catch (error) {
-      console.error("Error toggling recipe status:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Error al cambiar el estado de la receta. Por favor, inténtalo de nuevo."
-      );
-      setData(previousData);
-    }
-  };
 
   // Filtrar recetas según el estado
   const filteredData = data.filter((recipe) =>
@@ -197,7 +149,7 @@ export default function RecipePage() {
           <p className="text-red-500">{errorMessage}</p>
         ) : (
           <DataTable
-            columns={columns(updateRecipeInTable, toggleRecipeStatusInTable, ingredientsData)}
+            columns={columns(updateRecipeInTable, ingredientsData)}
             data={filteredData}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Pencil, Trash2} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { ReusableDialog } from "@/components/ReusableDialog";
 import { Label } from "@/components/ui/label";
@@ -26,12 +26,12 @@ export function ProductCard({
 }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editData, setEditData] = useState({
-    name: product.name,
-    business: product.business_name,
-    price: product.price,
-    category: product.categoryId,
-    img: product.img,
-    recipe: product.recipe,
+    name: product.name || "", // Valor predeterminado: cadena vacía
+    business: product.business_name || "", // Valor predeterminado: cadena vacía
+    price: product.price || 0, // Valor predeterminado: 0
+    category: product.categoryId || 0, // Valor predeterminado: 0
+    image_url: product.image_url || "", // Valor predeterminado: cadena vacía
+    recipe: product.recipe || {}, // Valor predeterminado: objeto vacío
   });
 
   const handleEditProduct = async () => {
@@ -55,7 +55,7 @@ export function ProductCard({
       <CardHeader className="flex items-center justify-center h-[140px]">
         <div className="w-[110px] h-[110px] relative">
           <Image
-            src={product.img || "/cuñape.png"}
+            src={product.image_url || "/cuñape.png"}
             alt={product.name}
             fill
             className="rounded-lg object-cover"
@@ -165,14 +165,13 @@ export function ProductCard({
                 </Label>
                 <Input
                   id="category"
-                  type="number" // Asegúrate de que el tipo sea number
+                  type="number"
                   value={editData.category}
-                  onChange={
-                    (e) =>
-                      setEditData({
-                        ...editData,
-                        category: Number(e.target.value),
-                      }) // Convierte a número
+                  onChange={(e) =>
+                    setEditData({
+                      ...editData,
+                      category: Number(e.target.value),
+                    })
                   }
                   placeholder="Categoría"
                   className="col-span-3"
@@ -181,14 +180,14 @@ export function ProductCard({
 
               {/* Imagen */}
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="img" className="text-right">
+                <Label htmlFor="image_url" className="text-right">
                   Imagen
                 </Label>
                 <Input
-                  id="img"
-                  value={editData.img}
+                  id="image_url"
+                  value={editData.image_url}
                   onChange={(e) =>
-                    setEditData({ ...editData, img: e.target.value })
+                    setEditData({ ...editData, image_url: e.target.value })
                   }
                   placeholder="URL de la imagen"
                   className="col-span-3"
@@ -222,7 +221,7 @@ export function ProductCard({
                   <Image
                     width={180}
                     height={180}
-                    src={product.img || "/cuñape.png"}
+                    src={product.image_url || "/cuñape.png"}
                     alt={product.name}
                     className="rounded-lg object-cover"
                   />

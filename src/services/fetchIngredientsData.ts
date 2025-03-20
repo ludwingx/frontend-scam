@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 import { cookies } from "next/headers";
 import { Ingredient } from "@/types/ingredients";
@@ -9,8 +9,10 @@ type ApiResponse = {
   message: string;
 };
 
-export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> => {
-  const token = (await cookies()).get('token')?.value;
+export const fetchIngredientsData = async (): Promise<
+  Ingredient[] | undefined
+> => {
+  const token = (await cookies()).get("token")?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   if (!token || !API_URL) {
@@ -38,60 +40,73 @@ export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> 
   }
 };
 
-
-export const updateIngredients = async (ingrediente: Ingredient): Promise<Ingredient | null> => {
-  const token = (await cookies()).get('token')?.value;
+export const updateRecipe = async (recipe: {
+   id: number; // Este campo no se enviará al backend
+  name: string;
+  status: number;
+  ingredientes: Array<{
+    ingredienteId: number;
+    cantidad: number;
+    unidad: string;
+  }>;
+}) => {
+  const token = (await cookies()).get("token")?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
   if (!token || !API_URL) {
     throw new Error("Faltan el token o la API_URL");
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/ingrediente/${ingrediente.id}`, {
-      method: "PUT",
+    // Validar datos antes de enviar
+    if (!recipe.name || !recipe.ingredientes) {
+      throw new Error("Datos de la receta incompletos.");
+    }
+
+    // Validar que los ingredientes tengan los campos requeridos
+    for (const ingrediente of recipe.ingredientes) {
+      if (
+        !ingrediente.ingredienteId ||
+        !ingrediente.cantidad ||
+        !ingrediente.unidad
+      ) {
+        throw new Error("Datos de ingredientes incompletos.");
+      }
+    }
+
+    // Construir el objeto que el backend espera
+    const requestBody = {
+      name: recipe.name,
+      status: recipe.status,
+      ingredientes: recipe.ingredientes.map((ing) => ({
+        ingredienteId: ing.ingredienteId,
+        cantidad: ing.cantidad,
+        unidad: ing.unidad,
+      })),
+    };
+    const url = `${API_URL}/api/receta/${recipe.id}`; // El ID se usa en la URL, no en el cuerpo
+    const method = "PUT";
+    const response = await fetch(url, {
+      method,
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(ingrediente),
+      body: JSON.stringify(requestBody), // Enviar solo los campos que el backend espera
     });
 
     if (!response.ok) {
-      throw new Error("Error al actualizar el negocio");
+      const errorResponse = await response.json();
+      console.error("Error response from server:", errorResponse);
+      throw new Error(
+        `Error al actualizar la receta: ${
+          errorResponse.message || "Error desconocido"
+        }`
+      );
     }
-
-    const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as Ingredient;
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error("Error updating business:", error);
-    throw error;
-  }
-};
-
-export const deleteIngredients = async (ingredientsId: number): Promise<boolean> => {
-  const token = (await cookies()).get('token')?.value;
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/api/ingrediente/${ingredientsId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Error al eliminar el negocio");
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error deleting ingrediente:", error);
-    throw error;
+    console.error("Error updating recipe:", error);
+    throw new Error("Error al actualizar la receta");
   }
 };

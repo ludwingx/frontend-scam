@@ -14,11 +14,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Product } from "@/types/products";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Page() {
   const [productsWithRecipes, setProductsWithRecipes] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showActiveProducts, setShowActiveProducts] = useState(true); // Estado para controlar qué productos se muestran
 
   useEffect(() => {
     const loadData = async () => {
@@ -53,9 +55,10 @@ export default function Page() {
     loadData();
   }, []);
 
-  if (loading) {
-    return <div>Cargando productos...</div>;
-  }
+  // Filtrar productos según el estado
+  const filteredProducts = productsWithRecipes.filter((product) =>
+    showActiveProducts ? product.status === 1 : product.status === 0
+  );
 
   if (error) {
     return <div>{error}</div>;
@@ -78,6 +81,12 @@ export default function Page() {
             <BreadcrumbSeparator className="text-gray-400" />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-gray-900">
+                Gestión de Items
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-sm font-medium text-gray-900">
                 Productos
               </BreadcrumbPage>
             </BreadcrumbItem>
@@ -91,14 +100,38 @@ export default function Page() {
 
       {/* Descripción y botón de crear producto */}
       <div className="flex flex-col md:flex-row justify-end items-end md:items-center gap-4 mb-6">
-        <ProductsActions />
+        <ProductsActions
+          onToggleActiveProducts={(showActive) => setShowActiveProducts(showActive)} // Pasar la función para alternar entre productos activos e inactivos
+          onRefresh={() => {
+            // Función para actualizar los productos
+            setLoading(true);
+            setError(null);
+            fetchProductData().then((products) => {
+              if (products) {
+                setProductsWithRecipes(products);
+                setLoading(false);
+              } else {
+                setError("No se pudieron cargar los productos.");
+              }
+            });
+
+          }}
+        />
       </div>
 
       {/* Contenedor de las tarjetas */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-        {productsWithRecipes.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {loading ? (
+          // Muestra skeletons mientras se cargan los datos
+          Array.from({ length: 10 }).map((_, index) => (
+            <Skeleton key={index} className="h-[200px] w-full rounded-lg" />
+          ))
+        ) : (
+          // Muestra las tarjetas de productos cuando los datos están cargados
+          filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))
+        )}
       </div>
     </div>
   );
