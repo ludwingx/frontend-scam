@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 
 type ApiResponse = {
   success: boolean;
-  data: Recipe | Recipe[] | null;
+  data: Recipe[] | Recipe | null;
   message: string;
 };
 
@@ -14,7 +14,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Función para obtener datos de una receta o todas las recetas
 export const fetchRecipeData = async (
   recetaId?: number
-): Promise<Recipe | null> => {
+): Promise<Recipe[] | Recipe | null> => {
   const token = (await cookies()).get("token")?.value;
 
   if (!token || !API_URL) {
@@ -37,10 +37,15 @@ export const fetchRecipeData = async (
     }
 
     const apiResponse: ApiResponse = await response.json();
-    return Array.isArray(apiResponse.data) ? apiResponse.data[0] : apiResponse.data; // <-- Asegúrate de devolver un solo objeto
+
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(apiResponse.message || "Error al obtener los datos de las recetas");
+    }
+
+    return apiResponse.data; // Retorna el array o el objeto directamente
   } catch (error) {
     console.error("Error fetching Recipe data:", error);
-    throw error;
+    throw new Error("Error al obtener los datos de las recetas");
   }
 };
 
@@ -109,59 +114,7 @@ export const updateRecipe = async (recipe: {
     return data;
   } catch (error) {
     console.error("Error updating recipe:", error);
-    throw error;
+    throw new Error("Error al actualizar la receta");
   }
 };
 
-// Función para activar o inactivar una receta
-export const toggleRecipeStatus = async (
-  recipeId: number,
-  newStatus: number
-): Promise<Recipe> => {
-  const token = (await cookies()).get("token")?.value;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
-  try {
-    // Obtener los datos completos de la receta
-    const recipe = await fetchRecipeData(recipeId);
-    if (!recipe) {
-      throw new Error("Receta no encontrada.");
-    }
-
-    // Construir el cuerpo de la solicitud con los datos completos
-    const requestBody = {
-      name: recipe.name, // Incluir el nombre de la receta
-      status: newStatus, // Nuevo estado
-      ingredientes: recipe.detalleRecetas.map((detalle) => ({
-        ingredienteId: detalle.ingredienteId,
-        cantidad: detalle.cantidad,
-        unidad: detalle.unidad,
-      })), // Incluir los ingredientes
-    };
-
-    const url = `${API_URL}/api/receta/${recipeId}`;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody), // Enviar los datos completos
-    });
-
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      console.error("Error response from server:", errorResponse);
-      throw new Error("Error al cambiar el estado de la receta.");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Error toggling recipe status:", error);
-    throw error;
-  }
-};

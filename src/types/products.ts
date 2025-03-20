@@ -10,5 +10,5 @@ export type Product = {
     recetaId: number;
     receta_name: string;
     status: number;
-    img?: string;
+    image_url: string;
   };

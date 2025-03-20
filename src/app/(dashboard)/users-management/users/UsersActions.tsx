@@ -23,7 +23,7 @@ export function UsersActions({
   setShowActiveUsers,
 }: UsersActionsProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [roles, setRoles] = useState<{ id: number; name: string }[]>([]);
+  const [roles, setRoles] = useState<{ id: number; name: string; status: number }[]>([]); // Asegúrate de que el tipo incluya `status`
   const [fullName, setFullName] = useState("");
   const [ci, setCi] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +35,9 @@ export function UsersActions({
       try {
         const rolesData = await fetchRoleData();
         if (rolesData) {
-          setRoles(rolesData);
+          // Filtrar roles con status = 1
+          const activeRoles = rolesData.filter((role) => role.status === 1);
+          setRoles(activeRoles);
         }
       } catch (error) {
         console.error("Error fetching roles:", error);
@@ -85,6 +87,7 @@ export function UsersActions({
     }
 
     const role = roles.find((r) => r.id === roleId);
+
     if (!role) {
       toast.error("Rol no válido.");
       return;

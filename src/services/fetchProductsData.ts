@@ -38,7 +38,38 @@ export const fetchProductData = async (): Promise<Product[]> => {
     throw error;
   }
 };
+export const createProduct = async (product: Omit<Product, 'id'>): Promise<Product | null> => {
+  const token = (await cookies()).get('token')?.value;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+  if (!token || !API_URL) {
+    throw new Error("Faltan el token o la API_URL");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/products`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(product),
+    });
+
+    if (!response.ok) {
+      // Obtener más detalles sobre el error
+      const errorResponse = await response.json();
+      console.error("Error response from server:", errorResponse);
+      throw new Error(errorResponse.message || "Error al crear el producto");
+    }
+
+    const apiResponse: ApiResponse = await response.json();
+    return apiResponse.data as Product;
+  } catch (error) {
+    console.error("Error creating product:", error);
+    throw error;
+  }
+};
 export const updateProduct = async (Product: Product): Promise<Product | null> => {
   const token = (await cookies()).get('token')?.value;
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -69,29 +100,3 @@ export const updateProduct = async (Product: Product): Promise<Product | null> =
   }
 };
 
-export const deleteProduct = async (ProductId: number): Promise<boolean> => {
-  const token = (await cookies()).get('token')?.value;
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
-  try {
-    const response = await fetch(`${API_URL}/api/product/${ProductId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Error al eliminar el negocio");
-    }
-
-    return true;
-  } catch (error) {
-    console.error("Error deleting Product:", error);
-    throw error;
-  }
-};
