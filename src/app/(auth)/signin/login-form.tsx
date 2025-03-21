@@ -33,6 +33,7 @@ const LoginForm = () => {
         try {
             const response = await login(ci, password);
             console.log("✅ Respuesta del backend:", response); // Verificar estructura
+            console.log("")
         
             // Acceder correctamente al token dentro de `data`
             const token = response?.data?.token;
@@ -91,7 +92,7 @@ const LoginForm = () => {
                             {isLoading ? 'Cargando...' : 'Iniciar sesión'}
                         </Button>
                     </form>
-                    <div className="hidden h-full w-full items-center justify-center bg-primary md:flex">
+                    <div className="hidden h-full w-full items-center justify-center md:flex">
                         <Image src={logoSCA} alt="Logo" width={250} height={250} />
                     </div>
                 </CardContent>
