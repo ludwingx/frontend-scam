@@ -1,270 +1,486 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  CheckCircle2,
+  Clock,
+  Plus,
+  RotateCw,
+  XCircle,
+  ArrowRightCircle,
+  Package,
+  ChevronDown
+} from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Tipos de datos
-interface Ingredient {
-  id: number;
-  name: string;
-  quantity: number; // Cantidad en stock
+type Ingredient = {
+  id: number
+  name: string
+  stock: number
+  unit: string
 }
 
-interface RecipeItem {
-  ingredient: Ingredient;
-  quantityPerUnit: number; // Cantidad necesaria por unidad de producto
+type RecipeItem = {
+  ingredient: Ingredient
+  quantity: number
 }
 
-interface Recipe {
-  productId: number;
-  items: RecipeItem[];
+type Recipe = {
+  id: number
+  name: string
+  items: RecipeItem[]
 }
 
-interface Production {
-  id: number;
-  name: string;
-  quantity: number; // Cantidad de productos a producir
-  status: "pending" | "in_progress" | "completed";
-  createdAt: string;
-  dueDate: string;
-  brand: string;
-  recipe: Recipe; // Receta asociada
+type Production = {
+  id: number
+  name: string
+  recipe: Recipe
+  quantity: number
+  status: "pending" | "in_progress" | "completed" | "canceled"
+  createdAt: string
+  dueDate: string
 }
 
+// Datos ficticios
+const mockIngredients: Ingredient[] = [
+  { id: 1, name: "Harina", stock: 100, unit: "kg" },
+  { id: 2, name: "Azúcar", stock: 50, unit: "kg" },
+  { id: 3, name: "Huevos", stock: 200, unit: "unidades" },
+]
+
+const mockRecipes: Recipe[] = [
+  {
+    id: 1,
+    name: "Receta de Cuñapes",
+    items: [
+      { ingredient: mockIngredients[0], quantity: 0.5 },
+      { ingredient: mockIngredients[1], quantity: 0.2 },
+      { ingredient: mockIngredients[2], quantity: 2 },
+    ],
+  },
+]
+
+const mockProductions: Production[] = [
+  {
+    id: 1,
+    name: "Cuñapes",
+    recipe: mockRecipes[0],
+    quantity: 100,
+    status: "pending",
+    createdAt: "2023-10-01",
+    dueDate: "2023-10-10",
+  },
+  {
+    id: 2,
+    name: "Pan de Trigo",
+    recipe: mockRecipes[0],
+    quantity: 50,
+    status: "in_progress",
+    createdAt: "2023-10-05",
+    dueDate: "2023-10-15",
+  },
+]
+
+// Componente de estado mejorado
+const StatusSelector = ({
+  status,
+  onStatusChange,
+}: {
+  status: string
+  onStatusChange: (status: Production["status"]) => void
+}) => {
+  const [open, setOpen] = useState(false)
+
+  const statuses = [
+    {
+      value: "pending",
+      label: "Pendiente",
+      icon: Clock,
+      color: "text-yellow-500",
+    },
+    {
+      value: "in_progress",
+      label: "En Proceso",
+      icon: RotateCw,
+      color: "text-blue-500",
+    },
+    {
+      value: "completed",
+      label: "Completado",
+      icon: CheckCircle2,
+      color: "text-green-500",
+    },
+    {
+      value: "canceled",
+      label: "Cancelado",
+      icon: XCircle,
+      color: "text-red-500",
+    },
+  ]
+
+  const selectedStatus = statuses.find((s) => s.value === status) || statuses[0]
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="sm" className="flex items-center gap-2">
+          <selectedStatus.icon className={`h-4 w-4 ${selectedStatus.color}`} />
+          <span>{selectedStatus.label}</span>
+          <ChevronDown className="h-4 w-4 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0 w-[200px]">
+        <Command>
+          <CommandInput placeholder="Cambiar estado..." />
+          <CommandList>
+            <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+            <CommandGroup>
+              {statuses.map((status) => (
+                <CommandItem
+                  key={status.value}
+                  value={status.value}
+                  onSelect={() => {
+                    onStatusChange(status.value as Production["status"])
+                    setOpen(false)
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <status.icon className={`h-4 w-4 ${status.color}`} />
+                  <span>{status.label}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+// Componente principal
 export default function ProductionPage() {
-  const [data, setData] = useState<Production[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [missingIngredients, setMissingIngredients] = useState<Ingredient[]>([]);
-  const router = useRouter();
+  const [productions, setProductions] = useState<Production[]>(mockProductions)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false)
+  const [missingIngredients, setMissingIngredients] = useState<{
+    ingredient: Ingredient
+    required: number
+    missing: number
+  }[]>([])
+  const [newProductionData, setNewProductionData] = useState<{
+    name: string
+    quantity: number
+    recipe: Recipe
+  } | null>(null)
+  const router = useRouter()
 
-  // Datos ficticios
-  const mockIngredients: Ingredient[] = [
-    { id: 1, name: "Harina", quantity: 100 },
-    { id: 2, name: "Azúcar", quantity: 50 },
-    { id: 3, name: "Huevos", quantity: 20 },
-  ];
-
-  const mockRecipes: Recipe[] = [
-    {
-      productId: 1,
-      items: [
-        { ingredient: mockIngredients[0], quantityPerUnit: 0.5 }, // 0.5 kg de harina por unidad
-        { ingredient: mockIngredients[1], quantityPerUnit: 0.2 }, // 0.2 kg de azúcar por unidad
-        { ingredient: mockIngredients[2], quantityPerUnit: 2 }, // 2 huevos por unidad
-      ],
-    },
-  ];
-
-  const mockProductions: Production[] = [
-    {
-      id: 1,
-      name: "Cuñapes",
-      quantity: 100,
-      status: "pending",
-      createdAt: "2023-10-01",
-      dueDate: "2023-10-10",
-      brand: "Marca A",
-      recipe: mockRecipes[0],
-    },
-  ];
-
-  // Simular carga de datos
-  useEffect(() => {
-    setTimeout(() => {
-      setData(mockProductions);
-    }, 1000); // Simula un retraso de 1 segundo
-  }, []);
-
-  // Función para crear una nueva producción
-  const createProduction = (name: string, quantity: number, recipe: Recipe) => {
-    // Calcular los ingredientes necesarios
-    const requiredIngredients = recipe.items.map((item) => ({
+  const checkIngredients = (name: string, quantity: number, recipe: Recipe) => {
+    // Calcular ingredientes necesarios y verificar stock
+    const requiredIngredients = recipe.items.map(item => ({
       ingredient: item.ingredient,
-      requiredQuantity: item.quantityPerUnit * quantity,
-    }));
+      required: item.quantity * quantity,
+      missing: Math.max(0, (item.quantity * quantity) - item.ingredient.stock)
+    }))
 
-    // Verificar el stock
-    const missing = requiredIngredients.filter(
-      (item) => item.ingredient.quantity < item.requiredQuantity
-    );
+    const missing = requiredIngredients.filter(item => item.missing > 0)
 
     if (missing.length > 0) {
-      // Mostrar los ingredientes faltantes
-      setMissingIngredients(missing.map((item) => item.ingredient));
-      // Cambiar el estado a "pendiente"
+      setMissingIngredients(missing)
+      setNewProductionData({ name, quantity, recipe })
+      setIsConfirmationModalOpen(true)
+      return false
+    }
+    return true
+  }
+
+  const confirmCreateProduction = () => {
+    if (!newProductionData) return
+    
+    const newProduction: Production = {
+      id: Date.now(),
+      name: newProductionData.name,
+      recipe: newProductionData.recipe,
+      quantity: newProductionData.quantity,
+      status: "pending",
+      createdAt: new Date().toISOString(),
+      dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    }
+    
+    setProductions(prev => [...prev, newProduction])
+    toast.warning("Producción creada como pendiente por falta de ingredientes")
+    setIsConfirmationModalOpen(false)
+    setIsCreateModalOpen(false)
+    setNewProductionData(null)
+  }
+
+  const handleCreateProduction = (name: string, quantity: number, recipe: Recipe) => {
+    if (checkIngredients(name, quantity, recipe)) {
+      // Si no faltan ingredientes, crear producción directamente
       const newProduction: Production = {
         id: Date.now(),
         name,
-        quantity,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-        dueDate: new Date().toISOString(),
-        brand: "Marca A",
         recipe,
-      };
-      setData((prevData) => [...prevData, newProduction]);
-      toast.warning("Falta stock para completar la producción.");
-    } else {
-      // Si hay suficiente stock, crear la producción
-      const newProduction: Production = {
-        id: Date.now(),
-        name,
         quantity,
         status: "in_progress",
         createdAt: new Date().toISOString(),
-        dueDate: new Date().toISOString(),
-        brand: "Marca A",
-        recipe,
-      };
-      setData((prevData) => [...prevData, newProduction]);
-      toast.success(`Producción "${name}" creada exitosamente.`);
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      }
+      
+      setProductions(prev => [...prev, newProduction])
+      toast.success("Producción creada exitosamente")
+      setIsCreateModalOpen(false)
     }
-  };
+  }
 
-  // Redirigir a la página de compras con los ingredientes faltantes
-  const redirectToPurchases = () => {
-    const missingIds = missingIngredients.map((ing) => ing.id);
-    router.push(`/purchases?missing=${missingIds.join(",")}`);
-  };
+  const handleStatusChange = (id: number, newStatus: Production["status"]) => {
+    setProductions(prev =>
+      prev.map(prod =>
+        prod.id === id ? { ...prod, status: newStatus } : prod
+      )
+    )
+    toast.success("Estado actualizado")
+  }
+
+  const handlePurchaseRedirect = () => {
+    const missingIds = missingIngredients.map(ing => ing.ingredient.id)
+    router.push(`/purchases?missing=${missingIds.join(",")}`)
+    setIsConfirmationModalOpen(false)
+    setIsCreateModalOpen(false)
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+      {/* Breadcrumb */}
       <div className="flex flex-col gap-4 mb-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href="/dashboard"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Panel de Control
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+                Producción
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        {/* Título y descripción */}
         <h2 className="text-3xl font-semibold text-gray-900">Producción</h2>
         <small className="text-sm font-medium text-gray-600">
           Aquí podrás gestionar las producciones.
         </small>
       </div>
 
-      {/* Botón flotante para crear una nueva producción */}
-      <Button
-        className="fixed bottom-8 right-8 bg-blue-600 text-white hover:bg-blue-600/90 rounded-full p-4 shadow-lg"
-        onClick={() => setIsModalOpen(true)}
-      >
-        <span className="text-xl">+</span>
-      </Button>
-
-      {/* Modal para crear una nueva producción */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <CreateProductionForm
-            onCreate={createProduction}
-            onClose={() => setIsModalOpen(false)}
-          />
-        </div>
-      )}
-
-      {/* Modal para mostrar los ingredientes faltantes */}
-      {missingIngredients.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow p-6 w-full max-w-md">
-            <h3 className="text-xl font-semibold mb-4">Ingredientes Faltantes</h3>
-            <ul className="mb-4">
-              {missingIngredients.map((ingredient) => (
-                <li key={ingredient.id} className="text-sm text-gray-600">
-                  {ingredient.name} (Faltan: {ingredient.quantity})
-                </li>
-              ))}
-            </ul>
-            <Button
-              className="bg-blue-600 text-white hover:bg-blue-600/90"
-              onClick={redirectToPurchases}
-            >
-              Comprar Ingredientes
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Lista de producciones */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data.map((production) => (
-          <ProductionCard key={production.id} production={production} />
-        ))}
+      {/* Botón de acción */}
+      <div className="flex justify-end mb-6">
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Nueva Producción
+        </Button>
       </div>
-    </div>
-  );
-}
 
-// Componente de tarjeta para cada producción
-function ProductionCard({ production }: { production: Production }) {
-  return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h3 className="text-xl font-semibold">{production.name}</h3>
-      <p className="text-sm text-gray-600">Cantidad: {production.quantity}</p>
-      <p className="text-sm text-gray-600">Estado: {production.status}</p>
-      <p className="text-sm text-gray-600">Marca: {production.brand}</p>
-      <p className="text-sm text-gray-600">
-        Fecha Límite: {new Date(production.dueDate).toLocaleDateString()}
-      </p>
-    </div>
-  );
-}
+      {/* Tabla de producciones */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Producciones Activas</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">ID</TableHead>
+                <TableHead>Producto</TableHead>
+                <TableHead>Cantidad</TableHead>
+                <TableHead>Receta</TableHead>
+                <TableHead>Fecha Límite</TableHead>
+                <TableHead className="text-right">Estado</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {productions.map((production) => (
+                <TableRow key={production.id}>
+                  <TableCell className="font-medium">#{production.id}</TableCell>
+                  <TableCell>{production.name}</TableCell>
+                  <TableCell>{production.quantity} unidades</TableCell>
+                  <TableCell>{production.recipe.name}</TableCell>
+                  <TableCell>
+                    {new Date(production.dueDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <StatusSelector
+                      status={production.status}
+                      onStatusChange={(status) =>
+                        handleStatusChange(production.id, status)
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-// Componente para crear una nueva producción
-function CreateProductionForm({
-  onCreate,
-  onClose,
-}: {
-  onCreate: (name: string, quantity: number, recipe: Recipe) => void;
-  onClose: () => void;
-}) {
-  const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState(0);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!name.trim()) {
-      toast.error("El nombre de la producción no puede estar vacío.");
-      return;
-    }
-
-    if (quantity <= 0) {
-      toast.error("La cantidad debe ser un número positivo.");
-      return;
-    }
-
-    // Usar la primera receta ficticia (puedes agregar un selector de recetas)
-    const recipe =   
-    onCreate(name, quantity, recipe);
-    onClose();
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6 w-full max-w-md">
-      <h3 className="text-xl font-semibold mb-4">Crear Nueva Producción</h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="name">Nombre</Label>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+      {/* Modal para crear nueva producción */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Crear Nueva Producción</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const form = e.target as HTMLFormElement
+                  const name = form.elements.namedItem("name") as HTMLInputElement
+                  const quantity = form.elements.namedItem("quantity") as HTMLInputElement
+                  
+                  handleCreateProduction(
+                    name.value,
+                    Number(quantity.value),
+                    mockRecipes[0] // Usar la primera receta por defecto
+                  )
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <Label htmlFor="name">Nombre del Producto</Label>
+                  <Input id="name" required placeholder="Ej: Cuñapes especiales" />
+                </div>
+                <div>
+                  <Label htmlFor="quantity">Cantidad a Producir</Label>
+                  <Input 
+                    id="quantity" 
+                    type="number" 
+                    min="1" 
+                    required 
+                    placeholder="Ej: 100" 
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateModalOpen(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crear Producción
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
         </div>
-        <div>
-          <Label htmlFor="quantity">Cantidad</Label>
-          <Input
-            id="quantity"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-          />
+      )}
+
+      {/* Modal de confirmación para ingredientes faltantes */}
+      {isConfirmationModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                Ingredientes Faltantes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  No hay suficiente stock para completar la producción. ¿Deseas crear la producción como pendiente?
+                </p>
+                
+                <div className="border rounded-lg divide-y">
+                  {missingIngredients.map((item) => (
+                    <div key={item.ingredient.id} className="flex justify-between items-center p-3">
+                      <div>
+                        <p className="font-medium">{item.ingredient.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Stock actual: {item.ingredient.stock} {item.ingredient.unit}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Necesario: {item.required.toFixed(2)} {item.ingredient.unit}
+                        </p>
+                      </div>
+                      <div className="text-red-500 text-sm font-medium">
+                        Faltan: {item.missing.toFixed(2)} {item.ingredient.unit}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsConfirmationModalOpen(false)
+                      setIsCreateModalOpen(false)
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={handlePurchaseRedirect}
+                  >
+                    <ArrowRightCircle className="mr-2 h-4 w-4" />
+                    Comprar Ingredientes
+                  </Button>
+                  <Button onClick={confirmCreateProduction}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Crear como Pendiente
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
-        <div className="flex gap-2">
-          <Button type="submit" className="bg-blue-600 text-white hover:bg-blue-600/90">
-            Crear
-          </Button>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-        </div>
-      </form>
+      )}
     </div>
-  );
+  )
 }
