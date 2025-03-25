@@ -45,7 +45,7 @@ export function ReusableDialogWidth({
       <DialogTrigger asChild onClick={() => setInternalIsOpen(true)}>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] sm:max-h-auto bg-white">
+      <DialogContent className="sm:max-w-[1000px] sm:max-h-[90vh] overflow-y-auto bg-white">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
