@@ -71,6 +71,8 @@ body {
   background-color: #f9fafb; /* Fondo gris claro para los encabezados */
   font-weight: 600; /* Texto en negrita para los encabezados */
 }
+
+
 @layer base {
   :root {
     --background: 0 0% 100%;
