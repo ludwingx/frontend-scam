@@ -6,14 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -524,7 +516,6 @@ export default function ProductionPage() {
         ))}
       </div>
 
-      {/* New Production Button */}
       <Button 
         className="fixed bottom-8 right-8 rounded-full p-4 shadow-lg"
         size="lg"
@@ -532,182 +523,284 @@ export default function ProductionPage() {
       >
         <span className="text-xl">+</span>
       </Button>
-    
 
-      <Dialog open={isModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsModalOpen(false);
-          setSelectedProducts([]);
-          setMissingIngredients([]);
-          setDueDate("");
-        }
-      }}>
+<Dialog open={isModalOpen} onOpenChange={(open) => {
+  if (!open) {
+    setIsModalOpen(false);
+    setSelectedProducts([]);
+    setMissingIngredients([]);
+    setDueDate("");
+  }
+}}>
+  <DialogContent className="w-[98vw] max-w-6xl h-[90vh] max-h-[90vh] flex flex-col p-0">
+    <DialogHeader className="px-6 pt-4">
+      <DialogTitle className="text-xl">Crear Nueva Producción</DialogTitle>
+      <DialogDescription>
+        Seleccione los productos a producir
+      </DialogDescription>
+    </DialogHeader>
 
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto"> {/* Reducido a max-w-2xl */}
-          <DialogHeader>
-            <DialogTitle>Crear Nueva Producción</DialogTitle>
-            <DialogDescription>
-              Seleccione los productos a producir
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4"> {/* Reducido espacio vertical */}
-            {/* Search Section */}
-            <div className="space-y-2"> {/* Menor espacio */}
-              <Label className="text-sm">Buscar productos</Label> {/* Texto más pequeño */}
-              <Input
-                placeholder="Nombre o marca..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
-
-              <div className="relative px-6"> {/* Padding reducido */}
-                <Carousel
-                  opts={{
-                    align: "start",
-                    slidesToScroll: 3,
-                  }}
-                  className="w-full"
-                >
-                  <CarouselContent className="-ml-1">
-                    {filteredProducts.map((product) => (
-                      <CarouselItem key={product.id} className="pl-1 basis-1/4 min-w-[140px]"> {/* Cambiado a 1/4 y min-w más pequeño */}
-                        <div className="p-1 h-full">
-                          <ProductCard
-                            product={product}
-                            onSelect={selectProduct}
-                            isSelected={selectedProducts.some(
-                              (p) => p.id === product.id
-                            )}
-                          />
-                        </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  <CarouselPrevious className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8" /> {/* Flechas más pequeñas */}
-                  <CarouselNext className="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8" /> {/* Flechas más pequeñas */}
-                </Carousel>
-              </div>
+    <div className="flex flex-1 overflow-hidden gap-0 h-full">
+      {/* Columna izquierda - Búsqueda y productos */}
+      <div className="w-1/3 flex flex-col border-r overflow-hidden">
+        <div className="p-4 space-y-2 bg-gray-50">
+          <Label className="text-sm font-medium">Buscar productos</Label>
+          <Input
+            placeholder="Nombre o marca..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {filteredProducts.length === 0 ? (
+            <div className="text-center p-4 text-gray-500 h-full flex items-center justify-center">
+              No se encontraron productos
             </div>
-
-            {/* Production Section */}
+          ) : (
             <div className="space-y-3">
-              <div>
-                <Label>Fecha límite</Label>
-                <Input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>
-                  Productos seleccionados ({selectedProducts.length})
-                </Label>
-                {selectedProducts.length === 0 ? (
-                  <div className="text-center p-3 bg-gray-50 rounded text-sm text-gray-500">
-                    No hay productos seleccionados
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                    {selectedProducts.map((product) => (
-                      <SelectedProductItem
-                        key={product.id}
-                        product={product}
-                        onUpdate={updateQuantity}
-                        onRemove={removeProduct}
-                        ingredients={ingredients}
+              {filteredProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                    selectedProducts.some(p => p.id === product.id)
+                      ? "bg-blue-50 border border-blue-300"
+                      : "hover:bg-gray-50 border border-gray-200"
+                  }`}
+                  onClick={() => selectProduct(product)}
+                >
+                  <div className="h-12 w-12 bg-gray-100 rounded flex-shrink-0 flex items-center justify-center">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-cover rounded"
                       />
-                    ))}
+                    ) : (
+                      <span className="text-gray-500 text-xs">Sin imagen</span>
+                    )}
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* Missing Ingredients Alert */}
-            {missingIngredients.length > 0 && (
-              <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 mt-0.5 text-red-500 flex-shrink-0" />
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-medium text-red-800">
-                      Ingredientes insuficientes
-                    </h4>
-                    <ul className="text-xs text-red-700 space-y-1">
-                      {missingIngredients.map(
-                        ({ ingredient, missingAmount }) => (
-                          <li
-                            key={ingredient.id}
-                            className="flex items-baseline"
-                          >
-                            <span className="font-medium min-w-[120px]">
-                              {ingredient.name}:
-                            </span>
-                            <span>
-                              Faltan {missingAmount.toFixed(2)}{" "}
-                              {ingredient.unit}
-                            </span>
-                            <span className="text-red-600 ml-2">
-                              (Stock: {ingredient.currentStock})
-                            </span>
-                          </li>
-                        )
-                      )}
-                    </ul>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-2 text-xs h-8 text-red-700 border-red-300 hover:bg-red-100"
-                      onClick={() => setShowPurchaseDialog(true)}
-                    >
-                      Generar Orden de Compra
-                    </Button>
+                  <div>
+                    <h3 className="font-medium text-sm">{product.name}</h3>
+                    <p className="text-xs text-gray-500">{product.brand}</p>
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Columna central - Productos seleccionados */}
+      <div className="w-1/3 flex flex-col border-r overflow-hidden">
+        <div className="p-4 bg-gray-50">
+          <Label className="text-sm font-medium">
+            Productos seleccionados ({selectedProducts.length})
+          </Label>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {selectedProducts.length === 0 ? (
+            <div className="text-center p-4 text-gray-500 h-full flex items-center justify-center">
+              No hay productos seleccionados
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {selectedProducts.map((product) => (
+                <div key={product.id} className="border rounded-lg p-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">{product.name}</h4>
+                      <p className="text-xs text-gray-500">{product.brand}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={product.quantity}
+                        onChange={(e) => updateQuantity(product.id, parseInt(e.target.value))}
+                        className="w-20 h-8"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 text-red-500"
+                        onClick={() => removeProduct(product.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3 text-sm">
+                    <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                      product.canProduce ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {product.canProduce ? 'Stock suficiente' : 'Faltan ingredientes'}
+                    </div>
+                    
+                    <div className="mt-2 text-xs text-gray-600">
+                      <p className="font-medium">Requisitos por unidad:</p>
+                      <ul className="mt-1 space-y-1">
+                        {product.recipe.map((item) => {
+                          const ingredient = ingredients.find(i => i.id === item.ingredientId);
+                          const totalNeeded = item.quantity * product.quantity;
+                          const hasEnough = ingredient?.currentStock >= totalNeeded;
+                          
+                          return (
+                            <li key={item.ingredientId} className={!hasEnough ? 'text-red-600' : ''}>
+                              {ingredient?.name || 'Ingrediente desconocido'}: 
+                              <span className="font-medium"> {item.quantity.toFixed(4)} {ingredient?.unit}</span>
+                              {ingredient && (
+                                <span> | Stock: {ingredient.currentStock} {ingredient.unit}</span>
+                              )}
+                              {!hasEnough && ingredient && (
+                                <span className="font-semibold"> | Faltan: {(totalNeeded - ingredient.currentStock).toFixed(2)}</span>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Columna derecha - Ingredientes faltantes */}
+      <div className="w-1/3 flex flex-col overflow-hidden">
+        <div className="p-4 bg-red-50">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <Label className="text-sm font-medium text-red-800">
+              Ingredientes insuficientes ({missingIngredients.length})
+            </Label>
           </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          {missingIngredients.length === 0 ? (
+            <div className="text-center p-4 text-gray-500 h-full flex items-center justify-center">
+              No hay ingredientes faltantes
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {missingIngredients.map(({ ingredient, missingAmount }) => (
+                <div key={ingredient.id} className="bg-red-50 p-3 rounded border border-red-200">
+                  <div className="flex justify-between items-start">
+                    <span className="font-medium">{ingredient.name}</span>
+                    <span className="text-red-600 font-medium">
+                      Faltan: {missingAmount.toFixed(2)} {ingredient.unit}
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Stock actual: {ingredient.currentStock} {ingredient.unit}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
 
-          <DialogFooter>
+    <DialogFooter className="p-4 bg-gray-50 border-t">
+      <div className="flex justify-between w-full items-center">
+        <div className="text-sm text-gray-600">
+          {selectedProducts.length} productos seleccionados
+          {missingIngredients.length > 0 && (
+            <span className="ml-3 text-red-600">
+              | {missingIngredients.length} ingredientes faltantes
+            </span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsModalOpen(false);
+              setSelectedProducts([]);
+              setMissingIngredients([]);
+              setDueDate("");
+            }}
+          >
+            Cancelar
+          </Button>
+          
+          {missingIngredients.length > 0 && (
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsModalOpen(false);
-                setSelectedProducts([]);
-                setMissingIngredients([]);
-                setDueDate("");
-              }}
+              variant="destructive"
+              onClick={() => setShowPurchaseDialog(true)}
             >
-              Cancelar
+              Crear Pedido de Compra
             </Button>
-            <Button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                addProduction({
-                  status: missingIngredients.length > 0 ? "pending" : "in_progress",
-                  dueDate:
-                    dueDate ||
-                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                  createdAt: new Date().toISOString(),
-                });
-              }}
-            >
-              {missingIngredients.length > 0
-                ? "Crear Producción Pendiente"
-                : "Iniciar Producción"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          )}
+          
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              addProduction({
+                status: missingIngredients.length > 0 ? "pending" : "in_progress",
+                dueDate: dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                createdAt: new Date().toISOString(),
+              });
+            }}
+          >
+            {missingIngredients.length > 0
+              ? "Crear Producción Pendiente"
+              : "Iniciar Producción"}
+          </Button>
+        </div>
+      </div>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
-      {/* Purchase Order Dialog */}
+{/* Diálogo para crear pedido de compra */}
+<Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
+  <DialogContent className="max-w-md">
+    <DialogHeader>
+      <DialogTitle>Generar Orden de Compra</DialogTitle>
+      <DialogDescription>
+        Se requieren los siguientes ingredientes:
+      </DialogDescription>
+    </DialogHeader>
+    
+    <div className="py-4">
+      <h4 className="font-medium mb-2">Ingredientes faltantes:</h4>
+      <ul className="space-y-2">
+        {missingIngredients.map(({ ingredient, missingAmount }) => (
+          <li key={ingredient.id} className="flex justify-between">
+            <span>{ingredient.name}</span>
+            <span className="font-medium">
+              {missingAmount.toFixed(2)} {ingredient.unit}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <DialogFooter>
+      <Button
+        variant="outline"
+        onClick={() => setShowPurchaseDialog(false)}
+      >
+        Cancelar
+      </Button>
+      <Button
+        onClick={() => {
+          toast.success("Orden de compra generada");
+          setShowPurchaseDialog(false);
+        }}
+      >
+        Confirmar Orden
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
       <Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Generar Orden de Compra</DialogTitle>
             <DialogDescription>
@@ -726,7 +819,7 @@ export default function ProductionPage() {
             </ul>
           </div>
 
-          <DialogFooter>
+          <DialogFooter >
             <Button
               variant="outline"
               onClick={() => setShowPurchaseDialog(false)}
@@ -747,44 +840,6 @@ export default function ProductionPage() {
     </div>
   );
 }
-
-function ProductCard({
-  product,
-  onSelect,
-  isSelected,
-}: {
-  product: Product;
-  onSelect: (product: Product) => void;
-  isSelected: boolean;
-}) {
-  return (
-    <Card
-      className={`cursor-pointer hover:shadow-md transition-shadow h-full ${
-        isSelected ? "border-2 border-blue-500" : "border"
-      }`}
-      onClick={() => onSelect(product)}
-    >
-      <CardContent className="p-2 flex flex-col h-full">
-        <div className="h-20 bg-gray-100 mb-1 rounded flex items-center justify-center"> {/* Altura reducida y fondo más claro */}
-          {product.image ? (
-            <img
-              src={product.image}
-              alt={product.name}
-              className="h-full w-full object-cover rounded"
-            />
-          ) : (
-            <span className="text-gray-500 text-xs">Sin imagen</span>
-          )}
-        </div>
-        <div className="flex-grow space-y-1"> {/* Espacio reducido */}
-          <h3 className="font-medium text-xs line-clamp-2">{product.name}</h3> {/* 2 líneas máximo */}
-          <p className="text-xs text-gray-500 line-clamp-1">{product.brand}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 
 function SelectedProductItem({
   product,
@@ -828,9 +883,9 @@ function SelectedProductItem({
       }`}
     >
       <div className="flex items-center justify-between mb-2">
-        <div>
-          <h4 className="font-medium">{product.name}</h4>
-          <p className="text-sm text-gray-600">{product.brand}</p>
+        <div className="max-w-[180px]">
+          <h4 className="font-medium truncate">{product.name}</h4>
+          <p className="text-sm text-gray-600 truncate">{product.brand}</p>
           {product.canProduce ? (
             <span className="text-xs text-green-600">Stock suficiente</span>
           ) : (
@@ -843,11 +898,12 @@ function SelectedProductItem({
             min="1"
             value={inputValue}
             onChange={handleQuantityChange}
-            className="w-24"
+            className="w-20 h-8"
           />
           <Button
             variant="destructive"
             size="sm"
+            className="h-8 w-8"
             onClick={() => onRemove(product.id)}
           >
             <Trash2 className="h-4 w-4" />
