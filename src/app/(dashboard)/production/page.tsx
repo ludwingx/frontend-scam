@@ -20,12 +20,30 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Trash2, AlertTriangle, ChevronDown, ChevronUp, Badge, ChevronsUpDown, Table } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Trash2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  ChevronsUpDown,
+  Table,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TableBody, TableRow, TableCell } from "@/components/ui/table";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@radix-ui/react-collapsible";
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@radix-ui/react-collapsible";
 import { Separator } from "@radix-ui/react-separator";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface Ingredient {
   id: number;
@@ -78,139 +96,411 @@ const mockIngredients: Ingredient[] = [
   {
     id: 1,
     name: "Harina de trigo",
-    currentStock: 150,
+    currentStock: 70, // kg (stock inicial para pequeña producción)
     unit: "kg",
-    minStock: 20,
+    minStock: 200, // 200kg como mínimo para no quedarse sin stock
   },
-  { id: 2, name: "Azúcar", currentStock: 80, unit: "kg", minStock: 10 },
-  { id: 3, name: "Huevos", currentStock: 500, unit: "unidades", minStock: 50 },
-  { id: 4, name: "Mantequilla", currentStock: 45, unit: "kg", minStock: 5 },
-  { id: 5, name: "Levadura", currentStock: 15, unit: "kg", minStock: 2 },
-  { id: 6, name: "Sal", currentStock: 30, unit: "kg", minStock: 1 },
-  { id: 7, name: "Queso", currentStock: 60, unit: "kg", minStock: 10 },
-  { id: 8, name: "Cacao", currentStock: 25, unit: "kg", minStock: 5 },
-  { id: 9, name: "Vainilla", currentStock: 5, unit: "kg", minStock: 1 },
-  { id: 10, name: "Canela", currentStock: 8, unit: "kg", minStock: 1 },
+  { 
+    id: 2, 
+    name: "Azúcar", 
+    currentStock: 28, // kg
+    unit: "kg", 
+    minStock: 100 
+  },
+  { 
+    id: 3, 
+    name: "Huevos", 
+    currentStock: 150, 
+    unit: "unidades", 
+    minStock: 1000 
+  },
+  { 
+    id: 4, 
+    name: "Mantequilla", 
+    currentStock: 40, // kg (30 bloques de 10kg)
+    unit: "kg", 
+    minStock: 50 
+  },
+  { 
+    id: 5, 
+    name: "Levadura química", 
+    currentStock: 1, // kg
+    unit: "kg", 
+    minStock: 10 
+  },
+  { 
+    id: 6, 
+    name: "Sal", 
+    currentStock: 30, // kg
+    unit: "kg", 
+    minStock: 20 
+  },
+  { 
+    id: 7, 
+    name: "Queso rallado", 
+    currentStock: 20,
+    unit: "kg", 
+    minStock: 50 
+  },
+  { 
+    id: 8, 
+    name: "Cacao en polvo", 
+    currentStock: 100, // kg
+    unit: "kg", 
+    minStock: 20 
+  },
+  { 
+    id: 9, 
+    name: "Esencia de vainilla", 
+    currentStock: 20, // litros
+    unit: "lt", 
+    minStock: 5 
+  },
+  { 
+    id: 10, 
+    name: "Canela molida", 
+    currentStock: 20, // kg
+    unit: "kg", 
+    minStock: 5 
+  },
+  {
+    id: 11,
+    name: "Leche entera",
+    currentStock: 300, // litros (3-4 días de producción)
+    unit: "lt",
+    minStock: 100
+  },
+  {
+    id: 12,
+    name: "Crema de leche",
+    currentStock: 150, // litros
+    unit: "lt",
+    minStock: 50
+  },
+  {
+    id: 13,
+    name: "Almidón de maíz",
+    currentStock: 200, // kg (para cuñapés)
+    unit: "kg",
+    minStock: 50
+  },
+  {
+    id: 14,
+    name: "Mermelada de durazno",
+    currentStock: 100, // kg
+    unit: "kg",
+    minStock: 20
+  },
+  {
+    id: 15,
+    name: "Dulce de leche",
+    currentStock: 200, // kg (2 tambores de 100kg)
+    unit: "kg",
+    minStock: 50
+  },
+  {
+    id: 16,
+    name: "Chocolate para cobertura",
+    currentStock: 150, // kg
+    unit: "kg",
+    minStock: 30
+  },
+  {
+    id: 17,
+    name: "Fruta confitada",
+    currentStock: 50, // kg
+    unit: "kg",
+    minStock: 10
+  },
+  {
+    id: 18,
+    name: "Almendras fileteadas",
+    currentStock: 50, // kg
+    unit: "kg",
+    minStock: 10
+  },
+  {
+    id: 19,
+    name: "Colorante alimentario",
+    currentStock: 10, // litros
+    unit: "lt",
+    minStock: 2
+  },
+  {
+    id: 20,
+    name: "Gelatina sin sabor",
+    currentStock: 20, // kg
+    unit: "kg",
+    minStock: 5
+  },
+  {
+    id: 21,
+    name: "Harina de maíz",
+    currentStock: 200, // kg
+    unit: "kg",
+    minStock: 50
+  },
+  {
+    id: 22,
+    name: "Manteca vegetal",
+    currentStock: 200, // kg
+    unit: "kg",
+    minStock: 50
+  },
+  {
+    id: 23,
+    name: "Huevos de codorniz",
+    currentStock: 1000, // unidades
+    unit: "unidades",
+    minStock:
+     200
+  },
+  {
+    id: 24,
+    name: "Carne molida",
+    currentStock: 50,
+    unit: "kg",
+    minStock: 10
+  },
+  {
+    id: 25,
+    name: "Ají molido",
+    currentStock: 5,
+    unit: "kg",
+    minStock: 1
+  },
+  {
+    id: 26,
+    name: "Leche condensada",
+    currentStock: 30,
+    unit: "lt",
+    minStock: 5
+  },
+  {
+    id: 27,
+    name: "Galletas Oreo",
+    currentStock: 20,
+    unit: "kg",
+    minStock: 3
+  },
+  {
+    id: 28,
+    name: "Queso crema",
+    currentStock: 25,
+    unit: "kg",
+    minStock: 5
+  },
+  {
+    id: 29,
+    name: "Duraznos frescos",
+    currentStock: 15,
+    unit: "kg",
+    minStock: 3
+  },
+  {
+    id: 30,
+    name: "Gelatina sin sabor",
+    currentStock: 5,
+    unit: "kg",
+    minStock: 1
+  },
+  {
+    id: 31,
+    name: "Café instantáneo",
+    currentStock: 10,
+    unit: "kg",
+    minStock: 2
+  }
 ];
 
 const mockProducts: Product[] = [
+  // Productos de Mil Sabores (unidades individuales)
   {
     id: 1,
-    name: "Cuñapes",
-    description: "Pan de queso tradicional",
-    brand: "Marca A",
-    image: "/cuñape.png",
+    name: "Empanada de arroz",
+    description: "Empanada de arroz rellena (120g)",
+    brand: "Mil Sabores",
+    image: "/empanada-de-arroz.jpg",
     recipe: [
-      { ingredientId: 1, quantity: 0.01 },
-      { ingredientId: 7, quantity: 0.024 },
-      { ingredientId: 3, quantity: 0.2 },
-      { ingredientId: 6, quantity: 0.002 },
-    ],
+      { ingredientId: 21, quantity: 0.08 },   // 80g harina de arroz
+      { ingredientId: 11, quantity: 0.05 },    // 50ml leche
+      { ingredientId: 4, quantity: 0.03 },     // 30g mantequilla
+      { ingredientId: 7, quantity: 0.04 },     // 40g queso (relleno)
+      { ingredientId: 6, quantity: 0.002 }     // 2g sal
+    ]
   },
   {
     id: 2,
-    name: "Empañadas de Queso",
-    description: "Pan integral de trigo con semillas",
-    brand: "Marca B",
-    image: "/empanadaQueso.png",
+    name: "Sonso",
+    description: "Pan de yuca y queso (150g)",
+    brand: "Mil Sabores",
     recipe: [
-      { ingredientId: 1, quantity: 0.05 },
-      { ingredientId: 2, quantity: 0.015 },
-      { ingredientId: 3, quantity: 0.25 },
-      { ingredientId: 4, quantity: 0.01 },
-      { ingredientId: 5, quantity: 0.0025 },
-      { ingredientId: 6, quantity: 0.0025 },
-    ],
+      { ingredientId: 13, quantity: 0.1 },     // 100g almidón de yuca
+      { ingredientId: 7, quantity: 0.06 },      // 60g queso
+      { ingredientId: 3, quantity: 0.4 },       // 0.4 huevo (2 huevos por 5 unidades)
+      { ingredientId: 4, quantity: 0.03 },      // 30g mantequilla
+      { ingredientId: 6, quantity: 0.003 }      // 3g sal
+    ]
   },
   {
     id: 3,
-    name: "Torta de Chocolate",
-    description: "Galletas dulces con chispas de chocolate",
-    brand: "Marca C",
-    image: "/tortaChocolate.png",
+    name: "Tamal",
+    description: "Tamal tradicional (250g)",
+    brand: "Mil Sabores",
     recipe: [
-      { ingredientId: 1, quantity: 0.015 },
-      { ingredientId: 2, quantity: 0.008 },
-      { ingredientId: 3, quantity: 0.08 },
-      { ingredientId: 4, quantity: 0.005 },
-      { ingredientId: 8, quantity: 0.01 },
-    ],
+      { ingredientId: 21, quantity: 0.15 },    // 150g harina de maíz
+      { ingredientId: 4, quantity: 0.05 },      // 50g manteca
+      { ingredientId: 7, quantity: 0.08 },      // 80g queso
+      { ingredientId: 24, quantity: 0.1 },      // 100g carne (nuevo ingrediente)
+      { ingredientId: 25, quantity: 0.02 },     // 20g ají (nuevo ingrediente)
+      { ingredientId: 6, quantity: 0.005 }      // 5g sal
+    ]
   },
   {
     id: 4,
-    name: "Torta de Vainilla",
-    description: "Torta esponjosa de vainilla",
-    brand: "Marca A",
-    image: "/tortaVainilla",
+    name: "Cuñapé",
+    description: "Pan de queso tradicional (100g)",
+    brand: "Mil Sabores",
     recipe: [
-      { ingredientId: 1, quantity: 0.2 },
-      { ingredientId: 2, quantity: 0.15 },
-      { ingredientId: 3, quantity: 2 },
-      { ingredientId: 4, quantity: 0.1 },
-      { ingredientId: 9, quantity: 0.005 },
-    ],
+      { ingredientId: 13, quantity: 0.07 },     // 70g almidón de yuca
+      { ingredientId: 7, quantity: 0.05 },      // 50g queso
+      { ingredientId: 3, quantity: 0.3 },       // 0.3 huevo
+      { ingredientId: 11, quantity: 0.03 },     // 30ml leche
+      { ingredientId: 4, quantity: 0.02 },      // 20g mantequilla
+      { ingredientId: 6, quantity: 0.002 }      // 2g sal
+    ]
   },
+
+  // Tortas enteras (unidades completas)
   {
     id: 5,
-    name: "Empanadas de Queso",
-    description: "Empanadas rellenas de queso derretido",
-    brand: "Marca D",
-    image: "/images/empanadas-queso.jpg",
+    name: "Torta de Chocolate",
+    description: "Torta de 3 pisos (24cm) - 12 porciones",
+    brand: "Repostería",
     recipe: [
-      { ingredientId: 1, quantity: 0.03 },
-      { ingredientId: 7, quantity: 0.02 },
-      { ingredientId: 3, quantity: 0.1 },
-    ],
+      { ingredientId: 1, quantity: 0.8 },      // 800g harina
+      { ingredientId: 2, quantity: 0.7 },       // 700g azúcar
+      { ingredientId: 8, quantity: 0.3 },       // 300g cacao
+      { ingredientId: 3, quantity: 12 },        // 12 huevos
+      { ingredientId: 4, quantity: 0.5 },       // 500g mantequilla
+      { ingredientId: 11, quantity: 0.4 },      // 400ml leche
+      { ingredientId: 16, quantity: 0.6 },      // 600g chocolate (cobertura)
+      { ingredientId: 12, quantity: 0.3 }       // 300ml crema (relleno)
+    ]
   },
   {
     id: 6,
-    name: "Pan de Canela",
-    description: "Pan dulce con canela y azúcar",
-    brand: "Marca E",
-    image: "/images/pan-canela.jpg",
+    name: "Torta Tres Leches",
+    description: "Torta clásica (22cm) - 10 porciones",
+    brand: "Repostería",
     recipe: [
-      { ingredientId: 1, quantity: 0.04 },
-      { ingredientId: 2, quantity: 0.02 },
-      { ingredientId: 3, quantity: 0.15 },
-      { ingredientId: 4, quantity: 0.015 },
-      { ingredientId: 10, quantity: 0.003 },
-    ],
+      { ingredientId: 1, quantity: 0.5 },      // 500g harina
+      { ingredientId: 2, quantity: 0.4 },       // 400g azúcar
+      { ingredientId: 3, quantity: 8 },         // 8 huevos
+      { ingredientId: 11, quantity: 0.5 },      // 500ml leche evaporada
+      { ingredientId: 26, quantity: 0.3 },      // 300ml leche condensada (nuevo ingrediente)
+      { ingredientId: 12, quantity: 0.4 },      // 400ml crema
+      { ingredientId: 9, quantity: 0.01 }       // 10ml vainilla
+    ]
   },
   {
     id: 7,
-    name: "Brownies",
-    description: "Brownies de chocolate con nueces",
-    brand: "Marca F",
-    image: "/images/brownies.jpg",
+    name: "Torta Oreo",
+    description: "Torta de galletas Oreo (24cm) - 12 porciones",
+    brand: "Repostería",
     recipe: [
-      { ingredientId: 1, quantity: 0.1 },
-      { ingredientId: 2, quantity: 0.2 },
-      { ingredientId: 3, quantity: 0.5 },
-      { ingredientId: 4, quantity: 0.15 },
-      { ingredientId: 8, quantity: 0.05 },
-    ],
+      { ingredientId: 1, quantity: 0.6 },      // 600g harina
+      { ingredientId: 2, quantity: 0.5 },       // 500g azúcar
+      { ingredientId: 3, quantity: 10 },        // 10 huevos
+      { ingredientId: 4, quantity: 0.4 },       // 400g mantequilla
+      { ingredientId: 27, quantity: 0.3 },      // 300g galletas Oreo (nuevo ingrediente)
+      { ingredientId: 12, quantity: 0.5 },      // 500ml crema
+      { ingredientId: 16, quantity: 0.2 }       // 200g chocolate blanco
+    ]
   },
   {
     id: 8,
-    name: "Donas",
-    description: "Donas glaseadas de varios sabores",
-    brand: "Marca G",
-    image: "/images/donas.jpg",
+    name: "Torta de Vainilla",
+    description: "Torta clásica (24cm) - 12 porciones",
+    brand: "Repostería",
     recipe: [
-      { ingredientId: 1, quantity: 0.07 },
-      { ingredientId: 2, quantity: 0.03 },
-      { ingredientId: 3, quantity: 0.3 },
-      { ingredientId: 4, quantity: 0.02 },
-      { ingredientId: 5, quantity: 0.005 },
-    ],
+      { ingredientId: 1, quantity: 0.7 },      // 700g harina
+      { ingredientId: 2, quantity: 0.6 },       // 600g azúcar
+      { ingredientId: 3, quantity: 10 },        // 10 huevos
+      { ingredientId: 4, quantity: 0.5 },       // 500g mantequilla
+      { ingredientId: 9, quantity: 0.02 },      // 20ml vainilla
+      { ingredientId: 11, quantity: 0.3 },      // 300ml leche
+      { ingredientId: 12, quantity: 0.4 }       // 400ml crema (relleno)
+    ]
   },
+  {
+    id: 9,
+    name: "Torta Red Velvet",
+    description: "Torta aterciopelada (24cm) - 12 porciones",
+    brand: "Repostería",
+    recipe: [
+      { ingredientId: 1, quantity: 0.6 },      // 600g harina
+      { ingredientId: 2, quantity: 0.5 },       // 500g azúcar
+      { ingredientId: 3, quantity: 8 },         // 8 huevos
+      { ingredientId: 4, quantity: 0.4 },       // 400g mantequilla
+      { ingredientId: 8, quantity: 0.05 },      // 50g cacao
+      { ingredientId: 19, quantity: 0.01 },     // 10ml colorante rojo
+      { ingredientId: 11, quantity: 0.3 },      // 300ml suero de leche
+      { ingredientId: 28, quantity: 0.4 }       // 400g queso crema (frosting)
+    ]
+  },
+  {
+    id: 10,
+    name: "Torta de Durazno",
+    description: "Torta con relleno de durazno (22cm) - 10 porciones",
+    brand: "Repostería",
+    recipe: [
+      { ingredientId: 1, quantity: 0.6 },      // 600g harina
+      { ingredientId: 2, quantity: 0.5 },       // 500g azúcar
+      { ingredientId: 3, quantity: 8 },         // 8 huevos
+      { ingredientId: 4, quantity: 0.4 },       // 400g mantequilla
+      { ingredientId: 14, quantity: 0.5 },      // 500g mermelada de durazno
+      { ingredientId: 12, quantity: 0.4 },      // 400ml crema
+      { ingredientId: 29, quantity: 0.3 }       // 300g duraznos frescos
+    ]
+  },
+  {
+    id: 11,
+    name: "Soufflé de Chantilly",
+    description: "Torta esponjosa (20cm) - 8 porciones",
+    brand: "Repostería",
+    recipe: [
+      { ingredientId: 3, quantity: 12 },        // 12 huevos (claras)
+      { ingredientId: 2, quantity: 0.3 },       // 300g azúcar
+      { ingredientId: 12, quantity: 0.6 },      // 600ml crema chantilly
+      { ingredientId: 30, quantity: 0.02 },     // 20g gelatina sin sabor
+      { ingredientId: 9, quantity: 0.01 }       // 10ml vainilla
+    ]
+  },
+  {
+    id: 12,
+    name: "Torta Moka",
+    description: "Torta de café (24cm) - 12 porciones",
+    brand: "Repostería",
+    recipe: [
+      { ingredientId: 1, quantity: 0.7 },      // 700g harina
+      { ingredientId: 2, quantity: 0.6 },       // 600g azúcar
+      { ingredientId: 3, quantity: 10 },        // 10 huevos
+      { ingredientId: 4, quantity: 0.5 },       // 500g mantequilla
+      { ingredientId: 31, quantity: 0.05 },     // 50g café instantáneo
+      { ingredientId: 16, quantity: 0.4 },      // 400g chocolate
+      { ingredientId: 12, quantity: 0.5 }       // 500ml crema
+    ]
+  }
 ];
 
 export default function ProductionPage() {
   const [productions, setProductions] = useState<Production[]>([]);
   const [activeView, setActiveView] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
+    []
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>(mockIngredients);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
@@ -218,7 +508,9 @@ export default function ProductionPage() {
     { ingredient: Ingredient; missingAmount: number }[]
   >([]);
   const [dueDate, setDueDate] = useState("");
-  const [showIngredientsUsage, setShowIngredientsUsage] = useState<number | null>(null);
+  const [showIngredientsUsage, setShowIngredientsUsage] = useState<
+    number | null
+  >(null);
   const [showTotalIngredients, setShowTotalIngredients] = useState(false);
   const [showAllIngredients, setShowAllIngredients] = useState(false);
 
@@ -242,7 +534,7 @@ export default function ProductionPage() {
             { ingredient: mockIngredients[0], amountUsed: 15 },
             { ingredient: mockIngredients[2], amountUsed: 150 },
             { ingredient: mockIngredients[6], amountUsed: 12 },
-          ]
+          ],
         },
         {
           id: 2,
@@ -261,7 +553,7 @@ export default function ProductionPage() {
             { ingredient: mockIngredients[0], amountUsed: 7.5 },
             { ingredient: mockIngredients[1], amountUsed: 3.9 },
             { ingredient: mockIngredients[3], amountUsed: 2.25 },
-          ]
+          ],
         },
         {
           id: 3,
@@ -280,7 +572,7 @@ export default function ProductionPage() {
             { ingredient: mockIngredients[0], amountUsed: 14 },
             { ingredient: mockIngredients[2], amountUsed: 250 },
             { ingredient: mockIngredients[4], amountUsed: 0.5 },
-          ]
+          ],
         },
         {
           id: 4,
@@ -299,7 +591,7 @@ export default function ProductionPage() {
             { ingredient: mockIngredients[0], amountUsed: 28.4 },
             { ingredient: mockIngredients[2], amountUsed: 160 },
             { ingredient: mockIngredients[4], amountUsed: 0.6 },
-          ]
+          ],
         },
       ];
       setProductions(mockProductions);
@@ -346,7 +638,8 @@ export default function ProductionPage() {
 
   const calculateIngredientsUsage = (products: SelectedProduct[]) => {
     const requiredIngredients: Record<number, number> = {};
-    const ingredientsUsage: { ingredient: Ingredient; amountUsed: number }[] = [];
+    const ingredientsUsage: { ingredient: Ingredient; amountUsed: number }[] =
+      [];
 
     products.forEach((product) => {
       if (product.quantity !== null) {
@@ -358,32 +651,39 @@ export default function ProductionPage() {
       }
     });
 
-    Object.entries(requiredIngredients).forEach(([ingredientId, amountNeeded]) => {
-      const ingredient = ingredients.find(i => i.id === parseInt(ingredientId));
-      if (ingredient) {
-        const amountToUse = Math.min(amountNeeded, ingredient.currentStock);
-        if (amountToUse > 0) {
-          ingredientsUsage.push({
-            ingredient,
-            amountUsed: amountToUse
-          });
+    Object.entries(requiredIngredients).forEach(
+      ([ingredientId, amountNeeded]) => {
+        const ingredient = ingredients.find(
+          (i) => i.id === parseInt(ingredientId)
+        );
+        if (ingredient) {
+          const amountToUse = Math.min(amountNeeded, ingredient.currentStock);
+          if (amountToUse > 0) {
+            ingredientsUsage.push({
+              ingredient,
+              amountUsed: amountToUse,
+            });
+          }
         }
       }
-    });
+    );
 
     return ingredientsUsage;
   };
 
   const calculateTotalIngredientsUsage = () => {
-    const totalUsage: Record<number, {ingredient: Ingredient, total: number}> = {};
-    
-    productions.forEach(production => {
+    const totalUsage: Record<
+      number,
+      { ingredient: Ingredient; total: number }
+    > = {};
+
+    productions.forEach((production) => {
       if (production.ingredientsUsage) {
-        production.ingredientsUsage.forEach(({ingredient, amountUsed}) => {
+        production.ingredientsUsage.forEach(({ ingredient, amountUsed }) => {
           if (!totalUsage[ingredient.id]) {
             totalUsage[ingredient.id] = {
               ingredient,
-              total: 0
+              total: 0,
             };
           }
           totalUsage[ingredient.id].total += amountUsed;
@@ -412,16 +712,16 @@ export default function ProductionPage() {
       }
 
       const missingForProduct: { ingredientId: number; missing: number }[] = [];
-      
+
       product.recipe.forEach((item) => {
-        const ingredient = ingredients.find(i => i.id === item.ingredientId);
+        const ingredient = ingredients.find((i) => i.id === item.ingredientId);
         if (ingredient) {
           const totalNeeded = requiredIngredients[item.ingredientId] || 0;
           if (ingredient.currentStock < totalNeeded) {
             const missingAmount = totalNeeded - ingredient.currentStock;
             missingForProduct.push({
               ingredientId: item.ingredientId,
-              missing: missingAmount
+              missing: missingAmount,
             });
           }
         }
@@ -430,7 +730,8 @@ export default function ProductionPage() {
       return {
         ...product,
         canProduce: missingForProduct.length === 0,
-        missingIngredients: missingForProduct.length > 0 ? missingForProduct : undefined
+        missingIngredients:
+          missingForProduct.length > 0 ? missingForProduct : undefined,
       };
     });
   };
@@ -448,7 +749,7 @@ export default function ProductionPage() {
           ...product,
           quantity: null,
           canProduce: false,
-          missingIngredients: []
+          missingIngredients: [],
         };
         const updated = [...prev, newProduct];
         const withStatus = updateProductionStatus(updated);
@@ -492,7 +793,9 @@ export default function ProductionPage() {
       return;
     }
 
-    const hasEmptyQuantities = selectedProducts.some(p => p.quantity === null);
+    const hasEmptyQuantities = selectedProducts.some(
+      (p) => p.quantity === null
+    );
     if (hasEmptyQuantities) {
       toast.error("Todos los productos deben tener una cantidad asignada");
       return;
@@ -503,12 +806,16 @@ export default function ProductionPage() {
 
     const productionWithId: Production = {
       id: Date.now(),
-      products: selectedProducts.filter(p => p.quantity !== null) as SelectedProduct[],
+      products: selectedProducts.filter(
+        (p) => p.quantity !== null
+      ) as SelectedProduct[],
       status: missing.length > 0 ? "pending" : "in_progress",
       createdAt: new Date().toISOString(),
-      dueDate: dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      dueDate:
+        dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       missingIngredients: missing.length > 0 ? missing : undefined,
-      ingredientsUsage: ingredientsUsage.length > 0 ? ingredientsUsage : undefined
+      ingredientsUsage:
+        ingredientsUsage.length > 0 ? ingredientsUsage : undefined,
     };
 
     setProductions((prev) => [...prev, productionWithId]);
@@ -551,8 +858,11 @@ export default function ProductionPage() {
           return production;
         }
 
-        const ingredientsUsage: { ingredient: Ingredient; amountUsed: number }[] = [];
-        
+        const ingredientsUsage: {
+          ingredient: Ingredient;
+          amountUsed: number;
+        }[] = [];
+
         production.products.forEach((product) => {
           product.recipe.forEach((item) => {
             const ingredientIndex = updatedIngredients.findIndex(
@@ -565,16 +875,16 @@ export default function ProductionPage() {
                   updatedIngredients[ingredientIndex].currentStock - totalUsed
                 ).toFixed(4)
               );
-              
+
               const existingUsage = ingredientsUsage.find(
-                i => i.ingredient.id === item.ingredientId
+                (i) => i.ingredient.id === item.ingredientId
               );
               if (existingUsage) {
                 existingUsage.amountUsed += totalUsed;
               } else {
                 ingredientsUsage.push({
                   ingredient: updatedIngredients[ingredientIndex],
-                  amountUsed: totalUsed
+                  amountUsed: totalUsed,
                 });
               }
             }
@@ -586,7 +896,7 @@ export default function ProductionPage() {
           ...production,
           status: "in_progress",
           missingIngredients: undefined,
-          ingredientsUsage
+          ingredientsUsage,
         };
       })
     );
@@ -594,7 +904,8 @@ export default function ProductionPage() {
 
   const filteredProductions = productions.filter((production) => {
     if (activeView === "pending") return production.status === "pending";
-    if (activeView === "in_progress") return production.status === "in_progress";
+    if (activeView === "in_progress")
+      return production.status === "in_progress";
     if (activeView === "completed") return production.status === "completed";
     return true;
   });
@@ -626,8 +937,8 @@ export default function ProductionPage() {
               Aquí podrás gestionar las producciones.
             </small>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setShowAllIngredients(!showAllIngredients)}
             className="flex items-center gap-2"
           >
@@ -651,12 +962,14 @@ export default function ProductionPage() {
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center justify-between">
               <span>Ingredientes utilizados en todas las producciones</span>
-              <Badge variant="outline">{totalIngredientsUsage.length} ingredientes</Badge>
+              <Badge variant="outline">
+                {totalIngredientsUsage.length} ingredientes
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {totalIngredientsUsage.map(({ingredient, total}) => (
+              {totalIngredientsUsage.map(({ ingredient, total }) => (
                 <div key={ingredient.id} className="border rounded-lg p-4">
                   <div className="flex justify-between items-center">
                     <span className="font-medium">{ingredient.name}</span>
@@ -664,14 +977,16 @@ export default function ProductionPage() {
                       {total.toFixed(2)} {ingredient.unit}
                     </span>
                   </div>
-                  <Progress 
+                  <Progress
                     value={(total / ingredient.currentStock) * 100}
                     className="h-2 mt-2"
                     indicatorClassName="bg-blue-500"
                   />
                   <div className="flex justify-between text-xs text-gray-500 mt-1">
                     <span>0 {ingredient.unit}</span>
-                    <span>{ingredient.currentStock.toFixed(2)} {ingredient.unit}</span>
+                    <span>
+                      {ingredient.currentStock.toFixed(2)} {ingredient.unit}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -715,14 +1030,16 @@ export default function ProductionPage() {
             ingredients={ingredients}
             onStartProduction={startProduction}
             showIngredientsUsage={showIngredientsUsage === production.id}
-            onToggleIngredientsUsage={() => 
-              setShowIngredientsUsage(showIngredientsUsage === production.id ? null : production.id)
+            onToggleIngredientsUsage={() =>
+              setShowIngredientsUsage(
+                showIngredientsUsage === production.id ? null : production.id
+              )
             }
           />
         ))}
       </div>
 
-      <Button 
+      <Button
         className="fixed bottom-8 right-8 rounded-full p-4 shadow-lg"
         size="lg"
         onClick={() => setIsModalOpen(true)}
@@ -730,18 +1047,23 @@ export default function ProductionPage() {
         <span className="text-xl">+</span>
       </Button>
 
-      <Dialog open={isModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setIsModalOpen(false);
-          setSelectedProducts([]);
-          setMissingIngredients([]);
-          setDueDate("");
-          setShowTotalIngredients(false);
-        }
-      }}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setIsModalOpen(false);
+            setSelectedProducts([]);
+            setMissingIngredients([]);
+            setDueDate("");
+            setShowTotalIngredients(false);
+          }
+        }}
+      >
         <DialogContent className="w-[98vw] max-w-6xl h-[90vh] max-h-[90vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="px-6 pt-4">
-            <DialogTitle className="text-xl">Crear Nueva Producción</DialogTitle>
+            <DialogTitle className="text-xl">
+              Crear Nueva Producción
+            </DialogTitle>
             <DialogDescription>
               Seleccione los productos a producir
             </DialogDescription>
@@ -770,7 +1092,7 @@ export default function ProductionPage() {
                       <div
                         key={product.id}
                         className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                          selectedProducts.some(p => p.id === product.id)
+                          selectedProducts.some((p) => p.id === product.id)
                             ? "bg-blue-50 border border-blue-300"
                             : "hover:bg-gray-50 border border-gray-200"
                         }`}
@@ -784,12 +1106,18 @@ export default function ProductionPage() {
                               className="h-full w-full object-cover rounded"
                             />
                           ) : (
-                            <span className="text-gray-500 text-xs">Sin imagen</span>
+                            <span className="text-gray-500 text-xs">
+                              Sin imagen
+                            </span>
                           )}
                         </div>
                         <div>
-                          <h3 className="font-medium text-sm">{product.name}</h3>
-                          <p className="text-xs text-gray-500">{product.brand}</p>
+                          <h3 className="font-medium text-sm">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            {product.brand}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -826,14 +1154,23 @@ export default function ProductionPage() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h4 className="font-medium">{product.name}</h4>
-                            <p className="text-xs text-gray-500">{product.brand}</p>
+                            <p className="text-xs text-gray-500">
+                              {product.brand}
+                            </p>
                           </div>
                           <div className="flex items-center gap-2">
                             <Input
                               type="number"
                               min="1"
                               value={product.quantity ?? ""}
-                              onChange={(e) => updateQuantity(product.id, e.target.value === "" ? null : parseInt(e.target.value))}
+                              onChange={(e) =>
+                                updateQuantity(
+                                  product.id,
+                                  e.target.value === ""
+                                    ? null
+                                    : parseInt(e.target.value)
+                                )
+                              }
                               className="w-20 h-8"
                               placeholder="Cantidad"
                             />
@@ -847,29 +1184,51 @@ export default function ProductionPage() {
                             </Button>
                           </div>
                         </div>
-                        
+
                         <div className="mt-3 text-sm">
-                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                            product.canProduce ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {product.canProduce ? 'Stock suficiente' : 'Faltan ingredientes'}
+                          <div
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
+                              product.canProduce
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }`}
+                          >
+                            {product.canProduce
+                              ? "Stock suficiente"
+                              : "Faltan ingredientes"}
                           </div>
-                          
+
                           <div className="mt-2 text-xs text-gray-600">
                             <p className="font-medium">Total requerido:</p>
                             <ul className="mt-1 space-y-1">
                               {product.recipe.map((item) => {
-                                const ingredient = ingredients.find(i => i.id === item.ingredientId);
-                                const totalNeeded = item.quantity * (product.quantity || 0);
-                                const isMissing = product.missingIngredients?.some(m => m.ingredientId === item.ingredientId);
-                                
+                                const ingredient = ingredients.find(
+                                  (i) => i.id === item.ingredientId
+                                );
+                                const totalNeeded =
+                                  item.quantity * (product.quantity || 0);
+                                const isMissing =
+                                  product.missingIngredients?.some(
+                                    (m) => m.ingredientId === item.ingredientId
+                                  );
+
                                 return (
-                                  <li 
-                                    key={item.ingredientId} 
-                                    className={isMissing ? 'text-red-600 font-semibold' : ''}
+                                  <li
+                                    key={item.ingredientId}
+                                    className={
+                                      isMissing
+                                        ? "text-red-600 font-semibold"
+                                        : ""
+                                    }
                                   >
-                                    {ingredient?.name || 'Ingrediente desconocido'}: 
-                                    <span className="font-medium"> {totalNeeded.toFixed(2)} {ingredient?.unit}</span>
+                                    {ingredient?.name ||
+                                      "Ingrediente desconocido"}
+                                    :
+                                    <span className="font-medium">
+                                      {" "}
+                                      {totalNeeded.toFixed(2)}{" "}
+                                      {ingredient?.unit}
+                                    </span>
                                   </li>
                                 );
                               })}
@@ -891,7 +1250,7 @@ export default function ProductionPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-semibold flex items-center justify-between">
                       Resumen de Producción
-                      <Badge variant="outline" className="ml-2">
+                      <Badge variant="secondary" className="ml-2">
                         {selectedProducts.length} productos
                       </Badge>
                     </CardTitle>
@@ -899,30 +1258,42 @@ export default function ProductionPage() {
                   <CardContent className="grid gap-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <span className="text-sm text-gray-500">Unidades totales</span>
+                        <span className="text-sm text-gray-500">
+                          Unidades totales
+                        </span>
                         <p className="font-medium text-lg">
-                          {selectedProducts.reduce((sum, p) => sum + (p.quantity || 0), 0).toLocaleString()}
+                          {selectedProducts
+                            .reduce((sum, p) => sum + (p.quantity || 0), 0)
+                            .toLocaleString()}
                         </p>
                       </div>
                       <div className="space-y-1">
-                        <span className="text-sm text-gray-500">Ingredientes</span>
+                        <span className="text-sm text-gray-500">
+                          Ingredientes
+                        </span>
                         <p className="font-medium text-lg">
                           {currentIngredientsUsage.length}
                         </p>
                       </div>
                     </div>
-                    
+
                     <Separator className="my-2" />
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-sm">Estado de producción</span>
-                      <span className={`text-sm font-medium ${
-                        missingIngredients.length > 0 ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                        {missingIngredients.length > 0 ? 'Pendiente' : 'Lista para iniciar'}
+                      <span
+                        className={`text-sm font-medium ${
+                          missingIngredients.length > 0
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        {missingIngredients.length > 0
+                          ? "Pendiente"
+                          : "Lista para iniciar"}
                       </span>
                     </div>
-                    
+
                     {missingIngredients.length > 0 && (
                       <div className="flex items-center justify-between">
                         <span className="text-sm">Faltantes</span>
@@ -947,53 +1318,71 @@ export default function ProductionPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {currentIngredientsUsage.map(({ ingredient, amountUsed }) => {
-                        const stock = ingredient.currentStock;
-                        const exceeds = amountUsed > stock;
-                        const missing = exceeds ? (amountUsed - stock) : 0;
-                        const percentage = Math.min(150, (amountUsed / stock) * 100);
+                      {currentIngredientsUsage.map(
+                        ({ ingredient, amountUsed }) => {
+                          const stock = ingredient.currentStock;
+                          const exceeds = amountUsed > stock;
+                          const missing = exceeds ? amountUsed - stock : 0;
+                          const percentage = Math.min(
+                            150,
+                            (amountUsed / stock) * 100
+                          );
 
-                        return (
-                          <div key={ingredient.id} className="space-y-1">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium">{ingredient.name}</span>
-                              <div className="flex items-center gap-1">
-                                <span className={`text-xs ${
-                                  exceeds ? 'text-red-600 font-bold' : 'text-gray-700'
-                                }`}>
-                                  {amountUsed.toFixed(2)}
+                          return (
+                            <div key={ingredient.id} className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">
+                                  {ingredient.name}
                                 </span>
-                                <span className="text-xs text-gray-400">/</span>
-                                <span className="text-xs text-gray-500">
-                                  {stock.toFixed(2)} {ingredient.unit}
+                                <div className="flex items-center gap-1">
+                                  <span
+                                    className={`text-xs ${
+                                      exceeds
+                                        ? "text-red-600 font-bold"
+                                        : "text-gray-700"
+                                    }`}
+                                  >
+                                    {amountUsed.toFixed(2)}
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    /
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {stock.toFixed(2)} {ingredient.unit}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Progress
+                                  value={percentage > 100 ? 100 : percentage}
+                                  className="h-2 flex-1"
+                                  indicatorClassName={
+                                    exceeds
+                                      ? "bg-red-500"
+                                      : percentage > 70
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
+                                  }
+                                />
+                                <span
+                                  className={`text-xs ${
+                                    exceeds ? "text-red-600" : "text-gray-500"
+                                  }`}
+                                >
+                                  {percentage.toFixed(0)}%
                                 </span>
                               </div>
+
+                              {exceeds && (
+                                <div className="text-xs text-red-600 text-right">
+                                  Faltan: {missing.toFixed(2)} {ingredient.unit}
+                                </div>
+                              )}
                             </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <Progress 
-                                value={percentage > 100 ? 100 : percentage}
-                                className="h-2 flex-1"
-                                indicatorClassName={
-                                  exceeds ? 'bg-red-500' : 
-                                  percentage > 70 ? 'bg-yellow-500' : 'bg-green-500'
-                                }
-                              />
-                              <span className={`text-xs ${
-                                exceeds ? 'text-red-600' : 'text-gray-500'
-                              }`}>
-                                {percentage.toFixed(0)}%
-                              </span>
-                            </div>
-                            
-                            {exceeds && (
-                              <div className="text-xs text-red-600 text-right">
-                                Faltan: {missing.toFixed(2)} {ingredient.unit}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        }
+                      )}
                     </CardContent>
                   </Card>
 
@@ -1012,19 +1401,26 @@ export default function ProductionPage() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3 pt-2">
-                        {missingIngredients.map(({ ingredient, missingAmount }) => (
-                          <div key={ingredient.id} className="flex justify-between items-center">
-                            <span className="text-sm font-medium">{ingredient.name}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-red-600">
-                                {missingAmount.toFixed(2)}
+                        {missingIngredients.map(
+                          ({ ingredient, missingAmount }) => (
+                            <div
+                              key={ingredient.id}
+                              className="flex justify-between items-center"
+                            >
+                              <span className="text-sm font-medium">
+                                {ingredient.name}
                               </span>
-                              <span className="text-xs text-gray-500">
-                                {ingredient.unit}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-red-600">
+                                  {missingAmount.toFixed(2)}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {ingredient.unit}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        )}
                       </CardContent>
                     </Card>
                   )}
@@ -1037,51 +1433,64 @@ export default function ProductionPage() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {currentIngredientsUsage.map(({ ingredient, amountUsed }) => {
-                        const newStock = ingredient.currentStock - amountUsed;
-                        const isLow = newStock < ingredient.minStock;
-                        const percentage = (newStock / ingredient.minStock) * 100;
+                      {currentIngredientsUsage.map(
+                        ({ ingredient, amountUsed }) => {
+                          const newStock = ingredient.currentStock - amountUsed;
+                          const isLow = newStock < ingredient.minStock;
+                          const percentage =
+                            (newStock / ingredient.minStock) * 100;
 
-                        return (
-                          <div key={ingredient.id} className="space-y-1">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium">{ingredient.name}</span>
-                              <div className="flex items-center gap-1">
-                                <span className={`text-xs ${
-                                  isLow ? 'text-red-600 font-bold' : 'text-gray-700'
-                                }`}>
-                                  {newStock.toFixed(2)}
+                          return (
+                            <div key={ingredient.id} className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">
+                                  {ingredient.name}
                                 </span>
-                                <span className="text-xs text-gray-400">/</span>
-                                <span className="text-xs text-gray-500">
-                                  {ingredient.minStock.toFixed(2)} min
+                                <div className="flex items-center gap-1">
+                                  <span
+                                    className={`text-xs ${
+                                      isLow
+                                        ? "text-red-600 font-bold"
+                                        : "text-gray-700"
+                                    }`}
+                                  >
+                                    {newStock.toFixed(2)}
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    /
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {ingredient.minStock.toFixed(2)} min
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <Progress
+                                  value={percentage > 100 ? 100 : percentage}
+                                  className="h-2 flex-1"
+                                  indicatorClassName={
+                                    isLow ? "bg-red-500" : "bg-green-500"
+                                  }
+                                />
+                                <span
+                                  className={`text-xs ${
+                                    isLow ? "text-red-600" : "text-gray-500"
+                                  }`}
+                                >
+                                  {percentage.toFixed(0)}%
                                 </span>
                               </div>
+
+                              {isLow && (
+                                <div className="text-xs text-red-600 text-right">
+                                  Stock bajo mínimo
+                                </div>
+                              )}
                             </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <Progress 
-                                value={percentage > 100 ? 100 : percentage}
-                                className="h-2 flex-1"
-                                indicatorClassName={
-                                  isLow ? 'bg-red-500' : 'bg-green-500'
-                                }
-                              />
-                              <span className={`text-xs ${
-                                isLow ? 'text-red-600' : 'text-gray-500'
-                              }`}>
-                                {percentage.toFixed(0)}%
-                              </span>
-                            </div>
-                            
-                            {isLow && (
-                              <div className="text-xs text-red-600 text-right">
-                                Stock bajo mínimo
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                          );
+                        }
+                      )}
                     </CardContent>
                   </Card>
                 </div>
@@ -1090,7 +1499,7 @@ export default function ProductionPage() {
                 <div className="pt-4 border-t">
                   <div className="flex flex-col gap-2">
                     {missingIngredients.length > 0 && (
-                      <Button 
+                      <Button
                         variant="destructive"
                         className="w-full"
                         onClick={() => setShowPurchaseDialog(true)}
@@ -1099,7 +1508,7 @@ export default function ProductionPage() {
                         Comprar ingredientes faltantes
                       </Button>
                     )}
-                    
+
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
@@ -1113,8 +1522,10 @@ export default function ProductionPage() {
                       >
                         Cancelar
                       </Button>
-                      <Button 
-                        variant={missingIngredients.length > 0 ? "default" : "primary"} 
+                      <Button
+                        variant={
+                          missingIngredients.length > 0 ? "default" : "default"
+                        }
                         className="flex-1"
                         onClick={addProduction}
                       >
@@ -1128,48 +1539,6 @@ export default function ProductionPage() {
               </div>
             </div>
           </div>
-
-          <DialogFooter className="p-4 bg-gray-50 border-t">
-            <div className="flex justify-between w-full items-center">
-              <div className="text-sm text-gray-600">
-                {selectedProducts.length} productos seleccionados
-                {missingIngredients.length > 0 && (
-                  <span className="ml-3 text-red-600">
-                    | {missingIngredients.length} ingredientes faltantes
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    setSelectedProducts([]);
-                    setMissingIngredients([]);
-                    setDueDate("");
-                    setShowTotalIngredients(false);
-                  }}
-                >
-                  Cancelar
-                </Button>
-                
-                {missingIngredients.length > 0 && (
-                  <Button
-                    variant="destructive"
-                    onClick={() => setShowPurchaseDialog(true)}
-                  >
-                    Crear Pedido de Compra
-                  </Button>
-                )}
-                
-                <Button onClick={addProduction}>
-                  {missingIngredients.length > 0
-                    ? "Crear Producción Pendiente"
-                    : "Iniciar Producción"}
-                </Button>
-              </div>
-            </div>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1181,7 +1550,7 @@ export default function ProductionPage() {
               Se requieren los siguientes ingredientes:
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <h4 className="font-medium mb-2">Ingredientes faltantes:</h4>
             <ul className="space-y-2">
@@ -1223,7 +1592,7 @@ function ProductionCard({
   ingredients,
   onStartProduction,
   showIngredientsUsage,
-  onToggleIngredientsUsage
+  onToggleIngredientsUsage,
 }: {
   production: Production;
   ingredients: Ingredient[];
@@ -1300,15 +1669,17 @@ function ProductionCard({
         )}
 
       <div className="mt-3">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onToggleIngredientsUsage}
           className="text-blue-600 hover:text-blue-800"
         >
-          {showIngredientsUsage ? "Ocultar ingredientes" : "Mostrar ingredientes a usar"}
+          {showIngredientsUsage
+            ? "Ocultar ingredientes"
+            : "Mostrar ingredientes a usar"}
         </Button>
-        
+
         {showIngredientsUsage && production.ingredientsUsage && (
           <div className="mt-2 p-2 bg-blue-50 rounded">
             <h4 className="font-medium text-sm text-blue-700">
