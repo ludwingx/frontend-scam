@@ -1,17 +1,17 @@
-"use client";
-import * as React from "react";
+// src/components/app-sidebar.tsx
+"use client"
+
+import * as React from "react"
 import {
   AlignVerticalSpaceAround,
-  AudioWaveform,
   Box,
   BriefcaseBusiness,
   Building,
   Building2,
   Cake,
-  Command,
   Container,
-  GalleryVerticalEnd,
   LayoutDashboard,
+  MapPinHouse,
   NotepadText,
   Package,
   PackagePlus,
@@ -22,22 +22,23 @@ import {
   UserRoundCog,
   Users,
   Wheat,
-} from "lucide-react";
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
+} from "lucide-react"
+import { NavProjects } from "@/components/nav-projects"
+import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { User } from "@/types/user";
-import { NavMain } from "./nav-main";
-import Image from "next/image";
-import { fetchProfileData } from "@/services/userService";
+} from "@/components/ui/sidebar"
+import { User } from "@/types/user"
+import { NavMain } from "./nav-main"
+import Image from "next/image"
+import { fetchProfileData } from "@/services/userService"
+import { TeamSwitcher } from "./team-switcher"
 
-// Datos de ejemplo
+// Datos estáticos fuera del componente
 const data = {
   user: {
     name: "shadcn",
@@ -46,19 +47,22 @@ const data = {
   },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      id: 'suc-1',
+      name: "Sucursal 1",
+      logo: MapPinHouse,
+      plan: "Radial 19 1/2",
     },
     {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
+      id: 'suc-2',
+      name: "Sucursal 2",
+      logo: MapPinHouse,
+      plan: "Av Virgen de Cotoca",
     },
     {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      id: 'suc-3',
+      name: "Sucursal 3",
+      logo: MapPinHouse,
+      plan: "Radial 26",
     },
   ],
   projects: [
@@ -110,22 +114,18 @@ const data = {
           title: "Ingredientes",
           url: "/ingredients",
           icon: ShoppingBasket
-
         },
-
         {
           title: "Recetas",
           url: "/recipes",
           icon: NotepadText
-        
-      },
-      {
-        title: "Productos",
-        url: "/products",
-        icon: Package
-      },
-    ]
-
+        },
+        {
+          title: "Productos",
+          url: "/products",
+          icon: Package
+        },
+      ]
     },
     {
       title: "Inventarios",
@@ -167,40 +167,42 @@ const data = {
       ]
     }
   ],
-};
+}
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [userData, setUserData] = React.useState<User | null>(null);
 
+  // Carga inicial del perfil del usuario (solo una vez)
   React.useEffect(() => {
-    const fetchData = async () => {
+    const loadUserData = async () => {
       try {
         const data = await fetchProfileData();
-        console.log("📌 Datos obtenidos en AppSidebar:", data);
         setUserData(data);
-     
       } catch (error) {
-        console.error("❌ Error fetching user data:", error);
+        console.error("Error loading user data:", error);
       }
     };
-  
-    fetchData();
+
+    loadUserData();
   }, []);
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <Image
-          src="/SCZ-Alimentos-Logo.svg"
-          alt="Logo"
-          width={200}
-          height={200}
-          className="flex justify-center items-center"
-          priority // Asegura que la imagen se cargue con prioridad
-        />
+        <TeamSwitcher teams={data.teams} />
+        <div className="flex flex-col items-center">
+          <Image
+            src="/SCZ-Alimentos-Logo.svg"
+            alt="Logo"
+            width={200}
+            height={200}
+            className="flex justify-center items-center"
+            priority
+          />
+        </div>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain}  />
+        <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>

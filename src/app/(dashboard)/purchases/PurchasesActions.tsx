@@ -34,10 +34,10 @@ interface Item {
   unit_measurement?: string;
   proveedor?: string;
   subtotal?: number;
-  tipo?: "Comestible" | "No comestible"; // Tipo de ítem (opcional)
+  tipo?: "Comestible" | "No comestible";
 }
 
-// Datos de ejemplo (no se modifican)
+// Datos de ejemplo
 const comestibles = [
   {
     id: 1,
@@ -75,20 +75,18 @@ const noComestibles = [
 
 export function PurchasesActions() {
   const [ingredients, setIngredients] = useState<Item[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Función para eliminar un ítem
   const handleRemoveItem = (id: number) => {
     setIngredients((prev) => prev.filter((ing) => ing.id !== id));
   };
 
-  // Función para calcular el subtotal de un ítem
   const calculateSubtotal = (item: Item) => {
     const cantidad = item.cantidad || 0;
     const precioUnitario = item.precioUnitario || 0;
     return cantidad * precioUnitario;
   };
 
-  // Función para calcular el total de la compra
   const calculateTotal = () => {
     return ingredients.reduce(
       (total, ing) => total + calculateSubtotal(ing),
@@ -96,17 +94,28 @@ export function PurchasesActions() {
     );
   };
 
-  // Función para enviar el JSON por consola
   const handleSubmit = () => {
     console.log("Datos de la compra:", JSON.stringify(ingredients, null, 2));
+    setDialogOpen(false);
   };
 
-  // Filtrar los ingredientes disponibles
   const getAvailableIngredients = (tipo: "Comestible" | "No comestible") => {
     const allIngredients = tipo === "Comestible" ? comestibles : noComestibles;
     return allIngredients.filter(
       (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
     );
+  };
+
+  // Función modificada para agregar items sin cerrar el diálogo
+  const addItem = (tipo: "Comestible" | "No comestible") => {
+    setIngredients((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        nombre: "",
+        tipo: tipo,
+      },
+    ]);
   };
 
   return (
@@ -116,12 +125,17 @@ export function PurchasesActions() {
         description="Aquí podrás crear una compra."
         submitButtonText="Crear Compra"
         trigger={
-          <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+          <Button 
+            className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            onClick={() => setDialogOpen(true)}
+          >
             <CirclePlus />
             <span>Crear Compra</span>
           </Button>
         }
-        onSubmit={handleSubmit} // Enviar JSON por consola al hacer submit
+        onSubmit={handleSubmit}
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -181,7 +195,8 @@ export function PurchasesActions() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
                                 const updatedItems = [...ingredients];
                                 updatedItems[index].tipo = "Comestible";
                                 setIngredients(updatedItems);
@@ -194,7 +209,8 @@ export function PurchasesActions() {
                               className="bg-red-600 text-white hover:bg-red-600/90"
                               variant="outline"
                               size="sm"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.preventDefault();
                                 const updatedItems = [...ingredients];
                                 updatedItems[index].tipo = "No comestible";
                                 setIngredients(updatedItems);
@@ -209,9 +225,8 @@ export function PurchasesActions() {
                             value={
                               <div className="inline">
                                 {ing.nombre}{" "}
-                                <span  className="text-sm text-gray-500">
-                                  {/* Muestra "Seleccionar un item" si no selecciono nada */}
-                                  { ing.nombre === "" ?   "Seleccionar un item" : ""}
+                                <span className="text-sm text-gray-500">
+                                  {ing.nombre === "" ? "Seleccionar un item" : ""}
                                   {
                                     (ing.tipo === "Comestible"
                                       ? comestibles
@@ -229,7 +244,6 @@ export function PurchasesActions() {
                               updatedItems[index].id = item.id;
                               updatedItems[index].unit_measurement =
                                 item.unit_measurement;
-                              // No sobrescribir la cantidad del input
                               setIngredients(updatedItems);
                             }}
                             options={getAvailableIngredients(ing.tipo)}
@@ -259,7 +273,6 @@ export function PurchasesActions() {
                           }}
                         />
                       </TableCell>
-                 
                       <TableCell className="w-[120px] text-center">
                         <Input
                           className="text-center"
@@ -282,9 +295,12 @@ export function PurchasesActions() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleRemoveItem(ing.id)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleRemoveItem(ing.id);
+                          }}
                         >
-                          <Trash2 className="w-4 h-4 text-red-600 " />
+                          <Trash2 className="w-4 h-4 text-red-600" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -299,15 +315,9 @@ export function PurchasesActions() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setIngredients((prev) => [
-                              ...prev,
-                              {
-                                id: Date.now(),
-                                nombre: "",
-                                tipo: "Comestible",
-                              },
-                            ]);
+                          onClick={(e) => {
+                            e.preventDefault();
+                            addItem("Comestible");
                           }}
                         >
                           <Utensils className="w-4 h-4 mr-2" />
@@ -316,15 +326,9 @@ export function PurchasesActions() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            setIngredients((prev) => [
-                              ...prev,
-                              {
-                                id: Date.now(),
-                                nombre: "",
-                                tipo: "No comestible",
-                              },
-                            ]);
+                          onClick={(e) => {
+                            e.preventDefault();
+                            addItem("No comestible");
                           }}
                         >
                           <Box className="w-4 h-4 mr-2" />
@@ -338,7 +342,6 @@ export function PurchasesActions() {
                     <TableCell className="w-[100px] text-center">
                       <Input type="text" disabled />
                     </TableCell>
-
                     <TableCell className="w-[100px] text-right"></TableCell>
                     <TableCell className="w-[40px]"></TableCell>
                   </TableRow>
