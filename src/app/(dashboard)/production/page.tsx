@@ -914,7 +914,7 @@ export default function ProductionPage() {
   const totalIngredientsUsage = calculateTotalIngredientsUsage();
 
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col min-h-screen p-6 bg-gray-50 ">
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>

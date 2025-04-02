@@ -1,74 +1,74 @@
-// src/components/team-switcher.tsx
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronsUpDown } from "lucide-react"
-import { useSucursal } from "@/hooks/use-sucursal"
+import * as React from "react";
+import { ChevronsUpDown, MapPinHouse } from "lucide-react";
+import { useSucursal } from "@/hooks/use-sucursal";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 interface Team {
-  id: string
-  name: string
-  logo: React.ElementType
-  plan: string
+  id: string;
+  name: string;
+  plan: string;
+  logo: React.ElementType;
 }
 
-export function TeamSwitcher({ teams }: { teams: Team[] }) {
-  const { isMobile } = useSidebar()
-  const { sucursalActual, setSucursal } = useSucursal()
+export function TeamSwitcher({ teams = [] }: { teams?: Team[] }) {
+  const { isMobile } = useSidebar();
+  const { sucursalActual, setSucursal } = useSucursal();
+  
+  // Logo único para todas las sucursales
+  const DefaultLogo = MapPinHouse;
 
   // Efecto para manejar la persistencia
   React.useEffect(() => {
-    // Solo se ejecuta en el cliente
     if (typeof window !== 'undefined') {
-      const savedSucursal = localStorage.getItem('sucursal-actual')
+      const savedSucursal = localStorage.getItem('sucursal-actual');
       
       if (savedSucursal) {
         try {
-          const parsed = JSON.parse(savedSucursal)
-          const validTeam = teams.find(t => t.id === parsed.id)
+          const parsed = JSON.parse(savedSucursal);
+          const validTeam = teams.find(t => t.id === parsed.id);
           if (validTeam) {
-            setSucursal(validTeam)
-            return
+            setSucursal(validTeam);
+            return;
           }
         } catch (e) {
-          console.error("Error parsing saved sucursal", e)
-          localStorage.removeItem('sucursal-actual')
+          console.error("Error parsing saved sucursal", e);
+          localStorage.removeItem('sucursal-actual');
         }
       }
 
-      // Si no hay sucursal guardada válida, establecer la primera
       if (teams.length > 0 && !sucursalActual) {
-        setSucursal(teams[0])
+        setSucursal(teams[0]);
       }
     }
-  }, []) // Solo se ejecuta una vez al montar
+  }, [teams, sucursalActual, setSucursal]);
 
   // Efecto para guardar cambios
   React.useEffect(() => {
-    if (sucursalActual) {
-      localStorage.setItem('sucursal-actual', JSON.stringify(sucursalActual))
+    if (sucursalActual && typeof window !== 'undefined') {
+      localStorage.setItem('sucursal-actual', JSON.stringify(sucursalActual));
     }
-  }, [sucursalActual])
+  }, [sucursalActual]);
 
   const handleSucursalChange = (team: Team) => {
-    setSucursal(team)
-  }
+    setSucursal(team);
+  };
 
-  if (!sucursalActual) {
-    return null
+  if (!sucursalActual || teams.length === 0) {
+    return null;
   }
 
   return (
@@ -81,7 +81,7 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <sucursalActual.logo className="size-4" />
+                <DefaultLogo className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
@@ -108,7 +108,7 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
                 className="gap-2 p-2"
               >
                 <div className="flex size-6 items-center justify-center rounded-sm border">
-                  <team.logo className="size-4 shrink-0" />
+                  <DefaultLogo className="size-4 shrink-0" />
                 </div>
                 <div>
                   <p className="font-medium">{team.name}</p>
@@ -120,5 +120,5 @@ export function TeamSwitcher({ teams }: { teams: Team[] }) {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }
