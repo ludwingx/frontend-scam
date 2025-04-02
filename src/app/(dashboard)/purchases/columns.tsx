@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input";
 import { TableHeader, TableRow, TableHead, TableBody, TableCell, TableFooter, Table } from "@/components/ui/table";
 import { Plus, X, Utensils, Box, Trash2 } from "lucide-react";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
-import { ReusableSelect } from "@/components/ReusableSelect";
 import {
   Select,
   SelectContent,
@@ -31,37 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Combobox } from "./ComboBox";
+import { dataFicticia } from "./data";
 
-// Datos de ejemplo para ingredientes
-const comestibles = [
-  { id: 1, nombre: "Harina", quantity: 1, unit_measurement: "kilo(s)", proveedor: "Proveedor A" },
-  { id: 2, nombre: "Azúcar", quantity: 300, unit_measurement: "gramo(s)", proveedor: "Proveedor B" },
-  { id: 3, nombre: "Huevo", quantity: 200, unit_measurement: "unidad(es)", proveedor: "Proveedor C" },
-];
+export type Purchases = typeof dataFicticia.compras[0];
 
-const noComestibles = [
-  { id: 4, nombre: "Cajas de cartón", quantity: 100, unit_measurement: "unidad(es)" },
-  { id: 5, nombre: "Lavandina", quantity: 100, unit_measurement: "litro(s)" },
-  { id: 6, nombre: "Stickers", quantity: 100, unit_measurement: "unidad(es)" },
-];
-
-// Tipo para definir la estructura de los datos de compras
-export type Purchases = {
-  id: number;
-  fecha_compra: string;
-  sucursal: string;
-  detalle_compra: {
-    id: number;
-    nombre_ingrediente: string;
-    cantidad: number;
-    precio_unitario: number;
-    unit_measurement?: string;
-    tipo?: "Comestible" | "No comestible";
-  }[];
-  total_compra: number;
-};
-
-// Columnas de la tabla
 export const columns: ColumnDef<Purchases>[] = [
   {
     id: "rowNumber",
@@ -161,15 +133,15 @@ export const columns: ColumnDef<Purchases>[] = [
       });
 
       const getAvailableIngredients = (tipo: "Comestible" | "No comestible") => {
-        return tipo === "Comestible" ? comestibles : noComestibles;
+        return tipo === "Comestible" ? dataFicticia.comestibles : dataFicticia.noComestibles;
       };
 
       const handleAgregarIngrediente = () => {
         if (nuevoIngrediente.nombre_ingrediente && nuevoIngrediente.cantidad > 0 && nuevoIngrediente.precio_unitario >= 0) {
           const nuevoId = detalles.length > 0 ? Math.max(...detalles.map(d => d.id)) + 1 : 1;
           const selectedItem = nuevoIngrediente.tipo === "Comestible" 
-            ? comestibles.find(item => item.nombre === nuevoIngrediente.nombre_ingrediente)
-            : noComestibles.find(item => item.nombre === nuevoIngrediente.nombre_ingrediente);
+            ? dataFicticia.comestibles.find(item => item.nombre === nuevoIngrediente.nombre_ingrediente)
+            : dataFicticia.noComestibles.find(item => item.nombre === nuevoIngrediente.nombre_ingrediente);
           
           setDetalles([...detalles, {
             id: nuevoId,
@@ -202,8 +174,8 @@ export const columns: ColumnDef<Purchases>[] = [
 
       const handleChangeProducto = (id: number, newProductName: string, tipo: "Comestible" | "No comestible") => {
         const selectedItem = tipo === "Comestible" 
-          ? comestibles.find(item => item.nombre === newProductName)
-          : noComestibles.find(item => item.nombre === newProductName);
+          ? dataFicticia.comestibles.find(item => item.nombre === newProductName)
+          : dataFicticia.noComestibles.find(item => item.nombre === newProductName);
         
         setDetalles(detalles.map(d => 
           d.id === id ? { 
@@ -261,9 +233,18 @@ export const columns: ColumnDef<Purchases>[] = [
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Sucursales:</SelectLabel>
-                      <SelectItem value="Radial 19">Radial 19</SelectItem>
-                      <SelectItem value="Villa 1ro de mayo">Villa 1ro de mayo</SelectItem>
-                      <SelectItem value="Radial 26">Radial 26</SelectItem>
+                      {dataFicticia.sucursales.map(sucursal => (
+                        <SelectItem key={sucursal.id} value={sucursal.nombre}>
+                          <div className="flex justify-between w-full">
+                            <span>{sucursal.nombre}</span>
+                            {sucursal.logo && (
+                              <span className="ml-2">
+                                <sucursal.logo className="h-4 w-4" />
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -275,7 +256,12 @@ export const columns: ColumnDef<Purchases>[] = [
                     <TableHeader className="bg-gray-100">
                       <TableRow>
                         <TableHead className="w-[40px] text-center">N°</TableHead>
-                        <TableHead className="min-w-[220px] text-center">Ítem</TableHead>
+                        <TableHead className="min-w-[250px]">
+                          <div className="flex justify-between">
+                            <span>Ítem</span>
+                            <span className="text-gray-500 font-normal">Presentación</span>
+                          </div>
+                        </TableHead>
                         <TableHead className="w-[100px] text-center">Cantidad</TableHead>
                         <TableHead className="w-[120px] text-center">Precio Unitario (Bs.)</TableHead>
                         <TableHead className="w-[100px] text-right">Subtotal</TableHead>
@@ -283,158 +269,202 @@ export const columns: ColumnDef<Purchases>[] = [
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {detalles.map((ing, index) => (
-                        <TableRow key={ing.id}>
-                          <TableCell className="text-center font-medium">{index + 1}</TableCell>
-                          <TableCell>
-                            <Combobox
-                              value={ing.nombre_ingrediente}
-                              onSelect={(item) => {
-                                if (ing.tipo) {
-                                  handleChangeProducto(ing.id, item, ing.tipo);
-                                }
-                              }}
-                              options={ing.tipo ? getAvailableIngredients(ing.tipo).map(item => item.nombre) : []}
-                              placeholder="Seleccionar ítem"
-                              renderOption={(item) => {
-                                const fullItem = (ing.tipo === "Comestible" ? comestibles : noComestibles)
-                                  .find(i => i.nombre === item);
-                                return (
-                                  <div className="flex justify-between w-full">
-                                    <span>{item}</span>
-                                    {fullItem && (
-                                      <span className="text-sm text-gray-500">
-                                        {fullItem.quantity} {fullItem.unit_measurement}
-                                      </span>
-                                    )}
+                      {detalles.map((ing, index) => {
+                        const producto = ing.tipo 
+                          ? (ing.tipo === "Comestible" 
+                              ? dataFicticia.comestibles 
+                              : dataFicticia.noComestibles)
+                            .find(p => p.nombre === ing.nombre_ingrediente)
+                          : null;
+
+                        return (
+                          <TableRow key={ing.id}>
+                            <TableCell className="text-center font-medium">{index + 1}</TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <Combobox
+                                  value={ing.nombre_ingrediente}
+                                  onSelect={(item) => {
+                                    if (ing.tipo) {
+                                      handleChangeProducto(ing.id, item, ing.tipo);
+                                    }
+                                  }}
+                                  options={ing.tipo ? getAvailableIngredients(ing.tipo).map(item => item.nombre) : []}
+                                  placeholder="Seleccionar ítem"
+                                  renderOption={(item) => {
+                                    const fullItem = (ing.tipo === "Comestible" 
+                                      ? dataFicticia.comestibles 
+                                      : dataFicticia.noComestibles)
+                                      .find(i => i.nombre === item);
+                                    return (
+                                      <div className="flex justify-between w-full">
+                                        <span>{item}</span>
+                                        {fullItem && (
+                                          <span className="text-gray-500">
+                                            {fullItem.quantity} {fullItem.unit_measurement}
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  }}
+                                />
+                                {producto && (
+                                  <div className="text-sm text-gray-500 mt-1">
+                                    {producto.quantity} {producto.unit_measurement}
                                   </div>
-                                );
-                              }}
-                            />
-                            {ing.unit_measurement && (
-                              <span className="text-sm text-gray-500 ml-1">({ing.unit_measurement})</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              className="text-center"
-                              type="number"
-                              value={ing.cantidad}
-                              min="0"
-                              step="0.01"
-                              onChange={(e) => handleChangeIngrediente(ing.id, 'cantidad', parseFloat(e.target.value))}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Input
-                              className="text-center"
-                              type="number"
-                              value={ing.precio_unitario}
-                              min="0"
-                              step="0.01"
-                              onChange={(e) => handleChangeIngrediente(ing.id, 'precio_unitario', parseFloat(e.target.value))}
-                            />
-                          </TableCell>
-                          <TableCell className="text-right">
-                            Bs. {(ing.cantidad * ing.precio_unitario).toFixed(2)}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEliminarIngrediente(ing.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                      {/* Fila para nuevo ingrediente */}
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                className="text-center"
+                                type="number"
+                                value={ing.cantidad}
+                                min="0"
+                                step="0.01"
+                                onChange={(e) => handleChangeIngrediente(ing.id, 'cantidad', parseFloat(e.target.value))}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                className="text-center"
+                                type="number"
+                                value={ing.precio_unitario}
+                                min="0"
+                                step="0.01"
+                                onChange={(e) => handleChangeIngrediente(ing.id, 'precio_unitario', parseFloat(e.target.value))}
+                              />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              Bs. {(ing.cantidad * ing.precio_unitario).toFixed(2)}
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEliminarIngrediente(ing.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                       <TableRow>
                         <TableCell className="text-center font-medium">
                           {detalles.length + 1}
                         </TableCell>
                         <TableCell>
-                          {!nuevoIngrediente.tipo ? (
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setNuevoIngrediente({...nuevoIngrediente, tipo: "Comestible"});
-                                }}
-                              >
-                                <Utensils className="w-4 h-4 mr-2" />
-                                Comestible
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setNuevoIngrediente({...nuevoIngrediente, tipo: "No comestible"});
-                                }}
-                              >
-                                <Box className="w-4 h-4 mr-2" />
-                                No comestible
-                              </Button>
-                            </div>
-                          ) : (
-                            <Combobox
-                              value={nuevoIngrediente.nombre_ingrediente || "Seleccionar ítem"}
-                              onSelect={(item) => {
-                                const selectedItem = (nuevoIngrediente.tipo === "Comestible" ? comestibles : noComestibles)
-                                  .find(i => i.nombre === item);
-                                setNuevoIngrediente({
-                                  ...nuevoIngrediente,
-                                  nombre_ingrediente: item,
-                                  unit_measurement: selectedItem?.unit_measurement || ""
-                                });
-                              }}
-                              options={getAvailableIngredients(nuevoIngrediente.tipo).map(item => item.nombre)}
-                              placeholder="Seleccionar ítem"
-                              renderOption={(item) => {
-                                const fullItem = (nuevoIngrediente.tipo === "Comestible" ? comestibles : noComestibles)
-                                  .find(i => i.nombre === item);
-                                return (
-                                  <div className="flex justify-between w-full">
-                                    <span>{item}</span>
-                                    {fullItem && (
-                                      <span className="text-sm text-gray-500">
-                                        {fullItem.quantity} {fullItem.unit_measurement}
-                                      </span>
-                                    )}
+                          <div className="flex flex-col">
+                            {!nuevoIngrediente.tipo ? (
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setNuevoIngrediente({...nuevoIngrediente, tipo: "Comestible"});
+                                  }}
+                                >
+                                  <Utensils className="w-4 h-4 mr-2" />
+                                  Comestible
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setNuevoIngrediente({...nuevoIngrediente, tipo: "No comestible"});
+                                  }}
+                                >
+                                  <Box className="w-4 h-4 mr-2" />
+                                  No comestible
+                                </Button>
+                              </div>
+                            ) : (
+                              <>
+                                <Combobox
+                                  value={nuevoIngrediente.nombre_ingrediente || "Seleccionar ítem"}
+                                  onSelect={(item) => {
+                                    const selectedItem = (nuevoIngrediente.tipo === "Comestible" 
+                                      ? dataFicticia.comestibles 
+                                      : dataFicticia.noComestibles)
+                                      .find(i => i.nombre === item);
+                                    setNuevoIngrediente({
+                                      ...nuevoIngrediente,
+                                      nombre_ingrediente: item,
+                                      unit_measurement: selectedItem?.unit_measurement || ""
+                                    });
+                                  }}
+                                  options={getAvailableIngredients(nuevoIngrediente.tipo).map(item => item.nombre)}
+                                  placeholder="Seleccionar ítem"
+                                  renderOption={(item) => {
+                                    const fullItem = (nuevoIngrediente.tipo === "Comestible" 
+                                      ? dataFicticia.comestibles 
+                                      : dataFicticia.noComestibles)
+                                      .find(i => i.nombre === item);
+                                    return (
+                                      <div className="flex justify-between w-full">
+                                        <span>{item}</span>
+                                        {fullItem && (
+                                          <span className="text-gray-500">
+                                            {fullItem.quantity} {fullItem.unit_measurement}
+                                          </span>
+                                        )}
+                                      </div>
+                                    );
+                                  }}
+                                />
+                                {nuevoIngrediente.nombre_ingrediente && (
+                                  <div className="text-sm text-gray-500 mt-1">
+                                    {(() => {
+                                      const producto = (nuevoIngrediente.tipo === "Comestible" 
+                                        ? dataFicticia.comestibles 
+                                        : dataFicticia.noComestibles)
+                                        .find(p => p.nombre === nuevoIngrediente.nombre_ingrediente);
+                                      return producto ? (
+                                        <span>
+                                          {producto.quantity} {producto.unit_measurement}
+                                        </span>
+                                      ) : null;
+                                    })()}
                                   </div>
-                                );
-                              }}
-                            />
-                          )}
+                                )}
+                              </>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Input
                             className="text-center"
                             type="number"
-                            placeholder="0"
-                            min="0"
-                            step="0.01"
                             value={nuevoIngrediente.cantidad || ""}
-                            onChange={(e) => setNuevoIngrediente({...nuevoIngrediente, cantidad: parseFloat(e.target.value)})}
+                            min="0"
+                            step="0.01"
+                            onChange={(e) => setNuevoIngrediente({
+                              ...nuevoIngrediente,
+                              cantidad: parseFloat(e.target.value)
+                            })}
+                            placeholder="Cantidad"
                           />
                         </TableCell>
                         <TableCell>
                           <Input
                             className="text-center"
                             type="number"
-                            placeholder="0.00"
+                            value={nuevoIngrediente.precio_unitario || ""}
                             min="0"
                             step="0.01"
-                            value={nuevoIngrediente.precio_unitario || ""}
-                            onChange={(e) => setNuevoIngrediente({...nuevoIngrediente, precio_unitario: parseFloat(e.target.value)})}
+                            onChange={(e) => setNuevoIngrediente({
+                              ...nuevoIngrediente,
+                              precio_unitario: parseFloat(e.target.value)
+                            })}
+                            placeholder="Precio"
                           />
                         </TableCell>
-                        <TableCell className="text-right">
-                          Bs. {(nuevoIngrediente.cantidad * nuevoIngrediente.precio_unitario).toFixed(2)}
+                        <TableCell className="text-right text-gray-600">
+                          {nuevoIngrediente.cantidad > 0 && nuevoIngrediente.precio_unitario > 0 ? 
+                            `Bs. ${(nuevoIngrediente.cantidad * nuevoIngrediente.precio_unitario).toFixed(2)}` : ''}
                         </TableCell>
                         <TableCell>
                           <Button
@@ -443,7 +473,7 @@ export const columns: ColumnDef<Purchases>[] = [
                             onClick={handleAgregarIngrediente}
                             disabled={!nuevoIngrediente.nombre_ingrediente || nuevoIngrediente.cantidad <= 0 || nuevoIngrediente.precio_unitario < 0}
                           >
-                            <Plus className="h-4 w-4" />
+                            <Plus className="h-4 w-4 text-green-600" />
                           </Button>
                         </TableCell>
                       </TableRow>
