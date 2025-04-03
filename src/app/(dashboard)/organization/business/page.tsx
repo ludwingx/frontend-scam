@@ -79,7 +79,7 @@ export default function BusinessPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col min-h-screen p-6 ">
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
           <BreadcrumbList>

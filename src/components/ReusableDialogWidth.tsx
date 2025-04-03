@@ -1,4 +1,4 @@
-"use client"; // Mark as Client Component
+"use client";
 
 import {
   Dialog,
@@ -18,9 +18,10 @@ interface ReusableDialogProps {
   trigger: ReactNode;
   children: ReactNode;
   onSubmit?: (e: React.FormEvent) => void;
-  onClose?: () => void; // Function to handle closing the dialog
+  onClose?: () => void;
   submitButtonText?: string;
-  isOpen?: boolean; // Add isOpen to the interface
+  isOpen?: boolean;
+  className?: string;
 }
 
 export function ReusableDialogWidth({
@@ -30,38 +31,61 @@ export function ReusableDialogWidth({
   children,
   onSubmit,
   onClose,
-  submitButtonText,
-  isOpen = false, // Default value for isOpen
+  submitButtonText = "Guardar",
+  isOpen = false,
+  className = "",
 }: ReusableDialogProps) {
-  const [internalIsOpen, setInternalIsOpen] = useState(isOpen); // Use isOpen prop
+  const [internalIsOpen, setInternalIsOpen] = useState(isOpen);
 
   const handleClose = () => {
-    setInternalIsOpen(false); // Close the dialog
-    if (onClose) onClose(); // Call onClose if defined
+    setInternalIsOpen(false);
+    onClose?.();
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setInternalIsOpen(open);
+    if (!open) {
+      onClose?.();
+    }
   };
 
   return (
-    <Dialog open={internalIsOpen} onOpenChange={setInternalIsOpen}>
-      <DialogTrigger asChild onClick={() => setInternalIsOpen(true)}>
+    <Dialog open={internalIsOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
         {trigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[1000px] sm:max-h-[90vh] overflow-y-auto bg-white">
+      <DialogContent 
+        className={`sm:max-w-[1000px] max-h-[90vh] overflow-y-auto ${className}`}
+      >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+          {description && (
+            <DialogDescription className="text-muted-foreground">
+              {description}
+            </DialogDescription>
+          )}
         </DialogHeader>
         <form
           onSubmit={(e) => {
-            e.preventDefault(); // Prevenir el comportamiento por defecto del formulario
-            if (onSubmit) {
-              onSubmit(e); // Pasar el evento a la función onSubmit
-            }
-            handleClose();
+            e.preventDefault();
+            onSubmit?.(e);
           }}
+          className="space-y-6"
         >
-          {children}
-          <DialogFooter className="flex justify-end">
-            <Button type="submit">{submitButtonText}</Button>
+          <div className="py-4">
+            {children}
+          </div>
+          <DialogFooter className="sm:justify-end gap-2">
+            <Button 
+              variant="outline" 
+              type="button" 
+              onClick={handleClose}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">
+              {submitButtonText}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

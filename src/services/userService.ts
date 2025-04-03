@@ -6,45 +6,36 @@ import { revalidatePath } from "next/cache";
 
 type ApiResponse = {
   success: boolean;
-  data: User[] | null;
+  data: User[] | User | null;
   message: string;
 };
 
-const getAuthToken = async (): Promise<string> => {
+// Datos ficticios para desarrollo
+const mockUser: User = {
+  id: 1,
+  full_name: "Usuario Demo",
+  rol_name: "Invitado",
+  password: "demo-password",
+  ci: "0000000",
+  rol_id: 1,
+  status: 1
+};
+
+const getAuthToken = async (): Promise<string | null> => {
   const token = (await cookies())?.get('token')?.value;
-  if (!token) throw new Error("No se encontró el token de autenticación.");
-  return token;
+  return token || null; // Devuelve null en lugar de lanzar error
 };
 
 const getApiUrl = (): string => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
-  if (!API_URL) throw new Error("No se encontró la API_URL en las variables de entorno.");
-  return API_URL;
-};
-export const login = async (ci: string, password: string) => {
-  const API_URL = getApiUrl();
-
-  try {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ ci, password }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Error en la autenticación');
+  if (!API_URL) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn("No se encontró la API_URL en las variables de entorno. Usando modo desarrollo con datos ficticios.");
+      return ''; // Devuelve string vacío para desarrollo
     }
-
-    const data = await response.json();
-    console.log("Respuesta del backend:", data); // Depuración
-    return data;
-  } catch (error) {
-    console.error("Error en la autenticación:", error);
-    throw error;
+    throw new Error("No se encontró la API_URL en las variables de entorno.");
   }
+  return API_URL;
 };
 export const fetchUserData = async (): Promise<User[] | null> => {
   const token = await getAuthToken();
@@ -71,21 +62,56 @@ export const fetchUserData = async (): Promise<User[] | null> => {
     }
 
     console.log("Fetched users:", apiResponse.data);
-    return apiResponse.data;
+    return apiResponse.data as User[];
   } catch (error) {
     console.error("Error fetching users:", error);
     throw error;
   }
 };
+export const login = async (ci: string, password: string) => {
+  const API_URL = getApiUrl();
 
-export async function fetchProfileData(): Promise<User> {
+  // En desarrollo, si no hay API_URL, devolvemos un mock
+  if (!API_URL && process.env.NODE_ENV === 'development') {
+    return {
+      token: 'demo-token',
+      user: mockUser
+    };
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ci, password }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error en la autenticación');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error en la autenticación:", error);
+    throw error;
+  }
+};
+
+export const fetchProfileData = async (): Promise<User> => {
   const token = await getAuthToken();
   const user_id = (await cookies()).get('user_id')?.value;
   const API_URL = getApiUrl();
 
-  if (!user_id) {
-    throw new Error("No se encontró el user_id en las cookies.");
+  // En desarrollo, si no hay token, devolvemos el mock
+  if ((!token || !user_id) && process.env.NODE_ENV === 'development') {
+    return mockUser;
   }
+
+  if (!token) throw new Error("No autenticado");
+  if (!user_id) throw new Error("No se encontró el user_id en las cookies.");
 
   try {
     const response = await fetch(`${API_URL}/api/user/${user_id}`, {
@@ -102,28 +128,27 @@ export async function fetchProfileData(): Promise<User> {
     }
 
     const rawResponse = await response.json();
-    console.log("Raw API Response:", rawResponse);
-
-    const apiResponse: ApiResponse = rawResponse;
+    const apiResponse = rawResponse as ApiResponse;
 
     if (!apiResponse.success || !apiResponse.data) {
       throw new Error('Respuesta del servidor no válida');
     }
 
-    // Handle both array and single object responses
     const userData = Array.isArray(apiResponse.data) ? apiResponse.data[0] : apiResponse.data;
 
     if (!userData) {
       throw new Error('No se encontraron datos del perfil');
     }
 
-    console.log("Perfil obtenido:", userData);
     return userData;
   } catch (error) {
     console.error("Error al obtener el perfil:", error);
-    throw new Error(`Error al obtener el perfil: ${error instanceof Error ? error.message : "Error desconocido"}`);
+    if (process.env.NODE_ENV === 'development') {
+      return mockUser;
+    }
+    throw error;
   }
-}
+};
 
 
 export async function createUser(user: Omit<User, 'id'>): Promise<User> {

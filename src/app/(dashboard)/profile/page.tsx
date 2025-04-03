@@ -66,7 +66,7 @@ export default function ProfilePage() { // Exportación por defecto
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col min-h-screen p-6 ">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Breadcrumb>
@@ -129,7 +129,7 @@ export default function ProfilePage() { // Exportación por defecto
               title="Editar Perfil"
               description="Actualiza la información de tu perfil."
               trigger={
-                <Button className="mt-4 px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition-colors duration-200">
+                <Button className="mt-4 px-6 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/80 transition-colors duration-200">
                   Editar Perfil
                 </Button>
               }

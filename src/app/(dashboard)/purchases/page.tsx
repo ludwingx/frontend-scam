@@ -17,29 +17,29 @@ export default function Page() {
   const data = dataFicticia.compras;
 
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col min-h-screen p-4 md:p-6 bg-background">
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground"
               >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+              <BreadcrumbPage className="text-sm font-medium text-foreground">
                 Compras
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        <h2 className="text-3xl font-semibold text-gray-900">Compras</h2>
-        <small className="text-sm font-medium text-gray-600">
+        <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Compras</h2>
+        <small className="text-sm font-medium text-muted-foreground">
           Aquí podrás gestionar las compras de ingredientes y materiales.
         </small>
       </div>
@@ -48,13 +48,13 @@ export default function Page() {
         <PurchasesActions />
       </div>
 
-      <div className="flex flex-col gap-4 mb-6 md:mb-0 md:overflow-x-auto">
+      <div className="flex flex-col gap-4 mb-6 md:mb-0 overflow-x-auto">
         <DataTable
           columns={columns}
           data={data}
           enableFilter
-          filterPlaceholder="Filtrar por fecha..."
-          filterColumn="fecha_compra" // Cambiado de "sucursal" a "fecha_compra"
+          filterPlaceholder="Filtrar por fecha de compra..."
+          filterColumn="fecha_compra"
           enablePagination
           enableRowSelection
           enableColumnVisibility

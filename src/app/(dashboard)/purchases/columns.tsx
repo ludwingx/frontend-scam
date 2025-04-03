@@ -59,7 +59,9 @@ export const columns: ColumnDef<Purchases>[] = [
       return (
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" className="w-full bg-green-100 hover:bg-green-200">Ver Detalle</Button>
+            <Button variant="outline" className="w-full bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800">
+              Ver Detalle
+            </Button>
           </SheetTrigger>
           <SheetContent className="sm:max-w-2xl">
             <SheetHeader>
@@ -69,37 +71,39 @@ export const columns: ColumnDef<Purchases>[] = [
               </SheetDescription>
             </SheetHeader>
             <ScrollArea className="h-[calc(100vh-200px)] p-2">
-              <table className="w-full text-sm pr-4">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-center p-2">N°</th>
-                    <th className="text-center p-2">Ítem</th>
-                    <th className="text-center p-2">Cantidad</th>
-                    <th className="text-center p-2">Precio Unitario (Bs.)</th>
-                    <th className="text-right p-2">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detalles.map((detalle) => (
-                    <tr key={detalle.id} className="border-b">
-                      <td className="text-center p-2">{detalles.indexOf(detalle) + 1}</td>
-                      <td className="text-center p-2">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-center w-12">N°</TableHead>
+                    <TableHead className="text-center">Ítem</TableHead>
+                    <TableHead className="text-center">Cantidad</TableHead>
+                    <TableHead className="text-center">Precio Unitario (Bs.)</TableHead>
+                    <TableHead className="text-right">Subtotal</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {detalles.map((detalle, index) => (
+                    <TableRow key={detalle.id}>
+                      <TableCell className="text-center">{index + 1}</TableCell>
+                      <TableCell className="text-center">
                         {detalle.nombre_ingrediente}
                         {detalle.unit_measurement && (
-                          <span className="text-sm text-gray-500 ml-1">({detalle.unit_measurement})</span>
+                          <span className="text-sm text-muted-foreground ml-1">({detalle.unit_measurement})</span>
                         )}
-                      </td>
-                      <td className="text-center p-2">{detalle.cantidad}</td>
-                      <td className="text-center p-2">Bs. {detalle.precio_unitario.toFixed(2)}</td>
-                      <td className="text-right p-2">Bs. {(detalle.cantidad * detalle.precio_unitario).toFixed(2)}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="text-center">{detalle.cantidad}</TableCell>
+                      <TableCell className="text-center">Bs. {detalle.precio_unitario.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">Bs. {(detalle.cantidad * detalle.precio_unitario).toFixed(2)}</TableCell>
+                    </TableRow>
                   ))}
-                  <tr className="bg-gray-100">
-                    <td colSpan={4} className="text-right p-2 font-medium">Total:</td>
-                    <td className="text-right p-2 font-medium">Bs. {totalCompra.toFixed(2)}</td>
-                  </tr>
-                </tbody>
-              </table>
+                </TableBody>
+                <TableFooter>
+                  <TableRow className="bg-muted">
+                    <TableCell colSpan={4} className="text-right font-medium">Total:</TableCell>
+                    <TableCell className="text-right font-medium">Bs. {totalCompra.toFixed(2)}</TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
             </ScrollArea>
             <SheetFooter className="pt-8">
               <SheetClose asChild>
@@ -195,9 +199,9 @@ export const columns: ColumnDef<Purchases>[] = [
         <div className="flex gap-2 justify-center">
           <ReusableDialogWidth
             title="Editar Compra"
-            description={"Aquí podrás editar los detalles de la compra N°" + purchase.id}
+            description={`Aquí podrás editar los detalles de la compra N°${purchase.id}`}
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                 Editar
               </Button>
             }
@@ -211,23 +215,24 @@ export const columns: ColumnDef<Purchases>[] = [
             }}
           >
             <div className="grid gap-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="fecha_compra" className="text-right">
+              <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
+                <Label htmlFor="fecha_compra" className="md:text-right">
                   Fecha de la compra
                 </Label>
                 <Input
                   id="fecha_compra"
                   type="date"
                   defaultValue={purchase.fecha_compra}
+                  className="md:col-span-3"
                 />
               </div>
 
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="sucursal" className="text-right">
+              <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-4">
+                <Label htmlFor="sucursal" className="md:text-right">
                   Sucursal
                 </Label>
-                <Select defaultValue={purchase.sucursal}>
-                  <SelectTrigger className="w-[220px]">
+                <Select defaultValue={purchase.sucursal} className="md:col-span-3">
+                  <SelectTrigger>
                     <SelectValue placeholder="Selecciona una sucursal" />
                   </SelectTrigger>
                   <SelectContent>
@@ -235,13 +240,11 @@ export const columns: ColumnDef<Purchases>[] = [
                       <SelectLabel>Sucursales:</SelectLabel>
                       {dataFicticia.sucursales.map(sucursal => (
                         <SelectItem key={sucursal.id} value={sucursal.nombre}>
-                          <div className="flex justify-between w-full">
-                            <span>{sucursal.nombre}</span>
+                          <div className="flex items-center gap-2">
                             {sucursal.logo && (
-                              <span className="ml-2">
-                                <sucursal.logo className="h-4 w-4" />
-                              </span>
+                              <sucursal.logo className="h-4 w-4" />
                             )}
+                            <span>{sucursal.nombre}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -250,22 +253,22 @@ export const columns: ColumnDef<Purchases>[] = [
                 </Select>
               </div>
 
-              <div className="grid items-center gap-4">
-                <ScrollArea className="h-[300px]">
-                  <Table>
-                    <TableHeader className="bg-gray-100">
+              <div className="space-y-4">
+                <ScrollArea className="h-[300px] rounded-md border p-4">
+                  <Table className="min-w-full">
+                    <TableHeader className="bg-muted">
                       <TableRow>
-                        <TableHead className="w-[40px] text-center">N°</TableHead>
-                        <TableHead className="min-w-[250px]">
+                        <TableHead className="w-12 text-center">N°</TableHead>
+                        <TableHead className="min-w-[200px]">
                           <div className="flex justify-between">
                             <span>Ítem</span>
-                            <span className="text-gray-500 font-normal">Presentación</span>
+                            <span className="text-muted-foreground font-normal">Presentación</span>
                           </div>
                         </TableHead>
-                        <TableHead className="w-[100px] text-center">Cantidad</TableHead>
-                        <TableHead className="w-[120px] text-center">Precio Unitario (Bs.)</TableHead>
-                        <TableHead className="w-[100px] text-right">Subtotal</TableHead>
-                        <TableHead className="w-[40px]"></TableHead>
+                        <TableHead className="w-24 text-center">Cantidad</TableHead>
+                        <TableHead className="w-32 text-center">Precio Unitario</TableHead>
+                        <TableHead className="w-24 text-right">Subtotal</TableHead>
+                        <TableHead className="w-12"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -281,7 +284,7 @@ export const columns: ColumnDef<Purchases>[] = [
                           <TableRow key={ing.id}>
                             <TableCell className="text-center font-medium">{index + 1}</TableCell>
                             <TableCell>
-                              <div className="flex flex-col">
+                              <div className="flex flex-col gap-1">
                                 <Combobox
                                   value={ing.nombre_ingrediente}
                                   onSelect={(item) => {
@@ -300,7 +303,7 @@ export const columns: ColumnDef<Purchases>[] = [
                                       <div className="flex justify-between w-full">
                                         <span>{item}</span>
                                         {fullItem && (
-                                          <span className="text-gray-500">
+                                          <span className="text-muted-foreground">
                                             {fullItem.quantity} {fullItem.unit_measurement}
                                           </span>
                                         )}
@@ -309,7 +312,7 @@ export const columns: ColumnDef<Purchases>[] = [
                                   }}
                                 />
                                 {producto && (
-                                  <div className="text-sm text-gray-500 mt-1">
+                                  <div className="text-sm text-muted-foreground">
                                     {producto.quantity} {producto.unit_measurement}
                                   </div>
                                 )}
@@ -344,7 +347,7 @@ export const columns: ColumnDef<Purchases>[] = [
                                 size="icon"
                                 onClick={() => handleEliminarIngrediente(ing.id)}
                               >
-                                <Trash2 className="h-4 w-4 text-red-600" />
+                                <Trash2 className="h-4 w-4 text-destructive" />
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -355,7 +358,7 @@ export const columns: ColumnDef<Purchases>[] = [
                           {detalles.length + 1}
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col">
+                          <div className="flex flex-col gap-2">
                             {!nuevoIngrediente.tipo ? (
                               <div className="flex gap-2">
                                 <Button
@@ -407,7 +410,7 @@ export const columns: ColumnDef<Purchases>[] = [
                                       <div className="flex justify-between w-full">
                                         <span>{item}</span>
                                         {fullItem && (
-                                          <span className="text-gray-500">
+                                          <span className="text-muted-foreground">
                                             {fullItem.quantity} {fullItem.unit_measurement}
                                           </span>
                                         )}
@@ -416,7 +419,7 @@ export const columns: ColumnDef<Purchases>[] = [
                                   }}
                                 />
                                 {nuevoIngrediente.nombre_ingrediente && (
-                                  <div className="text-sm text-gray-500 mt-1">
+                                  <div className="text-sm text-muted-foreground">
                                     {(() => {
                                       const producto = (nuevoIngrediente.tipo === "Comestible" 
                                         ? dataFicticia.comestibles 
@@ -462,7 +465,7 @@ export const columns: ColumnDef<Purchases>[] = [
                             placeholder="Precio"
                           />
                         </TableCell>
-                        <TableCell className="text-right text-gray-600">
+                        <TableCell className="text-right text-muted-foreground">
                           {nuevoIngrediente.cantidad > 0 && nuevoIngrediente.precio_unitario > 0 ? 
                             `Bs. ${(nuevoIngrediente.cantidad * nuevoIngrediente.precio_unitario).toFixed(2)}` : ''}
                         </TableCell>
@@ -473,18 +476,18 @@ export const columns: ColumnDef<Purchases>[] = [
                             onClick={handleAgregarIngrediente}
                             disabled={!nuevoIngrediente.nombre_ingrediente || nuevoIngrediente.cantidad <= 0 || nuevoIngrediente.precio_unitario < 0}
                           >
-                            <Plus className="h-4 w-4 text-green-600" />
+                            <Plus className="h-4 w-4 text-green-600 dark:text-green-400" />
                           </Button>
                         </TableCell>
                       </TableRow>
                     </TableBody>
                     <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-right font-bold bg-amber-100">Total</TableCell>
-                        <TableCell className="text-right font-bold bg-amber-100">
+                      <TableRow className="bg-amber-100 dark:bg-amber-900">
+                        <TableCell colSpan={4} className="text-right font-bold">Total</TableCell>
+                        <TableCell className="text-right font-bold">
                           Bs. {calcularTotal().toFixed(2)}
                         </TableCell>
-                        <TableCell className="bg-amber-100"></TableCell>
+                        <TableCell></TableCell>
                       </TableRow>
                     </TableFooter>
                   </Table>
@@ -495,7 +498,7 @@ export const columns: ColumnDef<Purchases>[] = [
 
           <ReusableDialog
             title="Eliminar Compra"
-            description={"¿Estás seguro de que deseas eliminar la compra N° " + purchase.id + "?"}
+            description={`¿Estás seguro de que deseas eliminar la compra N°${purchase.id}?`}
             trigger={<Button variant="destructive">Eliminar</Button>}
             submitButtonText="Eliminar"
             onSubmit={() => console.log("Compra eliminada")}

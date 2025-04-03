@@ -139,7 +139,7 @@ export function ProductsActions({ onRefresh, onToggleActiveProducts }: ProductsA
         description="Llena el formulario para crear un producto"
         submitButtonText="Crear Producto"
         trigger={
-          <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+         <Button className="text-white flex items-center gap-2 px-4 py-2 rounded-lg transition-colors">
             <CirclePlus />
             <span>Crear Producto</span>
           </Button>
@@ -273,7 +273,7 @@ export function ProductsActions({ onRefresh, onToggleActiveProducts }: ProductsA
         )}
         <label
           htmlFor="image"
-          className="cursor-pointer bg-gray-50 hover:bg-gray-100 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700"
+          className="cursor-pointer  hover:bg-gray-100 px-4 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700"
         >
           Elegir archivo
         </label>

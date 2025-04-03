@@ -126,10 +126,10 @@ export function PurchasesActions() {
         submitButtonText="Crear Compra"
         trigger={
           <Button 
-            className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg"
             onClick={() => setDialogOpen(true)}
           >
-            <CirclePlus />
+            <CirclePlus className="w-4 h-4" />
             <span>Crear Compra</span>
           </Button>
         }
@@ -142,7 +142,11 @@ export function PurchasesActions() {
             <Label htmlFor="name" className="text-right">
               Fecha de la compra
             </Label>
-            <Input id="name" type="date" />
+            <Input 
+              id="name" 
+              type="date" 
+              className="col-span-3"
+            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
@@ -165,7 +169,7 @@ export function PurchasesActions() {
 
           {/* Tabla de ítems */}
           <div className="grid items-center gap-4">
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[300px] rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -206,7 +210,6 @@ export function PurchasesActions() {
                               Comestible
                             </Button>
                             <Button
-                              className="bg-red-600 text-white hover:bg-red-600/90"
                               variant="outline"
                               size="sm"
                               onClick={(e) => {
@@ -225,7 +228,7 @@ export function PurchasesActions() {
                             value={
                               <div className="inline">
                                 {ing.nombre}{" "}
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-muted-foreground">
                                   {ing.nombre === "" ? "Seleccionar un item" : ""}
                                   {
                                     (ing.tipo === "Comestible"
@@ -251,7 +254,7 @@ export function PurchasesActions() {
                             renderOption={(item) => (
                               <div className="flex justify-between w-full">
                                 <span>{item.nombre}</span>
-                                <span className="text-sm text-gray-500">
+                                <span className="text-sm text-muted-foreground">
                                   {item.quantity} {item.unit_measurement}
                                 </span>
                               </div>
@@ -300,7 +303,7 @@ export function PurchasesActions() {
                             handleRemoveItem(ing.id);
                           }}
                         >
-                          <Trash2 className="w-4 h-4 text-red-600" />
+                          <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -350,14 +353,14 @@ export function PurchasesActions() {
                   <TableRow>
                     <TableCell
                       colSpan={4}
-                      className="text-right font-bold bg-amber-100"
+                      className="text-right font-bold bg-secondary"
                     >
                       Total
                     </TableCell>
-                    <TableCell className="w-[120px] text-right  bg-amber-100">
+                    <TableCell className="w-[120px] text-right bg-secondary">
                       Bs. {calculateTotal().toFixed(2).replace(".", ",")}
                     </TableCell>
-                    <TableCell className="w-[40px] bg-amber-100"></TableCell>
+                    <TableCell className="w-[40px] bg-secondary"></TableCell>
                   </TableRow>
                 </TableFooter>
               </Table>

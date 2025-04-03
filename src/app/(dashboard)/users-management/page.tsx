@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 
 export default async function Page() {
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col min-h-screen p-6 ">
       {/* Breadcrumb y título */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>

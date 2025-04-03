@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ModeToggle } from "@/components/mode-toggle" // ajusta la ruta según tu estructura
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -266,21 +267,25 @@ const SidebarTrigger = React.forwardRef<
   const { toggleSidebar } = useSidebar()
 
   return (
-    <Button
-      ref={ref}
-      data-sidebar="trigger"
-      variant="ghost"
-      size="icon"
-      className={cn("h-7 w-7", className)}
-      onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
-      }}
-      {...props}
-    >
-      <PanelLeft />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
+<div className="flex items-center gap-2">
+      <Button
+        ref={ref}
+        data-sidebar="trigger"
+        variant="ghost"
+        size="icon"
+        className={cn("h-7 w-7", className)}
+        onClick={(event) => {
+          onClick?.(event)
+          toggleSidebar()
+        }}
+        {...props}
+      >
+        <PanelLeft />
+        <span className="sr-only">Toggle Sidebar</span>
+      </Button>
+      <Separator orientation="vertical" className="h-6" />
+      <ModeToggle />
+    </div>
   )
 })
 SidebarTrigger.displayName = "SidebarTrigger"
