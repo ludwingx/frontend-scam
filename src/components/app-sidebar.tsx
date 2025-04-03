@@ -16,7 +16,6 @@ import {
   Package,
   PackagePlus,
   ScanFace,
-  Settings2,
   ShoppingBasket,
   ShoppingCart,
   UserRoundCog,
@@ -80,11 +79,6 @@ const data = {
       name: "Producción",
       url: "/production",
       icon: PackagePlus,
-    },
-    {
-      name: "Iniciar Sesion",
-      url: "/signin",
-      icon: Settings2,
     },
   ],
   navMain: [

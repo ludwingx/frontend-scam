@@ -2,77 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light dark;
+}
+
+/* Transiciones globales */
+* {
+  @apply transition-colors duration-200 ease-in-out;
+}
+
+/* Estilos base mejorados */
 body {
   font-family: Arial, Helvetica, sans-serif;
+  @apply bg-background text-foreground;
 }
+
+/* Componentes de Sidebar optimizados */
 .submenu-icon {
-  color: hsl(var(--sidebar-foreground)); /* Mismo color que los iconos principales */
-  width: 1rem; /* Ajusta el tamaño si es necesario */
-  height: 1rem; /* Ajusta el tamaño si es necesario */
-  margin-right: 0.5rem; /* Espaciado entre el icono y el texto */
-
+  @apply w-4 h-4 mr-2;
+  color: hsl(var(--sidebar-foreground));
 }
+
 .submenu-icon:hover {
-
-
-
-  color: hsl(var(--sidebar-accent-foreground)); /* Mismo color que los iconos principales */
-
+  color: hsl(var(--sidebar-accent-foreground));
+  @apply scale-110;
 }
+
 .sidebar-menu-item {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  @apply cursor-pointer flex items-center justify-between w-full;
 }
 
-/* Estilo para el ícono de despliegue */
+.sidebar-menu-item:hover {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
 .sidebar-menu-action {
-  transition: transform 0.2s ease;
+  @apply transition-transform duration-200 ease-in-out;
 }
 
 .sidebar-menu-action[data-state="open"] {
-  transform: rotate(90deg);
+  @apply rotate-90;
 }
 
+/* Efectos hover para botones */
+button, .btn {
+  @apply transition-all duration-200;
+}
 
+button:hover, .btn:hover {
+  @apply bg-opacity-90 dark:bg-opacity-90 shadow-md;
+}
+
+/* Estilos de tabla con hover */
 .table-container {
-  width: 100%;
-  overflow-x: auto; /* Permite el desplazamiento horizontal si la tabla es demasiado ancha */
+  @apply w-full overflow-x-auto;
 }
 
 .table {
-  width: 100%;
-  table-layout: fixed; /* Fija el ancho de las columnas */
+  @apply w-full table-fixed;
 }
 
 .table th,
 .table td {
-  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
-  overflow: hidden; /* Oculta el contenido que se desborda */
-  text-overflow: ellipsis; /* Muestra puntos suspensivos si el contenido es demasiado largo */
+  @apply whitespace-nowrap overflow-hidden text-ellipsis;
 }
 
-/* Agregar este estilo en tu archivo CSS global o en un módulo CSS */
 .compact-table {
-  width: 100%;
-  border-collapse: collapse; /* Reduce el espacio entre celdas */
+  @apply w-full border-collapse;
 }
 
 .compact-table th,
 .compact-table td {
-  padding: 8px 12px; /* Reducir el padding */
-  font-size: 14px; /* Reducir el tamaño de la fuente */
-  border-bottom: 1px solid #e5e7eb; /* Línea divisoria entre filas */
+  @apply py-2 px-3 text-sm border-b border-border;
 }
 
 .compact-table th {
-  background-color: #f9fafb; /* Fondo gris claro para los encabezados */
-  font-weight: 600; /* Texto en negrita para los encabezados */
+  @apply bg-muted font-semibold;
 }
 
+.compact-table tr:hover {
+  @apply bg-gray-50 dark:bg-gray-800;
+}
 
+/* TeamSwitcher hover styles */
+.team-switcher-button:hover {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+.dropdown-menu-item:hover {
+  @apply bg-gray-100 dark:bg-gray-700;
+}
+
+/* Card hover effects */
+.card {
+  @apply transition-shadow duration-300;
+}
+
+.card:hover {
+  @apply shadow-lg dark:shadow-gray-800;
+}
+
+/* Input hover effects */
+.input:hover {
+  @apply border-gray-400 dark:border-gray-500;
+}
+
+/* Variables de tema con verde personalizado */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -108,62 +143,47 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
-
-    
     --amber: 37.7 92.1% 50.2%;
-    --amber--foreground: 0 0% 98%;
+    --amber-foreground: 0 0% 98%;
   }
+
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 146 30% 14%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 146 30% 15%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
+    --popover: 146 30% 15%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
+    --primary: 142.1 76.2% 30.3%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 146 30% 20%;
     --secondary-foreground: 0 0% 98%;
-    --amber: 37.7 92.1% 50.2%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --muted: 146 25% 25%;
+    --muted-foreground: 0 0% 81%;
+    --accent: 142.1 76.2% 36.3%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 40.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 146 30% 20%;
+    --input: 146 30% 20%;
+    --ring: 142.1 76.2% 36.3%;
+    --chart-1: 142 60% 50%;
+    --chart-2: 172 60% 45%;
+    --chart-3: 112 80% 55%;
+    --chart-4: 82 65% 60%;
+    --chart-5: 52 75% 55%;
+    --sidebar-background: 146 30% 15%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 142.1 76.2% 36.3%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-
-    --amber: 37.7 92.1% 50.2%;
-    --amber--foreground: 0 0% 98%;
+    --sidebar-accent: 146 30% 25%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 146 30% 20%;
+    --sidebar-ring: 142.1 76.2% 36.3%;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-
-
+/* Estilos base consolidados */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -172,7 +192,49 @@ body {
     @apply bg-background text-foreground;
   }
 }
-@theme inline {
+
+/* Extensión de tema */
+@theme {
   --color-amber: var(--amber);
   --color-amber-foreground: var(--amber-foreground);
+}
+
+/* Efectos hover adicionales */
+.icon-btn {
+  @apply p-2 rounded-full;
+}
+
+.icon-btn:hover {
+  @apply bg-gray-200 dark:bg-gray-700;
+}
+
+.nav-link {
+  @apply px-4 py-2 rounded-md;
+}
+
+.nav-link:hover {
+  @apply bg-gray-100 dark:bg-gray-800 text-primary;
+}
+
+.badge {
+  @apply px-2 py-1 rounded-md text-sm;
+}
+
+.badge:hover {
+  @apply brightness-95 dark:brightness-110;
+}
+
+/* Animaciones para hover */
+@keyframes fadeIn {
+  from { opacity: 0.9; }
+  to { opacity: 1; }
+}
+
+.hover-animate {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* Tooltip hover */
+.tooltip:hover .tooltip-content {
+  @apply visible opacity-100;
 }

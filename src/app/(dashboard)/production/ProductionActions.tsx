@@ -71,7 +71,7 @@ export function ProductionActions({ }: ProductionActionsProps) {
         title="Crear Negocio"
         description="Aquí podrás crear un negocio."
         trigger={
-          <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+         <Button className="text-white flex items-center gap-2 px-4 py-2 rounded-lg transition-colors">
             <CirclePlus />
             <span>Crear Negocio</span>
           </Button>

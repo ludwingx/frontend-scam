@@ -61,7 +61,7 @@ export function RolesActions({ onRefresh, onToggleActiveRoles }: RolesActionsPro
         title="Crear Rol"
         description="Aquí podrás crear un rol."
         trigger={
-          <Button className="bg-primary text-white flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+         <Button className="text-white flex items-center gap-2 px-4 py-2 rounded-lg transition-colors">
             <CirclePlus />
             <span>Crear Rol</span>
           </Button>

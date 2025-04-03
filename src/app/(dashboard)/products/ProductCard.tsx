@@ -201,7 +201,7 @@ export function ProductCard({
           title="Detalles del Producto"
           description="Aquí podrás ver los detalles del producto"
           trigger={
-            <span className="text-white text-xs cursor-pointer bg-primary hover:bg-primary/90 rounded-lg px-3 p-1">
+            <span className="text-white text-xs cursor-pointer bg-primary hover:bg-primary/80 rounded-lg px-3 p-1">
               Ver Detalles
             </span>
           }
