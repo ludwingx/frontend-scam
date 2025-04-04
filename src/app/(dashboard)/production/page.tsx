@@ -6,7 +6,7 @@ import IngredientsSummary from "@/components/production/IngredientsSumary";
 import ProductionHeader from "@/components/production/ProductionHeader";
 import ProductionCard from "@/components/production/ProductionCard";
 import PurchaseDialog from "@/components/production/PurchaseDialog";
-import { Ingredient, Production, SelectedProduct} from "@/types/production";
+import { Ingredient, Production, SelectedProduct } from "@/types/production";
 import { mockIngredients, mockProductions, mockProducts } from "./data";
 import ProductionDialog from "@/components/production/ProductionDialog";
 import { toast } from "sonner";
@@ -27,20 +27,18 @@ export default function ProductionPage() {
   const [showIngredientsUsage, setShowIngredientsUsage] = useState<number | null>(null);
   const [showAllIngredients, setShowAllIngredients] = useState(false);
 
-  // Efectos
   useEffect(() => {
     setTimeout(() => {
       setProductions(mockProductions);
     }, 1000);
   }, []);
 
-  // Funciones de cálculo
   const calculateMissingIngredients = (products: SelectedProduct[]) => {
     const requiredIngredients: Record<number, number> = {};
     const missing: { ingredient: Ingredient; missingAmount: number }[] = [];
 
     products.forEach((product) => {
-      if (product.quantity !== null) {
+      if (product.quantity && product.quantity > 0) {
         product.recipe.forEach((item) => {
           const totalNeeded = item.quantity * product.quantity!;
           requiredIngredients[item.ingredientId] =
@@ -72,7 +70,7 @@ export default function ProductionPage() {
     const ingredientsUsage: { ingredient: Ingredient; amountUsed: number }[] = [];
 
     products.forEach((product) => {
-      if (product.quantity !== null) {
+      if (product.quantity && product.quantity > 0) {
         product.recipe.forEach((item) => {
           const totalNeeded = item.quantity * product.quantity!;
           requiredIngredients[item.ingredientId] =
@@ -87,13 +85,10 @@ export default function ProductionPage() {
           (i) => i.id === parseInt(ingredientId)
         );
         if (ingredient) {
-          const amountToUse = Math.min(amountNeeded, ingredient.currentStock);
-          if (amountToUse > 0) {
-            ingredientsUsage.push({
-              ingredient,
-              amountUsed: amountToUse,
-            });
-          }
+          ingredientsUsage.push({
+            ingredient,
+            amountUsed: Math.min(amountNeeded, ingredient.currentStock),
+          });
         }
       }
     );
@@ -124,98 +119,78 @@ export default function ProductionPage() {
     return Object.values(totalUsage);
   };
 
-  // Funciones de producción
   const startProduction = (productionId: number) => {
-    setProductions((prev) =>
-      prev.map((production) => {
+    setProductions((prevProductions) =>
+      prevProductions.map((production) => {
         if (production.id !== productionId) return production;
 
-        const updatedIngredients = [...ingredients];
-        let canProduce = true;
-
-        production.products.forEach((product) => {
-          product.recipe.forEach((item) => {
-            const ingredientIndex = updatedIngredients.findIndex(
-              (i) => i.id === item.ingredientId
-            );
-            if (ingredientIndex !== -1) {
-              const totalNeeded = item.quantity * product.quantity!;
-              if (
-                updatedIngredients[ingredientIndex].currentStock < totalNeeded
-              ) {
-                canProduce = false;
-              }
-            }
-          });
-        });
-
-        if (!canProduce) {
-          toast.error("No hay suficiente stock");
+        // Verificar si ya está en progreso
+        if (production.status === "in_progress") {
+          toast.warning("Esta producción ya está en progreso");
           return production;
         }
 
-        const ingredientsUsage: {
-          ingredient: Ingredient;
-          amountUsed: number;
-        }[] = [];
+        // Verificar stock antes de proceder
+        const missing = calculateMissingIngredients(production.products);
+        if (missing.length > 0) {
+          toast.error("No hay suficiente stock para algunos ingredientes");
+          return production;
+        }
 
-        production.products.forEach((product) => {
-          product.recipe.forEach((item) => {
-            const ingredientIndex = updatedIngredients.findIndex(
-              (i) => i.id === item.ingredientId
-            );
-            if (ingredientIndex !== -1) {
-              const totalUsed = item.quantity * product.quantity!;
-              updatedIngredients[ingredientIndex].currentStock -= totalUsed;
+        // Calcular el uso de ingredientes
+        const ingredientsUsage = calculateIngredientsUsage(production.products);
 
-              const existingUsage = ingredientsUsage.find(
-                (i) => i.ingredient.id === item.ingredientId
-              );
-              if (existingUsage) {
-                existingUsage.amountUsed += totalUsed;
-              } else {
-                ingredientsUsage.push({
-                  ingredient: updatedIngredients[ingredientIndex],
-                  amountUsed: totalUsed,
-                });
-              }
-            }
-          });
+        // Actualizar el stock de ingredientes
+        const updatedIngredients = [...ingredients];
+        ingredientsUsage.forEach(({ ingredient, amountUsed }) => {
+          const ingredientIndex = updatedIngredients.findIndex(
+            (i) => i.id === ingredient.id
+          );
+          if (ingredientIndex !== -1) {
+            updatedIngredients[ingredientIndex] = {
+              ...updatedIngredients[ingredientIndex],
+              currentStock: updatedIngredients[ingredientIndex].currentStock - amountUsed,
+            };
+          }
         });
 
+        // Actualizar el estado de los ingredientes
         setIngredients(updatedIngredients);
+
+        // Actualizar la producción
         return {
           ...production,
           status: "in_progress",
-          missingIngredients: undefined,
           ingredientsUsage,
+          missingIngredients: undefined,
         };
       })
     );
   };
 
   const addProduction = () => {
+    // Validaciones
     if (selectedProducts.length === 0) {
       toast.error("Debe seleccionar al menos un producto");
       return;
     }
 
-    const hasEmptyQuantities = selectedProducts.some(
-      (p) => p.quantity === null
+    const hasInvalidQuantities = selectedProducts.some(
+      (p) => p.quantity === null || p.quantity <= 0 || isNaN(p.quantity)
     );
-    if (hasEmptyQuantities) {
-      toast.error("Todos los productos deben tener una cantidad asignada");
+    if (hasInvalidQuantities) {
+      toast.error("Todos los productos deben tener una cantidad válida mayor a cero");
       return;
     }
 
+    // Calcular ingredientes faltantes y uso
     const missing = calculateMissingIngredients(selectedProducts);
     const ingredientsUsage = calculateIngredientsUsage(selectedProducts);
 
-    const productionWithId: Production = {
+    // Crear nueva producción
+    const newProduction: Production = {
       id: Date.now(),
-      products: selectedProducts.filter(
-        (p) => p.quantity !== null
-      ) as SelectedProduct[],
+      products: selectedProducts.filter((p) => p.quantity && p.quantity > 0),
       status: missing.length > 0 ? "pending" : "in_progress",
       createdAt: new Date().toISOString(),
       dueDate: dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -223,11 +198,30 @@ export default function ProductionPage() {
       ingredientsUsage: ingredientsUsage.length > 0 ? ingredientsUsage : undefined,
     };
 
-    setProductions((prev) => [...prev, productionWithId]);
+    // Si no hay ingredientes faltantes, actualizar el stock
+    if (missing.length === 0) {
+      const updatedIngredients = [...ingredients];
+      ingredientsUsage.forEach(({ ingredient, amountUsed }) => {
+        const ingredientIndex = updatedIngredients.findIndex(
+          (i) => i.id === ingredient.id
+        );
+        if (ingredientIndex !== -1) {
+          updatedIngredients[ingredientIndex] = {
+            ...updatedIngredients[ingredientIndex],
+            currentStock: updatedIngredients[ingredientIndex].currentStock - amountUsed,
+          };
+        }
+      });
+      setIngredients(updatedIngredients);
+    }
+
+    // Agregar la producción
+    setProductions((prev) => [...prev, newProduction]);
     toast.success(
       `Producción ${missing.length > 0 ? "pendiente" : "iniciada"} creada`
     );
 
+    // Resetear estados
     setSelectedProducts([]);
     setIsModalOpen(false);
     setDueDate("");
@@ -244,7 +238,6 @@ export default function ProductionPage() {
   const currentIngredientsUsage = calculateIngredientsUsage(selectedProducts);
   const totalIngredientsUsage = calculateTotalIngredientsUsage();
 
-  // Renderizado
   return (
     <div className="flex flex-col min-h-screen p-6">
       <ProductionHeader 

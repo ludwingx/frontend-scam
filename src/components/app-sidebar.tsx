@@ -3,24 +3,26 @@
 
 import * as React from "react"
 import {
-  AlignVerticalSpaceAround,
   Box,
-  BriefcaseBusiness,
+  Briefcase,
   Building,
   Building2,
   Cake,
-  Container,
+  ChefHat,
+  Factory,
+  FlaskConical,
   LayoutDashboard,
-  MapPinHouse,
-  NotepadText,
+  MapPin,
   Package,
-  PackagePlus,
-  ScanFace,
+  CookingPot,
+  ScanText,
   ShoppingBasket,
   ShoppingCart,
-  UserRoundCog,
+  Store,
+  UserCog,
   Users,
   Wheat,
+  Warehouse
 } from "lucide-react"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
@@ -48,19 +50,19 @@ const data = {
     {
       id: 'suc-1',
       name: "Sucursal 1",
-      logo: MapPinHouse,
+      logo: MapPin,
       plan: "Radial 19 1/2",
     },
     {
       id: 'suc-2',
       name: "Sucursal 2",
-      logo: MapPinHouse,
+      logo: MapPin,
       plan: "Av Virgen de Cotoca",
     },
     {
       id: 'suc-3',
       name: "Sucursal 3",
-      logo: MapPinHouse,
+      logo: MapPin,
       plan: "Radial 26",
     },
   ],
@@ -76,16 +78,21 @@ const data = {
       icon: ShoppingCart,
     },
     {
+      name: "Ventas",
+      url: "/sales",
+      icon: Store,
+    },
+    {
       name: "Producción",
       url: "/production",
-      icon: PackagePlus,
+      icon: Factory,
     },
   ],
   navMain: [
     {
-      title: "Gestion de Usuarios",
+      title: "Gestión de Usuarios",
       url: "/users-management",
-      icon: UserRoundCog,
+      icon: UserCog,
       items: [
         {
           title: "Usuarios",
@@ -95,7 +102,7 @@ const data = {
         {
           title: "Roles",
           url: "/users-management/roles",
-          icon: ScanFace
+          icon: ScanText
         },
       ],
     },
@@ -110,9 +117,14 @@ const data = {
           icon: ShoppingBasket
         },
         {
+          title: "Fórmulas bases",
+          url: "/simple-recipes",
+          icon: FlaskConical
+        },
+        {
           title: "Recetas",
           url: "/recipes",
-          icon: NotepadText
+          icon: CookingPot
         },
         {
           title: "Productos",
@@ -124,7 +136,7 @@ const data = {
     {
       title: "Inventarios",
       url: "/inventories",
-      icon: Container,
+      icon: Warehouse,
       items: [
         {
           title: "Materias Primas",
@@ -134,7 +146,7 @@ const data = {
         {
           title: "Productos Bases",
           url: "/inventories/base-products",
-          icon: AlignVerticalSpaceAround
+          icon: ChefHat
         },
         {
           title: "Productos Finales",
@@ -151,10 +163,10 @@ const data = {
         {
           title: "Negocios",
           url: "/organization/business",
-          icon: BriefcaseBusiness
+          icon: Briefcase
         },
         {
-          title: "sucursales",
+          title: "Sucursales",
           url: "/organization/branches",
           icon: Building
         },
