@@ -16,7 +16,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { X } from "lucide-react";
+import { X, ChevronDown, ChevronUp } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -26,17 +26,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { Recipe } from "@/types/recipes";
+import { RecipeData, IngredienteDetalleGet, SimpleRecipe } from "@/types/recipes";
 import { Combobox } from "./ComboBox";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
 import { Ingredient } from "@/types/ingredients";
 import { ReusableSelect } from "@/components/ReusableSelect";
 import { unitOptions } from "@/constants/unitOptions";
 
+type CombinedRecipe = RecipeData & {
+  type: 'simple' | 'compound';
+  ingredientes?: IngredienteDetalleGet[];
+  detalleRecetas?: (IngredienteDetalleGet & { recetaSimpleId?: number })[];
+  recetasSimples?: SimpleRecipe[];
+};
+
 export const columns = (
-  updateRecipeInTable: (updatedRecipe: Recipe) => Promise<void>,
-  ingredientsData: Ingredient[]
-): ColumnDef<Recipe>[] => [
+  updateRecipeInTable: (updatedRecipe: CombinedRecipe) => Promise<void>,
+  ingredientsData: Ingredient[],
+  allSimpleRecipes: SimpleRecipe[]
+): ColumnDef<CombinedRecipe>[] => [
   {
     id: "rowNumber",
     header: "N°",
@@ -47,13 +55,31 @@ export const columns = (
   {
     accessorKey: "name",
     header: "Nombre",
+    cell: ({ row }) => {
+      return <div className="font-medium">{row.original.name}</div>;
+    },
+  },
+  {
+    accessorKey: "type",
+    header: "Tipo",
+    cell: ({ row }) => {
+      const type = row.original.type;
+      return (
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          type === 'simple' 
+            ? 'bg-blue-100 text-blue-800' 
+            : 'bg-purple-100 text-purple-800'
+        }`}>
+          {type === 'simple' ? 'Simple' : 'Compuesta'}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "status",
     header: "Estado",
     cell: ({ row }) => {
       const status = row.original.status;
-
       return (
         <span
           className={`px-2 py-1 rounded text-sm font-semibold ${
@@ -68,65 +94,58 @@ export const columns = (
     },
   },
   {
-    accessorKey: "detalleRecetas",
-    header: "Detalle de Compra",
+    id: "ingredients",
+    header: "Ingredientes",
     cell: ({ row }) => {
-      const detalles = row.original.detalleRecetas;
+      const recipe = row.original;
+      const ingredients = recipe.type === 'simple' 
+        ? recipe.detalleBases || []
+        : recipe.detalleRecetas || [];
 
       return (
         <Sheet>
           <SheetTrigger asChild>
             <Button
               variant="outline"
-              className="w-full bg-green-100 hover:bg-green-200"
+              size="sm"
+              className="bg-green-100 text-black hover:bg-green-200"
             >
-              Ver Detalle
+              Ver {ingredients.length} ingrediente(s)
             </Button>
           </SheetTrigger>
           <SheetContent className="sm:max-w-2xl">
             <SheetHeader>
-              <SheetTitle>Detalle de la Receta</SheetTitle>
-              <SheetDescription className="pb-6">
-                Aquí puedes ver el detalle de los ingredientes comprados.
+              <SheetTitle>
+                {recipe.type === 'simple' 
+                  ? 'Ingredientes base' 
+                  : 'Ingredientes compuestos'}
+              </SheetTitle>
+              <SheetDescription>
+                {recipe.name}
               </SheetDescription>
             </SheetHeader>
-            <ScrollArea className="h-[calc(100vh-200px)] p-2">
-              <table className="w-full text-sm pr-4">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-center p-2">N°</th>
-                    <th className="text-center p-2">Ingrediente</th>
-                    <th className="text-center p-2">Cantidad</th>
-                    <th className="text-center p-2">Unidad de Medida</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detalles && detalles.length > 0 ? (
-                    detalles.map((detalle, index) => (
-                      <tr key={detalle.id} className="border-b">
-                        <td className="text-center p-2">{index + 1}</td>
-                        <td className="text-center p-2">
-                          {detalle.nombre_ingrediente}
-                        </td>
-                        <td className="text-center p-2">{detalle.cantidad}</td>
-                        <td className="text-center p-2">{detalle.unidad}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="text-center p-2">
-                        No hay ingredientes para mostrar.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <ScrollArea className="h-[calc(100vh-180px)] py-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Ingrediente</TableHead>
+                    <TableHead>Cantidad</TableHead>
+                    <TableHead>Unidad</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ingredients.map((ing) => (
+                    <TableRow key={ing.id}>
+                      <TableCell className="font-medium">
+                        {ing.nombre_ingrediente}
+                      </TableCell>
+                      <TableCell>{ing.cantidad}</TableCell>
+                      <TableCell>{ing.unidad}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </ScrollArea>
-            <SheetFooter className="pt-8">
-              <SheetClose asChild>
-                <Button type="button">Cerrar</Button>
-              </SheetClose>
-            </SheetFooter>
           </SheetContent>
         </Sheet>
       );
@@ -134,63 +153,38 @@ export const columns = (
   },
   {
     id: "actions",
-    header: () => <div className="text-center">Acciones</div>,
+    header: "Acciones",
     cell: ({ row }) => {
       const recipe = row.original;
       const [name, setName] = useState(recipe.name);
-      const [ingredientes, setIngredients] = useState<
-        Array<{
-          id: number;
-          nombre_ingrediente: string;
-          cantidad: number;
-          unidad: string;
-        }>
-      >(
-        recipe.detalleRecetas?.map((detalle) => ({
-          id: detalle.ingredienteId,
-          nombre_ingrediente: detalle.nombre_ingrediente,
-          cantidad: detalle.cantidad,
-          unidad: detalle.unidad || "Seleccionar Unidad",
-        })) || [] // Si detalleRecetas es undefined, usa un array vacío
+      const [description, setDescription] = useState(recipe.description || '');
+      const [ingredients, setIngredients] = useState<IngredienteDetalleGet[]>(
+        recipe.type === 'simple' 
+          ? recipe.detalleBases || []
+          : recipe.detalleRecetas || []
       );
+      const [isEditing, setIsEditing] = useState(false);
+
       const handleEditRecipe = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsEditing(true);
 
         if (!name.trim()) {
           toast.error("El nombre de la receta no puede estar vacío.");
+          setIsEditing(false);
           return;
         }
 
         try {
-          // Transformar ingredientes a la estructura esperada por el backend
-          const ingredientesTransformados = ingredientes.map((ing) => {
-            const ingredienteEnLista = ingredientsData.find(
-              (ingrediente) => ingrediente.id === ing.id
-            );
-
-            if (!ingredienteEnLista) {
-              throw new Error(
-                `Ingrediente con ID ${ing.id} no encontrado en la lista de ingredientes cargados.`
-              );
-            }
-
-            return {
-              ingredienteId: ing.id,
-              cantidad: ing.cantidad,
-              unidad: ing.unidad,
-            };
-          });
-
-          // Crear el objeto de receta actualizado
-          const updatedRecipe = {
-            id: recipe.id,
-            name: name,
-            status: recipe.status,
-            ingredientes: ingredientesTransformados,
+          const updatedRecipe: CombinedRecipe = {
+            ...recipe,
+            name,
+            description,
+            [recipe.type === 'simple' ? 'detalleBases' : 'detalleRecetas']: ingredients
           };
 
-          // Llamar a la función para actualizar la receta
-          await updateRecipeInTable(updatedRecipe as Recipe);
+          await updateRecipeInTable(updatedRecipe);
+          toast.success("Receta actualizada correctamente");
         } catch (error) {
           console.error("Error updating recipe:", error);
           toast.error(
@@ -198,6 +192,8 @@ export const columns = (
               ? error.message
               : "Error al actualizar la receta. Por favor, inténtalo de nuevo."
           );
+        } finally {
+          setIsEditing(false);
         }
       };
 
@@ -205,184 +201,127 @@ export const columns = (
         ingrediente: Ingredient,
         index?: number
       ) => {
-        const updatedIngredients = [...ingredientes];
-
-        const isIngredientAlreadyAdded = updatedIngredients.some(
-          (ing) => ing.id === ingrediente.id
-        );
-
-        if (isIngredientAlreadyAdded) {
-          toast.error(`"${ingrediente.name}" ya está en la lista.`);
-          return;
-        }
-
-        const ingredienteExiste = ingredientsData.some(
-          (ing) => ing.id === ingrediente.id
-        );
-
-        if (!ingredienteExiste) {
-          toast.error(`"${ingrediente.name}" no existe en la base de datos.`);
-          return;
-        }
+        const updatedIngredients = [...ingredients];
+        const newIngredient: IngredienteDetalleGet = {
+          id: index !== undefined ? updatedIngredients[index].id : Math.random(),
+          ingredienteId: ingrediente.id,
+          nombre_ingrediente: ingrediente.name,
+          cantidad: index !== undefined ? updatedIngredients[index].cantidad : 0,
+          unidad: index !== undefined ? updatedIngredients[index].unidad : "Seleccionar Unidad"
+        };
 
         if (index !== undefined) {
-          const currentUnidad = updatedIngredients[index].unidad;
-          updatedIngredients[index] = {
-            id: ingrediente.id,
-            nombre_ingrediente: ingrediente.name,
-            cantidad: updatedIngredients[index].cantidad,
-            unidad: currentUnidad || "Seleccionar Unidad",
-          };
+          updatedIngredients[index] = newIngredient;
         } else {
-          updatedIngredients.push({
-            id: ingrediente.id,
-            nombre_ingrediente: ingrediente.name,
-            cantidad: 0,
-            unidad: "Seleccionar Unidad",
-          });
+          updatedIngredients.push(newIngredient);
         }
 
         setIngredients(updatedIngredients);
       };
 
       const handleRemoveIngredient = (id: number) => {
-        const updatedIngredients = ingredientes.filter((ing) => ing.id !== id);
-        setIngredients(updatedIngredients);
+        setIngredients(ingredients.filter(ing => ing.id !== id));
       };
 
       const handleToggleStatus = async () => {
-        const newStatus = recipe.status === 1 ? 0 : 1;
-
         try {
-          const updatedRecipe = {
-            id: recipe.id,
-            name: recipe.name,
-            status: newStatus,
-            ingredientes: recipe.detalleRecetas.map((detalle) => ({
-              id: detalle.id,
-              ingredienteId: detalle.ingredienteId,
-              cantidad: detalle.cantidad,
-              unidad: detalle.unidad,
-            })),
-          };
-          await updateRecipeInTable(updatedRecipe as unknown as Recipe);
+          const newStatus = recipe.status === 1 ? 0 : 1;
+          const updatedRecipe = { ...recipe, status: newStatus };
+          await updateRecipeInTable(updatedRecipe);
+          toast.success(
+            `Receta ${newStatus === 1 ? 'activada' : 'desactivada'} correctamente`
+          );
         } catch (error) {
           console.error("Error toggling recipe status:", error);
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : "Error al cambiar el estado de la receta. Por favor, inténtalo de nuevo."
-          );
+          toast.error("Error al cambiar el estado de la receta");
         }
       };
 
       return (
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-2">
           <ReusableDialogWidth
-            title="Editar receta"
-            description={"Ingresa los nuevos datos de la receta " + recipe.name}
+            title={`Editar receta ${recipe.type === 'simple' ? 'simple' : 'compuesta'}`}
+            description="Modifica los datos de la receta"
             trigger={
-              <Button className="bg-blue-600 text-white hover:bg-blue-600/90">
+              <Button className="bg-blue-500" size="sm" >
                 Editar
               </Button>
             }
-            submitButtonText="Guardar Cambios"
+            submitButtonText="Guardar cambios"
             onSubmit={handleEditRecipe}
+            isSubmitting={isEditing}
           >
-            <div className="grid gap-4">
-              <div className="grid grid-cols-2 items-center gap-2">
-                <div className="grid grid-cols-4 items-center gap-4 pt-4">
-                  <Label htmlFor="name" className="text-right">
-                    Nombre
-                  </Label>
-                  <Input
-                    id="name"
-                    placeholder="Ingresa el nombre de la receta"
-                    className="col-span-3"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="col-span-3"
+                />
               </div>
 
-              <div className="grid items-center gap-4 pt-4">
-                <h5 className="text-l font-semibold text-gray-900">
-                  Lista de Ingredientes:
-                </h5>
-                <ScrollArea className="h-[300px] w-full overflow-x-auto">
-                  <Table className="w-full">
-                    <TableHeader className="sticky top-0 bg-white z-10">
-                      <TableRow>
-                        <TableHead className="text-center w-[40px] text-gray-900">
-                          N°
-                        </TableHead>
-                        <TableHead className="text-center w-[120px] text-gray-900">
-                          Ingrediente
-                        </TableHead>
-                        <TableHead className="text-center w-[100px] text-gray-900">
-                          Cantidad
-                        </TableHead>
-                        <TableHead className="text-center w-[120px] text-gray-900">
-                          Unidad
-                        </TableHead>
-                        <TableHead className="w-[40px] text-gray-900"></TableHead>
+              {recipe.type === 'simple' && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="description" className="text-right">
+                    Descripción
+                  </Label>
+                  <Input
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Ingredientes</Label>
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader >
+                      <TableRow >
+                        <TableHead>Ingrediente</TableHead>
+                        <TableHead>Cantidad</TableHead>
+                        <TableHead>Unidad</TableHead>
+                        <TableHead className="w-[40px]"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {ingredientes.map((ing, index) => (
+                      {ingredients.map((ing, index) => (
                         <TableRow key={ing.id}>
-                          <TableCell className="text-center font-medium">
-                            {index + 1}
-                          </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell>
                             <Combobox
                               value={ing.nombre_ingrediente}
-                              onSelect={(ingrediente) =>
-                                handleAddOrUpdateIngredient(
-                                  {
-                                    ...ingrediente,
-                                    unidad:
-                                      ingrediente.unidad?.toLowerCase() ||
-                                      "unidad",
-                                  },
-                                  index
-                                )
+                              onSelect={(ingrediente) => 
+                                handleAddOrUpdateIngredient(ingrediente, index)
                               }
                               options={ingredientsData}
-                              placeholder="Seleccionar ingrediente"
                             />
                           </TableCell>
                           <TableCell>
                             <Input
-                              className="text-center w-full"
                               type="number"
                               value={ing.cantidad}
                               onChange={(e) => {
-                                const updatedIngredients = [...ingredientes];
-                                updatedIngredients[index].cantidad = parseFloat(
-                                  e.target.value
-                                );
-                                setIngredients(updatedIngredients);
+                                const updated = [...ingredients];
+                                updated[index].cantidad = Number(e.target.value);
+                                setIngredients(updated);
                               }}
                             />
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell>
                             <ReusableSelect
-                              onValueChange={(value) => {
-                                const updatedIngredients = [...ingredientes];
-                                updatedIngredients[index].unidad = value;
-                                setIngredients(updatedIngredients);
-                              }}
                               options={unitOptions}
-                              value={
-                                ing.unidad === "Seleccionar Unidad"
-                                  ? ""
-                                  : ing.unidad
-                              }
-                              placeholder="Seleccionar unidad"
-                              label=""
-                              name=""
-                              disabled={false}
+                              value={ing.unidad}
+                              onValueChange={(value) => {
+                                const updated = [...ingredients];
+                                updated[index].unidad = value;
+                                setIngredients(updated);
+                              }}
                             />
                           </TableCell>
                           <TableCell>
@@ -391,80 +330,35 @@ export const columns = (
                               size="icon"
                               onClick={() => handleRemoveIngredient(ing.id)}
                             >
-                              <X className="h-4 w-4 text-red-500" />
+                              <X className="h-4 w-4" />
                             </Button>
                           </TableCell>
                         </TableRow>
                       ))}
                       <TableRow>
-                        <TableCell className="text-center font-medium">
-                          {ingredientes.length + 1}
-                        </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell colSpan={4} className="text-center">
                           <Combobox
                             value=""
-                            onSelect={(ingrediente) =>
-                              handleAddOrUpdateIngredient({
-                                ...ingrediente,
-                                unidad:
-                                  ingrediente.unidad?.toLowerCase() || "unidad",
-                              })
+                            onSelect={(ingrediente) => 
+                              handleAddOrUpdateIngredient(ingrediente)
                             }
                             options={ingredientsData.filter(
-                              (ingOption) =>
-                                !ingredientes.some(
-                                  (existingIng) =>
-                                    existingIng.id === ingOption.id
-                                )
+                              ing => !ingredients.some(i => i.ingredienteId === ing.id)
                             )}
-                            placeholder="Seleccionar ingrediente"
+                            placeholder="Agregar ingrediente"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            className="text-center w-full"
-                            type="number"
-                            placeholder="0"
-                            disabled
-                          />
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <ReusableSelect
-                            onValueChange={(value) => {
-                              const updatedIngredients = [...ingredientes];
-                              if (updatedIngredients[ingredientes.length]) {
-                                updatedIngredients[ingredientes.length].unidad =
-                                  value;
-                                setIngredients(updatedIngredients);
-                              }
-                            }}
-                            options={unitOptions}
-                            value=""
-                            placeholder="Seleccionar unidad"
-                            label=""
-                            name=""
-                            disabled={true}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="icon" disabled>
-                            <X className="h-4 w-4 text-red-500" />
-                          </Button>
                         </TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
-                </ScrollArea>
+                </div>
               </div>
             </div>
           </ReusableDialogWidth>
 
           <Button
-            className={
-              recipe.status === 1
-                ? "bg-red-500 text-white hover:bg-red-500/90"
-                : "bg-green-500 text-white hover:bg-green-500/90"
-            }
+            size="sm"
+            variant={recipe.status === 1 ? "destructive" : "default"}
             onClick={handleToggleStatus}
           >
             {recipe.status === 1 ? "Desactivar" : "Activar"}
@@ -474,3 +368,71 @@ export const columns = (
     },
   },
 ];
+
+const RecipeSimpleRow = ({ recipe }: { recipe: SimpleRecipe }) => {
+  const [showIngredients, setShowIngredients] = useState(false);
+
+  return (
+    <>
+      <TableRow>
+        <TableCell className="font-medium">{recipe.name}</TableCell>
+        <TableCell>
+          <span
+            className={`px-2 py-1 rounded text-xs font-medium ${
+              recipe.status === 1
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {recipe.status === 1 ? "ACTIVO" : "INACTIVO"}
+          </span>
+        </TableCell>
+        <TableCell>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowIngredients(!showIngredients)}
+          >
+            {showIngredients ? (
+              <>
+                <ChevronUp className="mr-2 h-4 w-4" />
+                Ocultar
+              </>
+            ) : (
+              <>
+                <ChevronDown className="mr-2 h-4 w-4" />
+                Ver ({recipe.detalleBases?.length || 0})
+              </>
+            )}
+          </Button>
+        </TableCell>
+      </TableRow>
+      {showIngredients && (
+        <TableRow >
+          <TableCell colSpan={3}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px]">#</TableHead>
+                  <TableHead>Ingrediente</TableHead>
+                  <TableHead>Cantidad</TableHead>
+                  <TableHead>Unidad</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recipe.detalleBases?.map((ing, index) => (
+                  <TableRow key={ing.id}>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{ing.nombre_ingrediente}</TableCell>
+                    <TableCell>{ing.cantidad}</TableCell>
+                    <TableCell>{ing.unidad}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
+  );
+};

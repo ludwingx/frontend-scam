@@ -1,17 +1,35 @@
-export interface Recipe {
+// Estructura para POST (registro)
+export interface RecipePost {
+  name: string;
+  description: string;
+  detalleBases: IngredienteDetalle[];
+}
+
+export interface IngredienteDetalle {
+  ingredienteId: number;
+  cantidad: number;
+  unidad: string;
+}
+
+// Estructura para GET (respuesta del servidor)
+export interface RecipeGetResponse {
+  success: boolean;
+  data: RecipeData;
+  message: string;
+}
+
+export interface RecipeData {
   id: number;
   name: string;
+  description: string | null;
   status: number;
-  detalleRecetas: Array<{
-    id: number;
-    ingredienteId: number;
-    nombre_ingrediente: string;
-    cantidad: number;
-    unidad: string;
-  }>;
-  ingredientes?: Array<{ // Añadir esta propiedad
-    ingredienteId: number;
-    cantidad: number;
-    unidad: string;
-  }>;
+  detalleBases: IngredienteDetalleGet[];
+}
+
+export interface IngredienteDetalleGet {
+  id: number;
+  ingredienteId: number;
+  nombre_ingrediente: string;
+  cantidad: number;
+  unidad: string;
 }

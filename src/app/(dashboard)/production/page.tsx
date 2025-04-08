@@ -7,9 +7,9 @@ import ProductionHeader from "@/components/production/ProductionHeader";
 import ProductionCard from "@/components/production/ProductionCard";
 import PurchaseDialog from "@/components/production/PurchaseDialog";
 import { Ingredient, Production, SelectedProduct } from "@/types/production";
-import { mockIngredients, mockProductions, mockProducts } from "./data";
 import ProductionDialog from "@/components/production/ProductionDialog";
 import { toast } from "sonner";
+import { mockIngredients, mockProductions, mockProducts } from "./data";
 
 export default function ProductionPage() {
   // Estados

@@ -10,7 +10,6 @@ import {
   Cake,
   ChefHat,
   Factory,
-  FlaskConical,
   LayoutDashboard,
   MapPin,
   Package,
@@ -115,11 +114,6 @@ const data = {
           title: "Ingredientes",
           url: "/ingredients",
           icon: ShoppingBasket
-        },
-        {
-          title: "Fórmulas bases",
-          url: "/simple-recipes",
-          icon: FlaskConical
         },
         {
           title: "Recetas",

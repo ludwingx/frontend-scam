@@ -30,29 +30,27 @@ export default function ProductionDialog({
   setSearchTerm,
   filteredProducts,
   missingIngredients = [],
-  currentIngredientsUsage = [],
   setShowPurchaseDialog,
 }: ProductionDialogProps) {
-
   const handleSetSelectedProducts: Dispatch<SetStateAction<Product[]>> = (
     products: Product[] | ((prev: Product[]) => Product[])
   ) => {
-    const convertToSelected = (prods: Product[]): SelectedProduct[] => 
-      prods.map(p => ({
+    const convertToSelected = (prods: Product[]): SelectedProduct[] =>
+      prods.map((p) => ({
         ...p,
         quantity: 0,
         canProduce: false,
-        missingIngredients: []
+        missingIngredients: [],
       }));
 
     if (Array.isArray(products)) {
-      setSelectedProducts(convertToSelected(products)); 
+      setSelectedProducts(convertToSelected(products));
     } else {
-      setSelectedProducts(prevSelected => {
-        const currentProducts = prevSelected.map(({
-          ...productBase 
-        }) => productBase);
-        
+      setSelectedProducts((prevSelected) => {
+        const currentProducts = prevSelected.map(
+          ({ ...productBase }) => productBase
+        );
+
         const newProducts = products(currentProducts);
         return convertToSelected(newProducts);
       });
@@ -64,7 +62,9 @@ export default function ProductionDialog({
       <DialogContent className="max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-4">
           <DialogTitle className="text-xl">Crear Nueva Producción</DialogTitle>
-          <DialogDescription>Seleccione los productos a producir</DialogDescription>
+          <DialogDescription>
+            Seleccione los productos a producir
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-1 overflow-hidden">
@@ -87,8 +87,14 @@ export default function ProductionDialog({
           <div className="w-1/3 flex flex-col border-l">
             <ProductionSummary
               selectedProducts={selectedProducts}
-              currentIngredientsUsage={currentIngredientsUsage}
               missingIngredients={missingIngredients}
+              ingredients={ingredients} // ¡Este es el parámetro clave!
+              onStartProduction={addProduction}
+              onCancel={() => {
+                onOpenChange(false);
+                setSelectedProducts([]);
+                setDueDate("");
+              }}
             />
 
             <div className="p-4 border-t mt-auto">
@@ -120,7 +126,9 @@ export default function ProductionDialog({
                   onClick={addProduction}
                   disabled={selectedProducts.length === 0}
                 >
-                  {missingIngredients.length > 0 ? "Crear como pendiente" : "Iniciar producción"}
+                  {missingIngredients.length > 0
+                    ? "Crear como pendiente"
+                    : "Iniciar producción"}
                 </Button>
               </div>
             </div>

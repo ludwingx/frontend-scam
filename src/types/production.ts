@@ -64,6 +64,7 @@ export interface IngredientUsage {
 }
 
 export interface MissingIngredient {
+  ingredientId: number;
   missing: number;
   ingredient: Ingredient;
   missingAmount: number;

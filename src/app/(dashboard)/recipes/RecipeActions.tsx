@@ -18,8 +18,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchIngredientsData } from "@/services/fetchIngredientsData";
 import { Combobox } from "./ComboBox";
 import { toast } from "sonner";
-import { ReusableSelect } from "@/components/ReusableSelect"; // Importar ReusableSelect
-import { unitOptions } from "@/constants/unitOptions"; // Importar las opciones de unidades
+import { ReusableSelect } from "@/components/ReusableSelect";
+import { unitOptions } from "@/constants/unitOptions";
+import { ReusableDialog } from "@/components/ReusableDialog";
 
 interface Item {
   id: number;
@@ -30,8 +31,8 @@ interface Item {
 }
 
 interface RecipeActionsProps {
-  onRefresh: () => void; // Prop para actualizar la tabla
-  onToggleActiveRecipes: (showActive: boolean) => void; // Prop para alternar entre recetas activas e inactivas
+  onRefresh: () => void;
+  onToggleActiveRecipes: (showActive: boolean) => void;
 }
 
 export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeActionsProps) {
@@ -39,9 +40,9 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
   const [name, setNombre] = useState("");
   const [ingredientsData, setIngredientsData] = useState<Item[]>([]);
   const [showActiveRecipes, setShowActiveRecipes] = useState(true); 
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog open/close
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   useEffect(() => {
-    // Cargar los datos de los ingredientes al montar el componente
     const loadIngredients = async () => {
       const data = await fetchIngredientsData();
       setIngredientsData(data || []);
@@ -67,7 +68,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
         id: ingrediente.id,
         name: ingrediente.name,
         cantidad: updatedIngredients[index].cantidad,
-        unidad: updatedIngredients[index].unidad, // Mantener la unidad actual
+        unidad: updatedIngredients[index].unidad,
         status: ingrediente.status,
       };
     } else {
@@ -75,7 +76,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
         id: ingrediente.id,
         name: ingrediente.name,
         cantidad: 0,
-        unidad: "", // Unidad por defecto
+        unidad: "",
         status: ingrediente.status,
       });
     }
@@ -100,7 +101,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
 
     const recipeData = {
       name,
-      status: 1, // Asegúrate de incluir el status si es requerido
+      status: 1,
       ingredientes: ingredients.map((ing) => ({
         ingredienteId: ing.id,
         cantidad: ing.cantidad,
@@ -108,13 +109,10 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
       })),
     };
 
-    console.log("datos de la receta:", recipeData); // Para depuración
-
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL;
-
       if (!apiUrl) {
-        throw new Error("La URL de la API no está definida en las variables de entorno.");
+        throw new Error("La URL de la API no está definida.");
       }
 
       const token = document.cookie
@@ -144,17 +142,9 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
 
       const data = await response.json();
       toast.success(`Receta "${data.name}" creada exitosamente.`);
-
-      // Limpiar el formulario después de crear la receta
       setNombre("");
       setIngredients([]);
-
-      // Llamar a la función de actualización
-      if (onRefresh) {
-        onRefresh();
-      }
-
-      // Cerrar el diálogo
+      onRefresh();
       setIsDialogOpen(false);
     } catch (error) {
       console.error("Error creating recipe:", error);
@@ -165,7 +155,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
   const handleToggleActiveRecipes = () => {
     const newShowActiveRecipes = !showActiveRecipes;
     setShowActiveRecipes(newShowActiveRecipes);
-    onToggleActiveRecipes(newShowActiveRecipes); // Notificar al componente padre
+    onToggleActiveRecipes(newShowActiveRecipes);
   };
 
   return (
@@ -173,37 +163,41 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
       {/* Botón para alternar entre recetas activas e inactivas */}
       <Button
         onClick={handleToggleActiveRecipes}
-        className={showActiveRecipes ? "bg-blue-500 text-white hover:bg-blue-500/90" : "bg-violet-500 text-white hover:bg-violet-500/90"}
+        variant="outline"
+        className={`${
+          showActiveRecipes 
+            ? "bg-green-600 hover:bg-green-600/90 text-white dark:bg-green-800 dark:hover:bg-green-800/90" 
+            : "bg-amber-600 hover:bg-amber-600/90 text-white dark:bg-amber-800 dark:hover:bg-amber-800/90"
+        }`}
       >
         {showActiveRecipes ? "Ver Inactivas" : "Ver Activas"}
       </Button>
 
-      {/* Diálogo para crear recetas */}
+      {/* Diálogo para crear recetas simples */}
       <ReusableDialogWidth
-        title="Crear Receta"
-        description="Llena el formulario para crear una receta"
+        title="Crear Receta Simple"
+        description="Llena el formulario para crear una receta simple"
         trigger={
-         <Button className="text-white flex items-center gap-2 px-4 py-2 rounded-lg transition-colors">
-            <CirclePlus />
-            <span>Crear Receta</span>
+          <Button className="bg-blue-600 hover:bg-blue-600/90 text-white dark:bg-blue-800 dark:hover:bg-blue-800/90">
+            <CirclePlus className="mr-2 h-4 w-4" />
+            Crear Receta Simple
           </Button>
         }
         onSubmit={handleSubmit}
         submitButtonText="Crear Receta"
-        onClose={() => setIsDialogOpen(false)} // Pass the close function
-        isOpen={isDialogOpen} // Pass the isOpen state
-
+        onClose={() => setIsDialogOpen(false)}
+        isOpen={isDialogOpen}
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-2 items-center gap-2">
             <div className="grid grid-cols-4 items-center gap-4 pt-4">
-              <Label htmlFor="name" className="text-right">
+              <Label htmlFor="name" className="text-right dark:text-gray-300">
                 Nombre
               </Label>
               <Input
                 id="name"
                 placeholder="Ingresa el nombre de la receta"
-                className="col-span-3"
+                className="col-span-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                 value={name}
                 onChange={(e) => setNombre(e.target.value)}
               />
@@ -211,32 +205,32 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
           </div>
 
           <div className="grid items-center gap-4 pt-4">
-            <h5 className="text-l font-semibold text-gray-900">
+            <h5 className="text-lg font-semibold dark:text-gray-300">
               Lista de Ingredientes:
             </h5>
             <ScrollArea className="h-[300px] w-full overflow-x-auto">
               <Table className="w-full">
-                <TableHeader className="sticky top-0 bg-white z-10">
+                <TableHeader className="sticky top-0 bg-gray-100 dark:bg-gray-800 z-10">
                   <TableRow>
-                    <TableHead className="text-center w-[40px] text-gray-900">
+                    <TableHead className="text-center w-[40px] dark:text-gray-300">
                       N°
                     </TableHead>
-                    <TableHead className="text-center w-[120px]  text-gray-900">
+                    <TableHead className="text-center w-[120px] dark:text-gray-300">
                       Ingrediente
                     </TableHead>
-                    <TableHead className="text-center w-[100px] text-gray-900 ">
+                    <TableHead className="text-center w-[100px] dark:text-gray-300">
                       Cantidad
                     </TableHead>
-                    <TableHead className="text-center w-[120px] text-gray-900">
+                    <TableHead className="text-center w-[120px] dark:text-gray-300">
                       Unidad
                     </TableHead>
-                    <TableHead className="w-[40px] text-gray-900"></TableHead>
+                    <TableHead className="w-[40px] dark:text-gray-300"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {ingredients.map((ing, index) => (
-                    <TableRow key={ing.id}>
-                      <TableCell className="text-center font-medium">
+                    <TableRow key={ing.id} className="dark:border-gray-700">
+                      <TableCell className="text-center font-medium dark:text-gray-300">
                         {index + 1}
                       </TableCell>
                       <TableCell className="text-center">
@@ -246,18 +240,18 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                             handleAddOrUpdateIngredient(
                               {
                                 ...ingrediente,
-                                unidad:
-                                  ingrediente.unidad?.toLowerCase() ,
+                                unidad: ingrediente.unidad?.toLowerCase(),
                               },
                               index
                             )
                           }
                           options={ingredientsData}
+                          className="dark:bg-gray-800 dark:text-white"
                         />
                       </TableCell>
                       <TableCell>
                         <Input
-                          className="text-center w-full"
+                          className="text-center w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white"
                           type="number"
                           name="cantidad"
                           value={ing.cantidad}
@@ -276,12 +270,14 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                             const updatedIngredients = [...ingredients];
                             updatedIngredients[index].unidad = value;
                             setIngredients(updatedIngredients);
-                          } }
+                          }}
                           options={unitOptions}
-                          value={ing.unidad || ""} 
+                          value={ing.unidad || ""}
                           placeholder="Seleccionar unidad"
-                          label={"Unidad"}
-                          disabled={false} name={"Unidad"}                          
+                          label="Unidad"
+                          disabled={false}
+                          name="Unidad"
+                          className="dark:bg-gray-800 dark:text-white"
                         />
                       </TableCell>
                       <TableCell>
@@ -289,14 +285,15 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRemoveIngredient(ing.id)}
+                          className="dark:hover:bg-gray-700"
                         >
-                          <X className="h-4 w-4 text-red-500" />
+                          <X className="h-4 w-4 text-red-500 dark:text-red-400" />
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow>
-                    <TableCell className="text-center font-medium">
+                  <TableRow className="dark:border-gray-700">
+                    <TableCell className="text-center font-medium dark:text-gray-300">
                       {ingredients.length + 1}
                     </TableCell>
                     <TableCell className="text-center">
@@ -305,17 +302,17 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                         onSelect={(ingrediente) =>
                           handleAddOrUpdateIngredient({
                             ...ingrediente,
-                            unidad:
-                              ingrediente.unidad?.toLowerCase() || "unidad(es)",
+                            unidad: ingrediente.unidad?.toLowerCase() || "unidad(es)",
                           })
                         }
                         options={ingredientsData}
                         placeholder="Seleccionar ingrediente"
+                        className="dark:bg-gray-800 dark:text-white"
                       />
                     </TableCell>
                     <TableCell>
                       <Input
-                        className="text-center w-full"
+                        className="text-center w-full dark:bg-gray-800 dark:border-gray-700"
                         type="number"
                         placeholder="0"
                         disabled
@@ -323,20 +320,24 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
                     </TableCell>
                     <TableCell className="text-center">
                       <ReusableSelect
-                        
                         onValueChange={(value) => {
                           const updatedIngredients = [...ingredients];
                           if (updatedIngredients[ingredients.length]) {
                             updatedIngredients[ingredients.length].unidad = value;
                             setIngredients(updatedIngredients);
                           }
-                        } }
+                        }}
                         options={unitOptions}
-                        placeholder="Seleccionar unidad" label={""} name={""} disabled={true}                      />
+                        placeholder="Seleccionar unidad"
+                        label=""
+                        name=""
+                        disabled={true}
+                        className="dark:bg-gray-800"
+                      />
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" disabled>
-                        <X className="h-4 w-4 text-red-500" />
+                      <Button variant="ghost" size="icon" disabled className="dark:hover:bg-gray-700">
+                        <X className="h-4 w-4 text-red-500 dark:text-red-400" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -346,6 +347,117 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
           </div>
         </div>
       </ReusableDialogWidth>
+
+      {/* Diálogo para crear recetas compuestas */}
+      <ReusableDialog
+        onOpenChange={setIsDialogOpen}
+        title="Crear Receta Compuesta"
+        description="Ingrese los datos de la receta compuesta"
+        trigger={
+          <Button className="bg-purple-600 hover:bg-purple-600/90 text-white dark:bg-purple-800 dark:hover:bg-purple-800/90">
+            <CirclePlus className="mr-2 h-4 w-4" />
+            Crear Receta Compuesta
+          </Button>
+        }
+        onSubmit={handleSubmit}
+      >
+        <div className="grid gap-4">
+          <div className="grid grid-cols">
+            <div className="grid items-center grid-cols-4 gap-4 pt-4">
+              <Label htmlFor="name" className="dark:text-gray-300">
+                Nombre
+              </Label>
+              <Input
+                id="name"
+                placeholder="Ingresa el nombre de la receta compuesta"
+                className="col-span-3 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                value={name}
+                onChange={(e) => setNombre(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="grid items-center gap-4 pt-4">
+            <h5 className="text-lg font-semibold dark:text-gray-300">
+              Lista de Recetas Simples:
+            </h5>
+            <ScrollArea className="h-[300px] w-full overflow-x-auto">
+              <Table className="w-full">
+                <TableHeader className="sticky top-0 bg-gray-100 dark:bg-gray-800">
+                  <TableRow>
+                    <TableHead className="text-center w-[40px] dark:text-gray-300">
+                      N°
+                    </TableHead>
+                    <TableHead className="text-center w-[120px] dark:text-gray-300">
+                      Recetas Simples
+                    </TableHead>
+                    <TableHead className="w-[40px] dark:text-gray-300"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ingredients.map((ing, index) => (
+                    <TableRow key={ing.id} className="dark:border-gray-700">
+                      <TableCell className="text-center font-medium dark:text-gray-300">
+                        {index + 1}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Combobox
+                          value={ing.name}
+                          onSelect={(ingrediente) =>
+                            handleAddOrUpdateIngredient(
+                              {
+                                ...ingrediente,
+                                unidad: ingrediente.unidad?.toLowerCase(),
+                              },
+                              index
+                            )
+                          }
+                          options={ingredientsData}
+                          className="dark:bg-gray-800 dark:text-white"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveIngredient(ing.id)}
+                          className="dark:hover:bg-gray-700"
+                        >
+                          <X className="h-4 w-4 text-red-500 dark:text-red-400" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="dark:border-gray-700">
+                    <TableCell className="text-center font-medium dark:text-gray-300">
+                      {ingredients.length + 1}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Combobox
+                        value=""
+                        onSelect={(ingrediente) =>
+                          handleAddOrUpdateIngredient({
+                            ...ingrediente,
+                            unidad: ingrediente.unidad?.toLowerCase() || "unidad(es)",
+                          })
+                        }
+                        options={ingredientsData}
+                        placeholder="Seleccionar ingrediente"
+                        className="dark:bg-gray-800 dark:text-white"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" disabled className="dark:hover:bg-gray-700">
+                        <X className="h-4 w-4 text-red-500 dark:text-red-400" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </div>
+        </div>
+      </ReusableDialog>
     </div>
   );
 }
