@@ -161,17 +161,7 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
   return (
     <div className="flex items-center gap-2">
       {/* Botón para alternar entre recetas activas e inactivas */}
-      <Button
-        onClick={handleToggleActiveRecipes}
-        variant="outline"
-        className={`${
-          showActiveRecipes 
-            ? "bg-green-600 hover:bg-green-600/90 text-white dark:bg-green-800 dark:hover:bg-green-800/90" 
-            : "bg-amber-600 hover:bg-amber-600/90 text-white dark:bg-amber-800 dark:hover:bg-amber-800/90"
-        }`}
-      >
-        {showActiveRecipes ? "Ver Inactivas" : "Ver Activas"}
-      </Button>
+
 
       {/* Diálogo para crear recetas simples */}
       <ReusableDialogWidth
@@ -458,6 +448,19 @@ export function RecipeActions({ onRefresh, onToggleActiveRecipes }: RecipeAction
           </div>
         </div>
       </ReusableDialog>
+
+      <Button
+        onClick={handleToggleActiveRecipes}
+        variant="outline"
+        className={`${
+          showActiveRecipes 
+            ? "bg-green-600 hover:bg-green-600/90 text-white dark:bg-green-800 dark:hover:bg-green-800/90" 
+            : "bg-amber-600 hover:bg-amber-600/90 text-white dark:bg-amber-800 dark:hover:bg-amber-800/90"
+        }`}
+      >
+        {showActiveRecipes ? "Ver Inactivas" : "Ver Activas"}
+      </Button>
     </div>
   );
 }
+
