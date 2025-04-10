@@ -49,6 +49,7 @@ import { Separator } from "@radix-ui/react-separator";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { mockIngredients, mockProducts } from "./data";
+import { ReusableDialog } from "@/components/ReusableDialog";
 
 interface Ingredient {
   id: number;
@@ -97,77 +98,13 @@ interface Production {
   }[];
 }
 
-interface ReusableDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  description?: string;
-  children: React.ReactNode;
-  size?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl" | "full";
-  showFooter?: boolean;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm?: () => void;
-  onCancel?: () => void;
-  disableConfirm?: boolean;
-}
-
-const ReusableDialog = ({
-  isOpen,
-  onClose,
-  title,
-  description,
-  children,
-  size = "md",
-  showFooter = true,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
-  onConfirm,
-  onCancel,
-  disableConfirm = false,
-}: ReusableDialogProps) => {
-  const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
-    "2xl": "max-w-2xl",
-    "3xl": "max-w-3xl",
-    "4xl": "max-w-4xl",
-    "5xl": "max-w-5xl",
-    full: "max-w-full",
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={sizeClasses[size]}>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
-        </DialogHeader>
-        <div className="py-4">{children}</div>
-        {showFooter && (
-          <DialogFooter>
-            <Button variant="outline" onClick={onCancel || onClose}>
-              {cancelText}
-            </Button>
-            {onConfirm && (
-              <Button onClick={onConfirm} disabled={disableConfirm}>
-                {confirmText}
-              </Button>
-            )}
-          </DialogFooter>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 export default function ProductionPage() {
   const [productions, setProductions] = useState<Production[]>([]);
   const [activeView, setActiveView] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
+    []
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>(mockIngredients);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
@@ -175,7 +112,9 @@ export default function ProductionPage() {
     { ingredient: Ingredient; missingAmount: number }[]
   >([]);
   const [dueDate, setDueDate] = useState("");
-  const [showIngredientsUsage, setShowIngredientsUsage] = useState<number | null>(null);
+  const [showIngredientsUsage, setShowIngredientsUsage] = useState<
+    number | null
+  >(null);
   const [showTotalIngredients, setShowTotalIngredients] = useState(false);
   const [showAllIngredients, setShowAllIngredients] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -250,7 +189,8 @@ export default function ProductionPage() {
 
   const calculateIngredientsUsage = (products: SelectedProduct[]) => {
     const requiredIngredients: Record<number, number> = {};
-    const ingredientsUsage: { ingredient: Ingredient; amountUsed: number }[] = [];
+    const ingredientsUsage: { ingredient: Ingredient; amountUsed: number }[] =
+      [];
 
     products.forEach((product) => {
       if (product.quantity !== null) {
@@ -517,7 +457,8 @@ export default function ProductionPage() {
 
   const filteredProductions = productions.filter((production) => {
     if (activeView === "pending") return production.status === "pending";
-    if (activeView === "in_progress") return production.status === "in_progress";
+    if (activeView === "in_progress")
+      return production.status === "in_progress";
     if (activeView === "completed") return production.status === "completed";
     return true;
   });
@@ -611,7 +552,9 @@ export default function ProductionPage() {
                             className="h-full w-full object-cover rounded"
                           />
                         ) : (
-                          <span className="text-gray-500 text-xs">Sin imagen</span>
+                          <span className="text-gray-500 text-xs">
+                            Sin imagen
+                          </span>
                         )}
                       </div>
                       <div className="flex-1">
@@ -628,12 +571,19 @@ export default function ProductionPage() {
             </div>
             {selectedProducts.length > 0 && (
               <div className="space-y-2">
-                <Label>Productos seleccionados ({selectedProducts.length})</Label>
+                <Label>
+                  Productos seleccionados ({selectedProducts.length})
+                </Label>
                 <div className="border rounded-lg p-2 space-y-2 max-h-[200px] overflow-y-auto">
                   {selectedProducts.map((product) => (
-                    <div key={product.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div
+                      key={product.id}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                    >
                       <div>
-                        <span className="font-medium text-sm">{product.name}</span>
+                        <span className="font-medium text-sm">
+                          {product.name}
+                        </span>
                         <div className="flex items-center gap-2 mt-1">
                           <Input
                             type="number"
@@ -642,7 +592,9 @@ export default function ProductionPage() {
                             onChange={(e) =>
                               updateQuantity(
                                 product.id,
-                                e.target.value === "" ? null : parseInt(e.target.value)
+                                e.target.value === ""
+                                  ? null
+                                  : parseInt(e.target.value)
                               )
                             }
                             className="w-20 h-8"
@@ -658,11 +610,13 @@ export default function ProductionPage() {
                           </Button>
                         </div>
                       </div>
-                      <div className={`text-xs px-2 py-1 rounded-full ${
-                        product.canProduce
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}>
+                      <div
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          product.canProduce
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {product.canProduce ? "Disponible" : "Faltantes"}
                       </div>
                     </div>
@@ -680,7 +634,9 @@ export default function ProductionPage() {
               <div className="grid grid-cols-2 gap-4">
                 <Card>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Detalles</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Detalles
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
@@ -691,23 +647,36 @@ export default function ProductionPage() {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Fecha límite:</span>
                         <span className="font-medium">
-                          {dueDate ? new Date(dueDate).toLocaleDateString() : "No especificada"}
+                          {dueDate
+                            ? new Date(dueDate).toLocaleDateString()
+                            : "No especificada"}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Productos:</span>
-                        <span className="font-medium">{selectedProducts.length}</span>
+                        <span className="font-medium">
+                          {selectedProducts.length}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Unidades totales:</span>
                         <span className="font-medium">
-                          {selectedProducts.reduce((sum, p) => sum + (p.quantity || 0), 0)}
+                          {selectedProducts.reduce(
+                            (sum, p) => sum + (p.quantity || 0),
+                            0
+                          )}
                         </span>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card className={missingIngredients.length > 0 ? "border-yellow-200 bg-yellow-50" : "border-green-200 bg-green-50"}>
+                <Card
+                  className={
+                    missingIngredients.length > 0
+                      ? "border-yellow-200 bg-yellow-50"
+                      : "border-green-200 bg-green-50"
+                  }
+                >
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center justify-between">
                       <span>Estado</span>
@@ -725,11 +694,17 @@ export default function ProductionPage() {
                   <CardContent>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Ingredientes necesarios:</span>
-                        <span className="font-medium">{currentIngredientsUsage.length}</span>
+                        <span className="text-gray-600">
+                          Ingredientes necesarios:
+                        </span>
+                        <span className="font-medium">
+                          {currentIngredientsUsage.length}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Ingredientes faltantes:</span>
+                        <span className="text-gray-600">
+                          Ingredientes faltantes:
+                        </span>
                         <span className="font-medium text-red-600">
                           {missingIngredients.length}
                         </span>
@@ -751,7 +726,10 @@ export default function ProductionPage() {
                   const isLowStock = stockAfter < ingredient.minStock;
 
                   return (
-                    <Card key={ingredient.id} className={isMissing ? "border-red-200 bg-red-50" : ""}>
+                    <Card
+                      key={ingredient.id}
+                      className={isMissing ? "border-red-200 bg-red-50" : ""}
+                    >
                       <CardHeader className="p-3">
                         <div className="flex justify-between items-center">
                           <span className="font-medium">{ingredient.name}</span>
@@ -762,35 +740,42 @@ export default function ProductionPage() {
                       </CardHeader>
                       <CardContent className="p-3 pt-0">
                         <div className="flex justify-between text-xs text-gray-600">
-                          <span>Stock actual: {ingredient.currentStock.toFixed(2)}</span>
+                          <span>
+                            Stock actual: {ingredient.currentStock.toFixed(2)}
+                          </span>
                           <span>
                             Stock después:{" "}
-                            <span className={isLowStock ? "text-red-600 font-medium" : ""}>
+                            <span
+                              className={
+                                isLowStock ? "text-red-600 font-medium" : ""
+                              }
+                            >
                               {stockAfter.toFixed(2)}
                             </span>
                           </span>
                         </div>
                         <Progress
                           value={
-                            (amountUsed / (amountUsed + ingredient.currentStock)) * 100
+                            (amountUsed /
+                              (amountUsed + ingredient.currentStock)) *
+                            100
                           }
                           className="h-2 mt-1"
-                          indicatorClassName={
+                          color={
                             isMissing
-                              ? "bg-red-500"
+                              ? "red"
                               : isLowStock
-                              ? "bg-yellow-500"
-                              : "bg-green-500"
+                              ? "yellow"
+                              : "primary"
                           }
+                          
                         />
                         {isMissing && (
                           <div className="text-xs text-red-600 mt-1 text-right">
                             Faltan:{" "}
-                            {
-                              missingIngredients.find(
-                                (mi) => mi.ingredient.id === ingredient.id
-                              )?.missingAmount.toFixed(2)
-                            }{" "}
+                            {missingIngredients
+                              .find((mi) => mi.ingredient.id === ingredient.id)
+                              ?.missingAmount.toFixed(2)}{" "}
                             {ingredient.unit}
                           </div>
                         )}
@@ -815,14 +800,19 @@ export default function ProductionPage() {
                 <Card className="border-red-200 bg-red-50">
                   <CardContent className="p-4">
                     <ul className="space-y-2">
-                      {missingIngredients.map(({ ingredient, missingAmount }) => (
-                        <li key={ingredient.id} className="flex justify-between">
-                          <span>{ingredient.name}</span>
-                          <span className="font-medium">
-                            {missingAmount.toFixed(2)} {ingredient.unit}
-                          </span>
-                        </li>
-                      ))}
+                      {missingIngredients.map(
+                        ({ ingredient, missingAmount }) => (
+                          <li
+                            key={ingredient.id}
+                            className="flex justify-between"
+                          >
+                            <span>{ingredient.name}</span>
+                            <span className="font-medium">
+                              {missingAmount.toFixed(2)} {ingredient.unit}
+                            </span>
+                          </li>
+                        )
+                      )}
                     </ul>
                   </CardContent>
                 </Card>
@@ -976,73 +966,96 @@ export default function ProductionPage() {
       >
         <span className="text-xl">+</span>
       </Button>
-
-      <ReusableDialog
-        isOpen={isModalOpen}
-        onClose={resetProductionCreation}
-        title={`Crear producción (Paso ${currentStep} de 3)`}
-        description={
-          currentStep === 1
-            ? "Ingrese los detalles básicos de la producción"
-            : currentStep === 2
-            ? "Seleccione los productos a producir"
-            : "Revise el resumen antes de confirmar"
-        }
-        size="xl"
-        showFooter={false}
-      >
-        <div className="space-y-6">
-          {/* Progress bar */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Paso {currentStep} de 3</span>
-              <span>
-                {currentStep === 1
-                  ? "Información básica"
-                  : currentStep === 2
-                  ? "Selección de productos"
-                  : "Revisión final"}
-              </span>
+      <Dialog open={isModalOpen} onOpenChange={resetProductionCreation}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="sticky bg-background ">
+            <DialogTitle>Crear producción</DialogTitle>
+            <div className="flex flex-col pt-2">
+              {/* Barra de progreso con iconos */}
+              <div className="flex items-center justify-between px-4">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex flex-col items-center">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        currentStep >= step
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {currentStep > step ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <span>{step}</span>
+                      )}
+                    </div>
+                    <span
+                      className={`text-xs mt-1 ${
+                        currentStep === step
+                          ? "font-medium"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {step === 1
+                        ? "Información"
+                        : step === 2
+                        ? "Productos"
+                        : "Revisión"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {/* Línea de progreso */}
+              <div className="relative mt-2">
+                <div className="absolute top-1/2 left-0 right-0 h-1 bg-muted -translate-y-1/2"></div>
+                <div
+                  className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 transition-all duration-300"
+                  style={{
+                    width: `${((currentStep - 1) / 2) * 100}%`,
+                  }}
+                ></div>
+              </div>
             </div>
-            <Progress value={(currentStep / 3) * 100} className="h-2" />
-          </div>
+          </DialogHeader>
 
-          {/* Step content */}
-          {renderStepContent()}
+          <div className="py-4">{renderStepContent()}</div>
 
-          {/* Navigation buttons */}
-          <div className="flex justify-between pt-4 border-t">
-            <div>
-              {currentStep > 1 && (
-                <Button variant="outline" onClick={prevStep}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Anterior
-                </Button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              {currentStep < 3 ? (
-                <Button onClick={nextStep}>
-                  Siguiente
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Button>
-              ) : (
-                <>
+          <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t">
+            <div className="flex justify-between w-full">
+              <div>
+                {currentStep > 1 && (
                   <Button variant="outline" onClick={prevStep}>
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Atrás
+                    Anterior
                   </Button>
-                  <Button onClick={addProduction}>
-                    {missingIngredients.length > 0
-                      ? "Crear como pendiente"
-                      : "Confirmar producción"}
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                {currentStep < 3 ? (
+                  <Button onClick={nextStep}>
+                    Siguiente
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
-                </>
-              )}
+                ) : (
+                  <>
+                    {currentStep > 1 && (
+                      <Button variant="outline" onClick={prevStep}>
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Atrás
+                      </Button>
+                    )}
+                    <Button onClick={addProduction}>
+                      {missingIngredients.length > 0
+                        ? "Crear como pendiente"
+                        : "Confirmar producción"}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      </ReusableDialog>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ReusableDialog
         isOpen={showPurchaseDialog}

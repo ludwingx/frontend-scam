@@ -103,7 +103,7 @@ export const mockProducts: Product[] = [
     name: "Empanada de arroz",
     description: "Empanada de arroz rellena (120g)",
     brand: "Mil Sabores",
-    image: "/empanada-de-arroz.jpg",
+    image: "/cuñape.png",
     recipe: [
       { ingredientId: 13, quantity: 0.08 }, // Almidón de maíz
       { ingredientId: 11, quantity: 0.05 }, // Leche
@@ -117,7 +117,7 @@ export const mockProducts: Product[] = [
     name: "Sonso",
     description: "Pan de yuca y queso (150g)",
     brand: "Mil Sabores",
-    image: "/sonso.jpg",
+    image: "/cuñape.png",
     recipe: [
       { ingredientId: 13, quantity: 0.1 },  // Almidón de maíz
       { ingredientId: 7, quantity: 0.06 },  // Queso rallado
@@ -131,7 +131,7 @@ export const mockProducts: Product[] = [
     name: "Cuñapé",
     description: "Pan de queso tradicional (100g)",
     brand: "Mil Sabores",
-    image: "/cuñape.jpg",
+    image: "/cuñape.png",
     recipe: [
       { ingredientId: 13, quantity: 0.07 }, // Almidón de maíz
       { ingredientId: 7, quantity: 0.05 },  // Queso rallado
@@ -146,7 +146,7 @@ export const mockProducts: Product[] = [
     name: "Torta de Chocolate",
     description: "Torta de 3 pisos (24cm) - 12 porciones",
     brand: "Repostería",
-    image: "/torta-chocolate.jpg",
+    image: "/cuñape.png",
     recipe: [
       { ingredientId: 1, quantity: 0.8 },   // Harina
       { ingredientId: 2, quantity: 0.7 },   // Azúcar
