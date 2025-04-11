@@ -1,12 +1,11 @@
-// src/app/dashboard/production/data.ts
-import { Ingredient, Product, Production} from "@/types/production";
+import { Ingredient, BaseProduct, Product, Production } from "@/types/production";
 
 // ==================== INGREDIENTES ====================
 export const mockIngredients: Ingredient[] = [
   {
     id: 1,
     name: "Harina de trigo",
-    currentStock: 1000, 
+    currentStock: 1000,
     unit: "kg",
     minStock: 200,
   },
@@ -93,6 +92,45 @@ export const mockIngredients: Ingredient[] = [
     currentStock: 400,
     unit: "kg",
     minStock: 50
+  },
+  {
+    id: 14,
+    name: "Chocolate cobertura",
+    currentStock: 200,
+    unit: "kg",
+    minStock: 30
+  }
+];
+
+// ==================== BASES DE PRODUCCIÓN ====================
+export const mockBases: BaseProduct[] = [
+  {
+    id: 1,
+    name: "Bizcochuelo de vainilla",
+    currentStock: 50,
+    unit: "unidades",
+    minStock: 10
+  },
+  {
+    id: 2,
+    name: "Bizcochuelo de chocolate",
+    currentStock: 30,
+    unit: "unidades",
+    minStock: 10
+  },
+  {
+    id: 3,
+    name: "Masa para empanadas",
+    currentStock: 100,
+    unit: "kg",
+    minStock: 20
+  },
+  {
+    id: 4,
+    name: "Masa para tartas",
+    currentStock: 40,
+    unit: "kg",
+    minStock: 10
   }
 ];
 
@@ -105,11 +143,11 @@ export const mockProducts: Product[] = [
     brand: "Mil Sabores",
     image: "/cuñape.png",
     recipe: [
-      { ingredientId: 13, quantity: 0.08 }, // Almidón de maíz
-      { ingredientId: 11, quantity: 0.05 }, // Leche
-      { ingredientId: 4, quantity: 0.03 },  // Mantequilla
-      { ingredientId: 7, quantity: 0.04 },  // Queso rallado
-      { ingredientId: 6, quantity: 0.002 }  // Sal
+      { ingredientId: 13, quantity: 0.08 },
+      { ingredientId: 11, quantity: 0.05 },
+      { ingredientId: 4, quantity: 0.03 },
+      { ingredientId: 7, quantity: 0.04 },
+      { ingredientId: 6, quantity: 0.002 }
     ]
   },
   {
@@ -119,11 +157,11 @@ export const mockProducts: Product[] = [
     brand: "Mil Sabores",
     image: "/cuñape.png",
     recipe: [
-      { ingredientId: 13, quantity: 0.1 },  // Almidón de maíz
-      { ingredientId: 7, quantity: 0.06 },  // Queso rallado
-      { ingredientId: 3, quantity: 0.4 },   // Huevos
-      { ingredientId: 4, quantity: 0.03 },  // Mantequilla
-      { ingredientId: 6, quantity: 0.003 }  // Sal
+      { ingredientId: 13, quantity: 0.1 },
+      { ingredientId: 7, quantity: 0.06 },
+      { ingredientId: 3, quantity: 0.4 },
+      { ingredientId: 4, quantity: 0.03 },
+      { ingredientId: 6, quantity: 0.003 }
     ]
   },
   {
@@ -133,12 +171,12 @@ export const mockProducts: Product[] = [
     brand: "Mil Sabores",
     image: "/cuñape.png",
     recipe: [
-      { ingredientId: 13, quantity: 0.07 }, // Almidón de maíz
-      { ingredientId: 7, quantity: 0.05 },  // Queso rallado
-      { ingredientId: 3, quantity: 0.3 },   // Huevos
-      { ingredientId: 11, quantity: 0.03 }, // Leche
-      { ingredientId: 4, quantity: 0.02 },  // Mantequilla
-      { ingredientId: 6, quantity: 0.002 }  // Sal
+      { ingredientId: 13, quantity: 0.07 },
+      { ingredientId: 7, quantity: 0.05 },
+      { ingredientId: 3, quantity: 0.3 },
+      { ingredientId: 11, quantity: 0.03 },
+      { ingredientId: 4, quantity: 0.02 },
+      { ingredientId: 6, quantity: 0.002 }
     ]
   },
   {
@@ -148,14 +186,28 @@ export const mockProducts: Product[] = [
     brand: "Repostería",
     image: "/cuñape.png",
     recipe: [
-      { ingredientId: 1, quantity: 0.8 },   // Harina
-      { ingredientId: 2, quantity: 0.7 },   // Azúcar
-      { ingredientId: 8, quantity: 0.3 },   // Cacao
-      { ingredientId: 3, quantity: 12 },    // Huevos
-      { ingredientId: 4, quantity: 0.5 },   // Mantequilla
-      { ingredientId: 11, quantity: 0.4 },  // Leche
-      { ingredientId: 16, quantity: 0.6 }, // Chocolate cobertura
-      { ingredientId: 12, quantity: 0.3 }   // Crema de leche
+      { ingredientId: 14, quantity: 0.6 },
+      { ingredientId: 12, quantity: 0.3 },
+      { ingredientId: 4, quantity: 0.2 },
+      { ingredientId: 9, quantity: 0.01 }
+    ],
+    baseRequirements: [
+      { baseId: 2, quantity: 1 }
+    ]
+  },
+  {
+    id: "prod-5",
+    name: "Torta de Vainilla",
+    description: "Torta de 2 pisos (20cm) - 8 porciones",
+    brand: "Repostería",
+    image: "/cuñape.png",
+    recipe: [
+      { ingredientId: 12, quantity: 0.4 },
+      { ingredientId: 2, quantity: 0.2 },
+      { ingredientId: 9, quantity: 0.02 }
+    ],
+    baseRequirements: [
+      { baseId: 1, quantity: 1 }
     ]
   }
 ];
@@ -164,85 +216,76 @@ export const mockProducts: Product[] = [
 export const mockProductions: Production[] = [
   {
     id: 1,
+    name: "Producción #1",
     products: [
       { 
-        ...mockProducts[0], 
-        quantity: 100, 
+        ...mockProducts[0],
+        quantity: 100,
         canProduce: true,
-        missingIngredients: [] 
+        missingIngredients: [],
+        missingBases: []
       },
       { 
-        ...mockProducts[1], 
-        quantity: 50, 
+        ...mockProducts[1],
+        quantity: 50,
         canProduce: true,
-        missingIngredients: [] 
+        missingIngredients: [],
+        missingBases: []
       }
     ],
     status: "in_progress",
     createdAt: new Date().toISOString(),
     dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    missingIngredients: [],
     ingredientsUsage: [
-      { ingredient: mockIngredients[12], amountUsed: 8 },  // Almidón
-      { ingredient: mockIngredients[6], amountUsed: 5 },    // Queso
-      { ingredient: mockIngredients[2], amountUsed: 20 }    // Huevos
+      { ingredient: mockIngredients[12], amountUsed: 8 },
+      { ingredient: mockIngredients[6], amountUsed: 5 },
+      { ingredient: mockIngredients[2], amountUsed: 20 }
     ]
   },
   {
     id: 2,
+    name: "Producción #2",
     products: [
       { 
-        ...mockProducts[3], 
-        quantity: 5, 
+        ...mockProducts[3],
+        quantity: 5,
         canProduce: true,
-        missingIngredients: [] 
+        missingIngredients: [],
+        missingBases: []
       }
     ],
     status: "completed",
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
     dueDate: new Date().toISOString(),
     ingredientsUsage: [
-      { ingredient: mockIngredients[0], amountUsed: 4 },    // Harina
-      { ingredient: mockIngredients[1], amountUsed: 3.5 },  // Azúcar
-      { ingredient: mockIngredients[7], amountUsed: 1.5 }   // Cacao
+      { ingredient: mockIngredients[13], amountUsed: 3 },
+      { ingredient: mockIngredients[11], amountUsed: 1.5 }
+    ],
+    basesUsage: [
+      { base: mockBases[1], amountUsed: 5 }
     ]
   },
   {
     id: 3,
+    name: "Producción #3",
     products: [
       { 
-        ...mockProducts[2], 
-        quantity: 10, 
+        ...mockProducts[4],
+        quantity: 3,
         canProduce: true,
-        missingIngredients: [] 
+        missingIngredients: [],
+        missingBases: []
       }
     ],
     status: "completed",
     createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     dueDate: new Date().toISOString(),
     ingredientsUsage: [
-      { ingredient: mockIngredients[0], amountUsed: 4 },    // Harina
-      { ingredient: mockIngredients[1], amountUsed: 3.5 },  // Azúcar
-      { ingredient: mockIngredients[7], amountUsed: 1.5 }   // Cacao
-    ]
-  },
-  {
-    id: 4,
-    products: [
-      { 
-        ...mockProducts[1], 
-        quantity: 10, 
-        canProduce: true,
-        missingIngredients: [] 
-      }
+      { ingredient: mockIngredients[11], amountUsed: 1.2 },
+      { ingredient: mockIngredients[1], amountUsed: 0.6 }
     ],
-    status: "completed",
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    dueDate: new Date().toISOString(),
-    ingredientsUsage: [
-      { ingredient: mockIngredients[0], amountUsed: 4 },    // Harina
-      { ingredient: mockIngredients[1], amountUsed: 3.5 },  // Azúcar
-      { ingredient: mockIngredients[7], amountUsed: 1.5 }   // Cacao
+    basesUsage: [
+      { base: mockBases[0], amountUsed: 3 }
     ]
   }
 ];
