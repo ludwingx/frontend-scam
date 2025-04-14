@@ -33,6 +33,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { mockIngredients, mockBases, mockProducts } from "./data";
 import { ReusableDialog } from "@/components/ReusableDialog";
+import { BaseProduct } from "@/types/production";
 
 interface Ingredient {
   id: number;
@@ -48,7 +49,8 @@ interface Base {
   currentStock: number;
   unit: string;
   minStock: number;
-  recipe: {  // Hacer recipe obligatorio
+  recipe: {
+    // Hacer recipe obligatorio
     ingredientId: number;
     quantity: number;
   }[];
@@ -123,15 +125,21 @@ export default function ProductionPage() {
   const [productions, setProductions] = useState<Production[]>([]);
   const [activeView, setActiveView] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
+    []
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [ingredients, setIngredients] = useState<Ingredient[]>(mockIngredients);
-  const [bases, setBases] = useState<Base[]>(mockBases);
+  const [bases, setBases] = useState<BaseProduct[]>(mockBases);
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
-  const [missingIngredients, setMissingIngredients] = useState<MissingIngredient[]>([]);
+  const [missingIngredients, setMissingIngredients] = useState<
+    MissingIngredient[]
+  >([]);
   const [missingBases, setMissingBases] = useState<MissingBase[]>([]);
   const [dueDate, setDueDate] = useState("");
-  const [showIngredientsUsage, setShowIngredientsUsage] = useState<number | null>(null);
+  const [showIngredientsUsage, setShowIngredientsUsage] = useState<
+    number | null
+  >(null);
   const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
@@ -198,15 +206,19 @@ export default function ProductionPage() {
     });
 
     // Verificar ingredientes
-    Object.entries(requiredIngredients).forEach(([ingredientId, amountNeeded]) => {
-      const ingredient = ingredients.find((i) => i.id === parseInt(ingredientId));
-      if (ingredient && ingredient.currentStock < amountNeeded) {
-        missingIngs.push({
-          ingredient,
-          missingAmount: amountNeeded - ingredient.currentStock,
-        });
+    Object.entries(requiredIngredients).forEach(
+      ([ingredientId, amountNeeded]) => {
+        const ingredient = ingredients.find(
+          (i) => i.id === parseInt(ingredientId)
+        );
+        if (ingredient && ingredient.currentStock < amountNeeded) {
+          missingIngs.push({
+            ingredient,
+            missingAmount: amountNeeded - ingredient.currentStock,
+          });
+        }
       }
-    });
+    );
 
     // Verificar bases
     Object.entries(requiredBases).forEach(([baseId, amountNeeded]) => {
@@ -238,10 +250,12 @@ export default function ProductionPage() {
 
       // Sumar ingredientes de las bases requeridas
       product.baseRequirements?.forEach((baseReq) => {
-        const base = bases.find(b => b.id === baseReq.baseId);
-        if (base && base.recipe) { // <- Agregamos esta validación
-          base.recipe.forEach(item => {
-            const totalNeeded = item.quantity * baseReq.quantity * product.quantity;
+        const base = bases.find((b) => b.id === baseReq.baseId);
+        if (base && base.recipe) {
+          // <- Agregamos esta validación
+          base.recipe.forEach((item) => {
+            const totalNeeded =
+              item.quantity * baseReq.quantity * product.quantity;
             requiredIngredients[item.ingredientId] =
               (requiredIngredients[item.ingredientId] || 0) + totalNeeded;
           });
@@ -249,18 +263,22 @@ export default function ProductionPage() {
       });
     });
 
-    Object.entries(requiredIngredients).forEach(([ingredientId, amountNeeded]) => {
-      const ingredient = ingredients.find((i) => i.id === parseInt(ingredientId));
-      if (ingredient) {
-        const amountToUse = Math.min(amountNeeded, ingredient.currentStock);
-        if (amountToUse > 0) {
-          ingredientsUsage.push({
-            ingredient,
-            amountUsed: amountToUse,
-          });
+    Object.entries(requiredIngredients).forEach(
+      ([ingredientId, amountNeeded]) => {
+        const ingredient = ingredients.find(
+          (i) => i.id === parseInt(ingredientId)
+        );
+        if (ingredient) {
+          const amountToUse = Math.min(amountNeeded, ingredient.currentStock);
+          if (amountToUse > 0) {
+            ingredientsUsage.push({
+              ingredient,
+              amountUsed: amountToUse,
+            });
+          }
         }
       }
-    });
+    );
 
     return ingredientsUsage;
   };
@@ -313,7 +331,7 @@ export default function ProductionPage() {
 
       // Verificar bases requeridas
       product.baseRequirements?.forEach((baseReq) => {
-        const base = bases.find(b => b.id === baseReq.baseId);
+        const base = bases.find((b) => b.id === baseReq.baseId);
         if (base) {
           const totalNeeded = baseReq.quantity * product.quantity;
           if (base.currentStock < totalNeeded) {
@@ -377,27 +395,40 @@ export default function ProductionPage() {
       return;
     }
 
-    const { missingIngredients: missingIngs, missingBases: missingBs } = calculateMissingItems(selectedProducts);
+    const { missingIngredients: missingIngs, missingBases: missingBs } =
+      calculateMissingItems(selectedProducts);
     const ingredientsUsage = calculateIngredientsUsage(selectedProducts);
     const basesUsage = calculateBasesUsage(selectedProducts);
-    const nextId = productions.length > 0 ? Math.max(...productions.map((p) => p.id)) + 1 : 1;
+    const nextId =
+      productions.length > 0
+        ? Math.max(...productions.map((p) => p.id)) + 1
+        : 1;
 
     const productionWithId: Production = {
       id: nextId,
       name: `Producción #${nextId}`,
       products: selectedProducts,
-      status: missingIngs.length > 0 || missingBs.length > 0 ? "pending" : "in_progress",
+      status:
+        missingIngs.length > 0 || missingBs.length > 0
+          ? "pending"
+          : "in_progress",
       createdAt: new Date().toISOString(),
-      dueDate: dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      dueDate:
+        dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       missingIngredients: missingIngs.length > 0 ? missingIngs : undefined,
       missingBases: missingBs.length > 0 ? missingBs : undefined,
-      ingredientsUsage: ingredientsUsage.length > 0 ? ingredientsUsage : undefined,
+      ingredientsUsage:
+        ingredientsUsage.length > 0 ? ingredientsUsage : undefined,
       basesUsage: basesUsage.length > 0 ? basesUsage : undefined,
     };
 
     setProductions((prev) => [...prev, productionWithId]);
     toast.success(
-      `Producción ${missingIngs.length > 0 || missingBs.length > 0 ? "pendiente" : "iniciada"} creada`
+      `Producción ${
+        missingIngs.length > 0 || missingBs.length > 0
+          ? "pendiente"
+          : "iniciada"
+      } creada`
     );
 
     setSelectedProducts([]);
@@ -419,16 +450,24 @@ export default function ProductionPage() {
         production.products.forEach((product) => {
           // Verificar ingredientes directos
           product.recipe.forEach((item) => {
-            const ingredient = updatedIngredients.find((i) => i.id === item.ingredientId);
-            if (ingredient && ingredient.currentStock < item.quantity * product.quantity) {
+            const ingredient = updatedIngredients.find(
+              (i) => i.id === item.ingredientId
+            );
+            if (
+              ingredient &&
+              ingredient.currentStock < item.quantity * product.quantity
+            ) {
               canProduce = false;
             }
           });
 
           // Verificar bases requeridas
           product.baseRequirements?.forEach((baseReq) => {
-            const base = updatedBases.find(b => b.id === baseReq.baseId);
-            if (base && base.currentStock < baseReq.quantity * product.quantity) {
+            const base = updatedBases.find((b) => b.id === baseReq.baseId);
+            if (
+              base &&
+              base.currentStock < baseReq.quantity * product.quantity
+            ) {
               canProduce = false;
             }
           });
@@ -445,14 +484,20 @@ export default function ProductionPage() {
         // Consumir ingredientes directos
         production.products.forEach((product) => {
           product.recipe.forEach((item) => {
-            const ingredientIndex = updatedIngredients.findIndex((i) => i.id === item.ingredientId);
+            const ingredientIndex = updatedIngredients.findIndex(
+              (i) => i.id === item.ingredientId
+            );
             if (ingredientIndex !== -1) {
               const totalUsed = item.quantity * product.quantity;
               updatedIngredients[ingredientIndex].currentStock = parseFloat(
-                (updatedIngredients[ingredientIndex].currentStock - totalUsed).toFixed(4)
+                (
+                  updatedIngredients[ingredientIndex].currentStock - totalUsed
+                ).toFixed(4)
               );
 
-              const existingUsage = ingredientsUsage.find((i) => i.ingredient.id === item.ingredientId);
+              const existingUsage = ingredientsUsage.find(
+                (i) => i.ingredient.id === item.ingredientId
+              );
               if (existingUsage) {
                 existingUsage.amountUsed += totalUsed;
               } else {
@@ -466,14 +511,18 @@ export default function ProductionPage() {
 
           // Consumir bases
           product.baseRequirements?.forEach((baseReq) => {
-            const baseIndex = updatedBases.findIndex(b => b.id === baseReq.baseId);
+            const baseIndex = updatedBases.findIndex(
+              (b) => b.id === baseReq.baseId
+            );
             if (baseIndex !== -1) {
               const totalUsed = baseReq.quantity * product.quantity;
               updatedBases[baseIndex].currentStock = parseFloat(
                 (updatedBases[baseIndex].currentStock - totalUsed).toFixed(4)
               );
 
-              const existingUsage = basesUsage.find((b) => b.base.id === baseReq.baseId);
+              const existingUsage = basesUsage.find(
+                (b) => b.base.id === baseReq.baseId
+              );
               if (existingUsage) {
                 existingUsage.amountUsed += totalUsed;
               } else {
@@ -485,15 +534,22 @@ export default function ProductionPage() {
 
               // Consumir ingredientes de las bases
               const base = updatedBases[baseIndex];
-              base.recipe.forEach(item => {
-                const ingredientIndex = updatedIngredients.findIndex(i => i.id === item.ingredientId);
+              base.recipe.forEach((item) => {
+                const ingredientIndex = updatedIngredients.findIndex(
+                  (i) => i.id === item.ingredientId
+                );
                 if (ingredientIndex !== -1) {
                   const totalIngredientUsed = item.quantity * totalUsed;
                   updatedIngredients[ingredientIndex].currentStock = parseFloat(
-                    (updatedIngredients[ingredientIndex].currentStock - totalIngredientUsed).toFixed(4)
+                    (
+                      updatedIngredients[ingredientIndex].currentStock -
+                      totalIngredientUsed
+                    ).toFixed(4)
                   );
 
-                  const existingIngUsage = ingredientsUsage.find(i => i.ingredient.id === item.ingredientId);
+                  const existingIngUsage = ingredientsUsage.find(
+                    (i) => i.ingredient.id === item.ingredientId
+                  );
                   if (existingIngUsage) {
                     existingIngUsage.amountUsed += totalIngredientUsed;
                   } else {
@@ -524,7 +580,8 @@ export default function ProductionPage() {
 
   const filteredProductions = productions.filter((production) => {
     if (activeView === "pending") return production.status === "pending";
-    if (activeView === "in_progress") return production.status === "in_progress";
+    if (activeView === "in_progress")
+      return production.status === "in_progress";
     if (activeView === "completed") return production.status === "completed";
     return true;
   });
@@ -707,11 +764,23 @@ export default function ProductionPage() {
                         Faltan:{" "}
                         {product.missingItems.map((item, idx) => (
                           <span key={idx}>
-                            {item.ingredientId 
-                              ? `${ingredients.find(i => i.id === item.ingredientId)?.name}: ${item.missing.toFixed(2)} ${ingredients.find(i => i.id === item.ingredientId)?.unit}`
-                              : item.baseId 
-                                ? `${bases.find(b => b.id === item.baseId)?.name}: ${item.missing.toFixed(2)} ${bases.find(b => b.id === item.baseId)?.unit}`
-                                : ""}
+                            {item.ingredientId
+                              ? `${
+                                  ingredients.find(
+                                    (i) => i.id === item.ingredientId
+                                  )?.name
+                                }: ${item.missing.toFixed(2)} ${
+                                  ingredients.find(
+                                    (i) => i.id === item.ingredientId
+                                  )?.unit
+                                }`
+                              : item.baseId
+                              ? `${
+                                  bases.find((b) => b.id === item.baseId)?.name
+                                }: ${item.missing.toFixed(2)} ${
+                                  bases.find((b) => b.id === item.baseId)?.unit
+                                }`
+                              : ""}
                             {idx < product.missingItems.length - 1 ? ", " : ""}
                           </span>
                         ))}
@@ -785,12 +854,19 @@ export default function ProductionPage() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center justify-between">
                       <span>Estado</span>
-                      {missingIngredients.length > 0 || missingBases.length > 0 ? (
-                        <Badge variant="outline" className="text-yellow-600 dark:text-yellow-400">
+                      {missingIngredients.length > 0 ||
+                      missingBases.length > 0 ? (
+                        <Badge
+                          variant="outline"
+                          className="text-yellow-600 dark:text-yellow-400"
+                        >
                           Pendiente
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-green-600 dark:text-green-400">
+                        <Badge
+                          variant="outline"
+                          className="text-green-600 dark:text-green-400"
+                        >
                           Listo para iniciar
                         </Badge>
                       )}
@@ -841,7 +917,11 @@ export default function ProductionPage() {
                   return (
                     <Card
                       key={ingredient.id}
-                      className={isMissing ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30" : ""}
+                      className={
+                        isMissing
+                          ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30"
+                          : ""
+                      }
                     >
                       <CardHeader className="p-3">
                         <div className="flex justify-between items-center">
@@ -860,14 +940,16 @@ export default function ProductionPage() {
                             Stock después:{" "}
                             <span
                               className={
-                                isLowStock ? "text-red-600 dark:text-red-400 font-medium" : ""
+                                isLowStock
+                                  ? "text-red-600 dark:text-red-400 font-medium"
+                                  : ""
                               }
                             >
                               {stockAfter.toFixed(2)}
                             </span>
                           </span>
                         </div>
-                       
+
                         {isMissing && (
                           <div className="text-xs text-red-600 dark:text-red-400 mt-1 text-right">
                             Faltan:{" "}
@@ -902,7 +984,11 @@ export default function ProductionPage() {
                   return (
                     <Card
                       key={base.id}
-                      className={isMissing ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30" : ""}
+                      className={
+                        isMissing
+                          ? "border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30"
+                          : ""
+                      }
                     >
                       <CardHeader className="p-3">
                         <div className="flex justify-between items-center">
@@ -921,14 +1007,16 @@ export default function ProductionPage() {
                             Stock después:{" "}
                             <span
                               className={
-                                isLowStock ? "text-red-600 dark:text-red-400 font-medium" : ""
+                                isLowStock
+                                  ? "text-red-600 dark:text-red-400 font-medium"
+                                  : ""
                               }
                             >
                               {stockAfter.toFixed(2)}
                             </span>
                           </span>
                         </div>
-                       
+
                         {isMissing && (
                           <div className="text-xs text-red-600 dark:text-red-400 mt-1 text-right">
                             Faltan:{" "}
@@ -958,22 +1046,31 @@ export default function ProductionPage() {
                 </h3>
                 <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30">
                   <CardContent className="p-4">
-                    <h4 className="font-medium mb-2">Ingredientes faltantes:</h4>
+                    <h4 className="font-medium mb-2">
+                      Ingredientes faltantes:
+                    </h4>
                     {missingIngredients.length > 0 ? (
                       <ul className="space-y-2 mb-4">
-                        {missingIngredients.map(({ ingredient, missingAmount }) => (
-                          <li key={ingredient.id} className="flex justify-between">
-                            <span>{ingredient.name}</span>
-                            <span className="font-medium">
-                              {missingAmount.toFixed(2)} {ingredient.unit}
-                            </span>
-                          </li>
-                        ))}
+                        {missingIngredients.map(
+                          ({ ingredient, missingAmount }) => (
+                            <li
+                              key={ingredient.id}
+                              className="flex justify-between"
+                            >
+                              <span>{ingredient.name}</span>
+                              <span className="font-medium">
+                                {missingAmount.toFixed(2)} {ingredient.unit}
+                              </span>
+                            </li>
+                          )
+                        )}
                       </ul>
                     ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">No hay ingredientes faltantes</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        No hay ingredientes faltantes
+                      </p>
                     )}
-                    
+
                     <h4 className="font-medium mb-2">Bases faltantes:</h4>
                     {missingBases.length > 0 ? (
                       <ul className="space-y-2">
@@ -987,7 +1084,9 @@ export default function ProductionPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">No hay bases faltantes</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        No hay bases faltantes
+                      </p>
                     )}
                   </CardContent>
                 </Card>
@@ -1013,7 +1112,12 @@ export default function ProductionPage() {
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink className="text-sm font-medium text-muted-foreground hover:text-foreground" href="/dashboard">Panel de Control</BreadcrumbLink>
+            <BreadcrumbLink
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
+              href="/dashboard"
+            >
+              Panel de Control
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -1027,7 +1131,9 @@ export default function ProductionPage() {
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white">Producción</h2>
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-white">
+              Producción
+            </h2>
             <small className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Aquí podrás gestionar las producciones.
             </small>
@@ -1135,31 +1241,27 @@ export default function ProductionPage() {
               </div>
             </div>
           </DialogHeader>
-
-          <div className="py-4">{renderStepContent()}</div>
-
-          <DialogFooter className="sticky bottom-0 bg-background dark:bg-gray-900 pt-4 border-t">
-            <div className="flex justify-between w-full">
+          <div>{renderStepContent()}</div>
+          <DialogFooter className="sticky bottom-0 bg-background/80 backdrop-blur-sm p-4 border-t border-border/50">
+            <div className="flex justify-end w-full gap-2">
               {currentStep > 1 && (
                 <Button variant="outline" onClick={prevStep}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Atrás
                 </Button>
               )}
-              <div className="flex gap-2">
+              <Button onClick={currentStep < 3 ? nextStep : addProduction}>
                 {currentStep < 3 ? (
-                  <Button onClick={nextStep}>
+                  <>
                     Siguiente
                     <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
+                  </>
+                ) : missingIngredients.length > 0 || missingBases.length > 0 ? (
+                  "Crear como pendiente"
                 ) : (
-                  <Button onClick={addProduction}>
-                    {missingIngredients.length > 0 || missingBases.length > 0
-                      ? "Crear como pendiente"
-                      : "Confirmar producción"}
-                  </Button>
+                  "Confirmar producción"
                 )}
-              </div>
+              </Button>
             </div>
           </DialogFooter>
         </DialogContent>
@@ -1185,9 +1287,11 @@ export default function ProductionPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">No hay ingredientes faltantes</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              No hay ingredientes faltantes
+            </p>
           )}
-          
+
           <h4 className="font-medium mb-2">Bases faltantes:</h4>
           {missingBases.length > 0 ? (
             <ul className="space-y-2">
@@ -1201,7 +1305,9 @@ export default function ProductionPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">No hay bases faltantes</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No hay bases faltantes
+            </p>
           )}
         </div>
       </ReusableDialog>
@@ -1271,18 +1377,22 @@ function ProductionCard({
         </ul>
       </div>
 
-      {(production.missingIngredients && production.missingIngredients.length > 0) ||
+      {(production.missingIngredients &&
+        production.missingIngredients.length > 0) ||
       (production.missingBases && production.missingBases.length > 0) ? (
         <div className="mt-3 p-2 bg-red-50 dark:bg-red-900/30 rounded">
           <h4 className="font-medium text-sm text-red-700 dark:text-red-400">
             Faltan items:
           </h4>
           <ul className="list-disc pl-5 text-xs text-red-700 dark:text-red-400">
-            {production.missingIngredients?.map(({ ingredient, missingAmount }) => (
-              <li key={`ing-${ingredient.id}`}>
-                {ingredient.name} - {missingAmount.toFixed(2)} {ingredient.unit}
-              </li>
-            ))}
+            {production.missingIngredients?.map(
+              ({ ingredient, missingAmount }) => (
+                <li key={`ing-${ingredient.id}`}>
+                  {ingredient.name} - {missingAmount.toFixed(2)}{" "}
+                  {ingredient.unit}
+                </li>
+              )
+            )}
             {production.missingBases?.map(({ base, missingAmount }) => (
               <li key={`base-${base.id}`}>
                 {base.name} - {missingAmount.toFixed(2)} {base.unit}
@@ -1306,21 +1416,25 @@ function ProductionCard({
 
         {showIngredientsUsage && (
           <div className="mt-2 space-y-2">
-            {production.ingredientsUsage && production.ingredientsUsage.length > 0 && (
-              <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
-                <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">
-                  Ingredientes utilizados:
-                </h4>
-                <ul className="list-disc pl-5 text-xs text-blue-700 dark:text-blue-400">
-                  {production.ingredientsUsage.map(({ ingredient, amountUsed }) => (
-                    <li key={`ing-use-${ingredient.id}`}>
-                      {ingredient.name} - {amountUsed.toFixed(2)} {ingredient.unit}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
+            {production.ingredientsUsage &&
+              production.ingredientsUsage.length > 0 && (
+                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
+                  <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">
+                    Ingredientes utilizados:
+                  </h4>
+                  <ul className="list-disc pl-5 text-xs text-blue-700 dark:text-blue-400">
+                    {production.ingredientsUsage.map(
+                      ({ ingredient, amountUsed }) => (
+                        <li key={`ing-use-${ingredient.id}`}>
+                          {ingredient.name} - {amountUsed.toFixed(2)}{" "}
+                          {ingredient.unit}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              )}
+
             {production.basesUsage && production.basesUsage.length > 0 && (
               <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
                 <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">
