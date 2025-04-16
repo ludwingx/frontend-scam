@@ -183,7 +183,7 @@ export const mockProducts: Product[] = [
     id: "prod-4",
     name: "Torta de Chocolate",
     description: "Torta de 3 pisos (24cm) - 12 porciones",
-    brand: "Repostería",
+    brand: "Torta Express",
     image: "/cuñape.png",
     recipe: [
       { ingredientId: 14, quantity: 0.6 },
@@ -199,7 +199,7 @@ export const mockProducts: Product[] = [
     id: "prod-5",
     name: "Torta de Vainilla",
     description: "Torta de 2 pisos (20cm) - 8 porciones",
-    brand: "Repostería",
+    brand: "Torta Express",
     image: "/cuñape.png",
     recipe: [
       { ingredientId: 12, quantity: 0.4 },
