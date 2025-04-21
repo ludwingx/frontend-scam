@@ -55,6 +55,7 @@ import {
   ArrowLeft,
   ArrowRight,
   AlertTriangle,
+  UserPlus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -70,25 +71,48 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-// Datos de productos
+// Datos de clientes ficticios
+const mockClients = [
+  { id: 1, name: "Restaurante La Cabaña" },
+  { id: 2, name: "Cafetería Dulce Tentación" },
+  { id: 3, name: "Supermercado Del Valle" },
+  { id: 4, name: "Panadería El Trigal" },
+  { id: 5, name: "Hotel Los Pinos" },
+  { id: 6, name: "Catering Sabores Andinos" },
+];
+
+// Datos de productos con stock
 const productsByBrand = {
   "Mil Sabores": [
-    { id: 1, name: "Cuñape", description: "Pan de queso tradicional (100g)", price: 8 },
-    { id: 2, name: "Tamales a la olla", description: "Tamales tradicionales", price: 12 },
-    { id: 3, name: "Sonso", description: "Pan de yuca y queso (150g)", price: 7 },
-    { id: 4, name: "Empanada de Arroz", description: "Empanada de arroz rellena (120g)", price: 10 },
+    { id: 1, name: "Cuñape", description: "Pan de queso tradicional (100g)", price: 8, stock: 150 },
+    { id: 2, name: "Tamales a la olla", description: "Tamales tradicionales", price: 12, stock: 200 },
+    { id: 3, name: "Sonso", description: "Pan de yuca y queso (150g)", price: 7, stock: 100 },
+    { id: 4, name: "Empanada de Arroz", description: "Empanada de arroz rellena (120g)", price: 10, stock: 80 },
   ],
   "TortaExpress": [
-    { id: 5, name: "Torta de Oreo", description: "Torta de galletas Oreo (24cm)", price: 480 },
-    { id: 6, name: "Torta de Moka", description: "Torta de café y chocolate (24cm)", price: 520 },
-    { id: 7, name: "Torta de Durazno", description: "Torta con relleno de durazno (24cm)", price: 420 },
-    { id: 8, name: "Torta de Vainilla", description: "Torta clásica de vainilla (24cm)", price: 400 },
-    { id: 9, name: "Torta de Chocolate", description: "Torta de chocolate 3 pisos (24cm)", price: 450 },
-    { id: 10, name: "Torta de Red Velvet", description: "Torta terciopelo rojo (24cm)", price: 500 },
-    { id: 11, name: "Torta de Caramelo", description: "Torta de caramelo (24cm)", price: 480 },
-    { id: 12, name: "Torta de Fresa", description: "Torta de fresa (24cm)", price: 420 },
-    { id: 13, name: "Torta de Limón", description: "Torta de limón (24cm)", price: 400 },
+    { id: 5, name: "Torta de Oreo", description: "Torta de galletas Oreo (24cm)", price: 480, stock: 5 },
+    { id: 6, name: "Torta de Moka", description: "Torta de café y chocolate (24cm)", price: 520, stock: 3 },
+    { id: 7, name: "Torta de Durazno", description: "Torta con relleno de durazno (24cm)", price: 420, stock: 4 },
+    { id: 8, name: "Torta de Vainilla", description: "Torta clásica de vainilla (24cm)", price: 400, stock: 6 },
+    { id: 9, name: "Torta de Chocolate", description: "Torta de chocolate 3 pisos (24cm)", price: 450, stock: 2 },
+    { id: 10, name: "Torta de Red Velvet", description: "Torta terciopelo rojo (24cm)", price: 500, stock: 3 },
+    { id: 11, name: "Torta de Caramelo", description: "Torta de caramelo (24cm)", price: 480, stock: 1 },
+    { id: 12, name: "Torta de Fresa", description: "Torta de fresa (24cm)", price: 420, stock: 2 },
+    { id: 13, name: "Torta de Limón", description: "Torta de limón (24cm)", price: 400, stock: 4 },
   ],
 };
 
@@ -98,6 +122,7 @@ interface ProductItem {
   description: string;
   price: number;
   quantity: number;
+  stock: number;
 }
 
 interface SaleFormData {
@@ -109,7 +134,7 @@ interface SaleFormData {
   notes: string;
 }
 
-type FormStep = "client" | "products" | "review";
+type FormStep = "client" | "products" | "quantities" | "review";
 
 export default function Page() {
   const [isCreateSaleOpen, setIsCreateSaleOpen] = useState(false);
@@ -124,6 +149,10 @@ export default function Page() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentStep, setCurrentStep] = useState<FormStep>("client");
   const [quantities, setQuantities] = useState<Record<number, number>>({});
+  const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
+  const [clients, setClients] = useState(mockClients);
 
   // Datos de ejemplo para las ventas
   const [salesData, setSalesData] = useState([
@@ -166,12 +195,10 @@ export default function Page() {
     },
   ]);
 
-  // Función para obtener la descripción de un producto
-  const getProductDescription = (brand: keyof typeof productsByBrand, productName: string) => {
-    const brandProducts = productsByBrand[brand];
-    const product = brandProducts.find(p => p.name === productName);
-    return product?.description || "Descripción no disponible";
-  };
+  // Filtrar clientes basados en la búsqueda
+  const filteredClients = clients.filter(client =>
+    client.name.toLowerCase().includes(clientSearch.toLowerCase())
+  );
 
   // Filtrar productos basados en la búsqueda
   const filteredProducts = saleForm.brand 
@@ -186,44 +213,83 @@ export default function Page() {
     return saleForm.products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
   };
 
+  // Agregar nuevo cliente
+  const addNewClient = () => {
+    if (clientSearch.trim() === "") {
+      toast.error("Ingrese un nombre de cliente válido");
+      return;
+    }
+    
+    const newClient = {
+      id: Math.max(...clients.map(c => c.id)) + 1,
+      name: clientSearch.trim()
+    };
+    
+    setClients([...clients, newClient]);
+    setSaleForm({...saleForm, client: newClient.name});
+    setClientSearch(newClient.name);
+    setIsClientDropdownOpen(false);
+    toast.success(`Cliente "${newClient.name}" agregado`);
+  };
+
+  // Seleccionar productos para la venta
+  const toggleProductSelection = (productId: number) => {
+    setSelectedProducts(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
   // Actualizar cantidad de un producto
   const updateQuantity = (productId: number, newQuantity: number) => {
+    const product = productsByBrand[saleForm.brand as keyof typeof productsByBrand].find(p => p.id === productId);
+    
+    if (!product) return;
+
+    if (newQuantity < 1) {
+      newQuantity = 1;
+    } else if (newQuantity > product.stock) {
+      newQuantity = product.stock;
+      toast.warning(`No hay suficiente stock. Máximo disponible: ${product.stock}`);
+    }
+
     setQuantities(prev => ({
       ...prev,
-      [productId]: Math.max(0, newQuantity)
+      [productId]: newQuantity
     }));
   };
 
-  // Agregar productos seleccionados a la venta
-  const addSelectedProducts = () => {
-    const selectedProducts = filteredProducts.filter(product => quantities[product.id] > 0);
-    
+  // Agregar productos seleccionados con sus cantidades
+  const addProductsWithQuantities = () => {
     if (selectedProducts.length === 0) {
-      toast.error("Seleccione al menos un producto con cantidad mayor a 0");
+      toast.error("Seleccione al menos un producto");
       return;
     }
 
+    const productsToAdd = filteredProducts
+      .filter(product => selectedProducts.includes(product.id))
+      .map(product => ({
+        ...product,
+        quantity: quantities[product.id] || 1
+      }));
+
     const updatedProducts = [...saleForm.products];
     
-    selectedProducts.forEach(product => {
+    productsToAdd.forEach(product => {
       const existingIndex = updatedProducts.findIndex(p => p.id === product.id);
-      const quantity = quantities[product.id];
       
       if (existingIndex >= 0) {
-        updatedProducts[existingIndex].quantity += quantity;
+        updatedProducts[existingIndex].quantity += product.quantity;
       } else {
-        updatedProducts.push({
-          id: product.id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          quantity: quantity
-        });
+        updatedProducts.push(product);
       }
     });
 
     setSaleForm({ ...saleForm, products: updatedProducts });
+    setSelectedProducts([]);
     setQuantities({});
+    setCurrentStep("review");
     toast.success("Productos agregados a la venta");
   };
 
@@ -234,21 +300,6 @@ export default function Page() {
       products: saleForm.products.filter(p => p.id !== productId)
     });
     toast.info("Producto eliminado de la venta");
-  };
-
-  // Actualizar cantidad de un producto en la venta
-  const updateProductQuantity = (productId: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeProductFromSale(productId);
-      return;
-    }
-
-    setSaleForm({
-      ...saleForm,
-      products: saleForm.products.map(p => 
-        p.id === productId ? { ...p, quantity: newQuantity } : p
-      )
-    });
   };
 
   // Crear nueva venta
@@ -292,7 +343,9 @@ export default function Page() {
       notes: "",
     });
     setQuantities({});
+    setSelectedProducts([]);
     setSearchTerm("");
+    setClientSearch("");
   };
 
   // Navegar entre pasos
@@ -302,23 +355,28 @@ export default function Page() {
       return;
     }
 
-    if (currentStep === "products" && saleForm.products.length === 0) {
-      toast.error("Debe agregar al menos un producto");
+    if (currentStep === "products" && selectedProducts.length === 0) {
+      toast.error("Seleccione al menos un producto");
       return;
     }
 
-    if (currentStep === "client") {
-      setCurrentStep("products");
-    } else if (currentStep === "products") {
-      setCurrentStep("review");
+    if (currentStep === "quantities") {
+      addProductsWithQuantities();
+      return;
+    }
+
+    const steps: FormStep[] = ["client", "products", "quantities", "review"];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex < steps.length - 1) {
+      setCurrentStep(steps[currentIndex + 1]);
     }
   };
 
   const prevStep = () => {
-    if (currentStep === "products") {
-      setCurrentStep("client");
-    } else if (currentStep === "review") {
-      setCurrentStep("products");
+    const steps: FormStep[] = ["client", "products", "quantities", "review"];
+    const currentIndex = steps.indexOf(currentStep);
+    if (currentIndex > 0) {
+      setCurrentStep(steps[currentIndex - 1]);
     }
   };
 
@@ -327,79 +385,148 @@ export default function Page() {
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="client">Cliente *</Label>
-        <Input
-          id="client"
-          placeholder="Nombre del cliente"
-          value={saleForm.client}
-          onChange={(e) => setSaleForm({...saleForm, client: e.target.value})}
-        />
+        <div className="flex gap-2">
+          <Popover open={isClientDropdownOpen} onOpenChange={setIsClientDropdownOpen}>
+            <PopoverTrigger asChild>
+              <div className="relative flex-1">
+                <Input
+                  id="client"
+                  placeholder="Buscar cliente"
+                  value={saleForm.client}
+                  onChange={(e) => {
+                    setClientSearch(e.target.value);
+                    setSaleForm({...saleForm, client: e.target.value});
+                  }}
+                  onClick={() => setIsClientDropdownOpen(true)}
+                />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-[300px] p-0" align="start">
+              <Command>
+                <CommandInput 
+                  placeholder="Buscar cliente..." 
+                  value={clientSearch} 
+                  onValueChange={(value) => {
+                    setClientSearch(value);
+                    setSaleForm({...saleForm, client: value});
+                  }} 
+                />
+                <CommandList>
+                  <CommandEmpty className="py-4 text-center text-sm">
+                    {clientSearch.trim() ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <span>No se encontraron clientes</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={addNewClient}
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          Agregar "{clientSearch.trim()}"
+                        </Button>
+                      </div>
+                    ) : (
+                      "Ingrese un nombre para buscar"
+                    )}
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {filteredClients.map((client) => (
+                      <CommandItem
+                        key={client.id}
+                        value={client.name}
+                        onSelect={() => {
+                          setSaleForm({...saleForm, client: client.name});
+                          setClientSearch(client.name);
+                          setIsClientDropdownOpen(false);
+                        }}
+                      >
+                        {client.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          {saleForm.client.trim() && !filteredClients.some(c => c.name.toLowerCase() === saleForm.client.toLowerCase()) && (
+            <Button variant="outline" size="icon" onClick={addNewClient}>
+              <UserPlus className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="brand">Marca *</Label>
-        <Select
-          value={saleForm.brand}
-          onValueChange={(value) => {
-            setSaleForm({
-              ...saleForm, 
-              brand: value as keyof typeof productsByBrand,
-              products: []
-            });
-            setQuantities({});
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Seleccione una marca" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.keys(productsByBrand).map((brand) => (
-              <SelectItem key={brand} value={brand}>
-                {brand}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="brand">Marca *</Label>
+          <Select
+            value={saleForm.brand}
+            onValueChange={(value) => {
+              setSaleForm({
+                ...saleForm, 
+                brand: value as keyof typeof productsByBrand,
+                products: []
+              });
+              setQuantities({});
+              setSelectedProducts([]);
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione una marca" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.keys(productsByBrand).map((brand) => (
+                <SelectItem key={brand} value={brand}>
+                  {brand}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="paymentMethod">Método de Pago</Label>
+          <Select
+            value={saleForm.paymentMethod}
+            onValueChange={(value) => setSaleForm({...saleForm, paymentMethod: value})}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccione método" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cash">Efectivo</SelectItem>
+              <SelectItem value="transfer">Transferencia</SelectItem>
+              <SelectItem value="credit">Crédito</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="paymentMethod">Método de Pago</Label>
-        <Select
-          value={saleForm.paymentMethod}
-          onValueChange={(value) => setSaleForm({...saleForm, paymentMethod: value})}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Seleccione método de pago" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="cash">Efectivo</SelectItem>
-            <SelectItem value="transfer">Transferencia</SelectItem>
-            <SelectItem value="credit">Crédito</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="deliveryDate">Fecha de Entrega</Label>
+          <Input
+            type="date"
+            value={saleForm.deliveryDate}
+            onChange={(e) => setSaleForm({...saleForm, deliveryDate: e.target.value})}
+          />
+        </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="deliveryDate">Fecha de Entrega</Label>
-        <Input
-          type="date"
-          value={saleForm.deliveryDate}
-          onChange={(e) => setSaleForm({...saleForm, deliveryDate: e.target.value})}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notas</Label>
-        <Input
-          id="notes"
-          placeholder="Notas adicionales"
-          value={saleForm.notes}
-          onChange={(e) => setSaleForm({...saleForm, notes: e.target.value})}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="notes">Notas</Label>
+          <Input
+            id="notes"
+            placeholder="Notas adicionales"
+            value={saleForm.notes}
+            onChange={(e) => setSaleForm({...saleForm, notes: e.target.value})}
+          />
+        </div>
       </div>
     </div>
   );
 
-  // Componente para el paso de selección de productos (simplificado)
+  // Componente para el paso de selección de productos
   const ProductsStep = () => (
     <div className="space-y-6">
       {saleForm.brand ? (
@@ -418,36 +545,25 @@ export default function Page() {
             <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
-                  <div key={product.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors">
-                    <div className="flex-1">
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-muted-foreground">{product.description}</p>
-                      <p className="text-sm font-medium mt-1">${product.price}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateQuantity(product.id, (quantities[product.id] || 0) - 1)}
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={quantities[product.id] || 0}
-                        onChange={(e) => updateQuantity(product.id, parseInt(e.target.value) || 0)}
-                        className="w-16 text-center"
-                      />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => updateQuantity(product.id, (quantities[product.id] || 0) + 1)}
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
+                  <div 
+                    key={product.id} 
+                    className={`p-3 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer ${selectedProducts.includes(product.id) ? 'bg-blue-50 dark:bg-blue-900/30' : ''}`}
+                    onClick={() => toggleProductSelection(product.id)}
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className={`h-6 w-6 rounded-md border flex items-center justify-center ${selectedProducts.includes(product.id) ? 'bg-primary border-primary text-primary-foreground' : 'bg-background'}`}>
+                        {selectedProducts.includes(product.id) && <Check className="h-4 w-4" />}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-muted-foreground">{product.description}</p>
+                        <div className="flex justify-between items-center mt-1">
+                          <p className="text-sm font-medium">${product.price}</p>
+                          <Badge variant="outline" className="text-xs">
+                            Stock: {product.stock}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -457,83 +573,6 @@ export default function Page() {
                 </div>
               )}
             </div>
-
-            <Button
-              className="w-full mt-2"
-              onClick={addSelectedProducts}
-              disabled={Object.values(quantities).every(qty => qty <= 0)}
-            >
-              Agregar Productos Seleccionados
-            </Button>
-          </div>
-
-          <Separator className="my-4" />
-
-          <div className="space-y-4">
-            <h3 className="font-medium text-lg">Productos en la venta</h3>
-            
-            {saleForm.products.length > 0 ? (
-              <>
-                <div className="border rounded-lg divide-y max-h-[300px] overflow-y-auto">
-                  {saleForm.products.map((product) => (
-                    <div key={product.id} className="p-4 flex justify-between items-center hover:bg-muted/50 transition-colors">
-                      <div className="flex-1">
-                        <p className="font-medium">{product.name}</p>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateProductQuantity(product.id, product.quantity - 1)}
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                          <span className="w-10 text-center">{product.quantity}</span>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => updateProductQuantity(product.id, product.quantity + 1)}
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="w-20 text-right font-medium">
-                          ${(product.price * product.quantity).toFixed(2)}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-red-500 hover:text-red-600"
-                          onClick={() => removeProductFromSale(product.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">
-                      {saleForm.products.length} producto{saleForm.products.length !== 1 ? 's' : ''}
-                    </span>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="text-xl font-bold">${calculateTotal().toFixed(2)}</p>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="border rounded-lg p-8 text-center text-muted-foreground">
-                <ShoppingCart className="h-8 w-8 mx-auto mb-2" />
-                <p>No hay productos agregados</p>
-                <p className="text-sm">Selecciona productos de la lista</p>
-              </div>
-            )}
           </div>
         </>
       ) : (
@@ -542,6 +581,71 @@ export default function Page() {
           <p className="text-sm mt-2">Vuelve al paso anterior y elige una marca</p>
         </div>
       )}
+    </div>
+  );
+
+  // Componente para el paso de asignación de cantidades
+  const QuantitiesStep = () => (
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <h3 className="font-medium text-lg">Asignar cantidades</h3>
+        <p className="text-sm text-muted-foreground">Seleccione las cantidades a vender (no puede exceder el stock disponible)</p>
+        
+        <div className="border rounded-lg divide-y max-h-[400px] overflow-y-auto">
+          {filteredProducts.filter(p => selectedProducts.includes(p.id)).length > 0 ? (
+            filteredProducts
+              .filter(p => selectedProducts.includes(p.id))
+              .map((product) => (
+                <div key={product.id} className="p-4 flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-muted-foreground">{product.description}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        Stock: {product.stock}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        Precio: ${product.price}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(product.id, (quantities[product.id] || 1) - 1)}
+                      disabled={(quantities[product.id] || 1) <= 1}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="1"
+                      max={product.stock}
+                      value={quantities[product.id] || 1}
+                      onChange={(e) => updateQuantity(product.id, parseInt(e.target.value) || 1)}
+                      className="w-16 text-center"
+                    />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => updateQuantity(product.id, (quantities[product.id] || 1) + 1)}
+                      disabled={(quantities[product.id] || 1) >= product.stock}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No hay productos seleccionados
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 
@@ -590,18 +694,24 @@ export default function Page() {
                 <p className="text-sm text-muted-foreground">{product.description}</p>
               </div>
               <div className="flex items-center gap-6">
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Cantidad</p>
-                  <p className="font-medium">{product.quantity}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Precio Unitario</p>
-                  <p className="font-medium">${product.price.toFixed(2)}</p>
+                <div className="flex items-center gap-2">
+                  <span className="w-10 text-center">{product.quantity}</span>
+                  <Badge variant="outline" className="text-xs">
+                    Stock: {product.stock}
+                  </Badge>
                 </div>
                 <div className="text-right w-24">
                   <p className="text-sm text-muted-foreground">Subtotal</p>
                   <p className="font-medium">${(product.price * product.quantity).toFixed(2)}</p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-red-500 hover:text-red-600"
+                  onClick={() => removeProductFromSale(product.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           ))}
@@ -789,40 +899,36 @@ export default function Page() {
             <DialogTitle>Crear Venta</DialogTitle>
             <div className="flex flex-col pt-2">
               <div className="flex items-center justify-between px-4">
-                {[1, 2, 3].map((step) => (
+                {["client", "products", "quantities", "review"].map((step, index) => (
                   <div key={step} className="flex flex-col items-center">
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        currentStep === "client" && step === 1
+                        currentStep === step
                           ? "bg-primary text-primary-foreground"
-                          : currentStep === "products" && step === 2
-                          ? "bg-primary text-primary-foreground"
-                          : currentStep === "review" && step === 3
-                          ? "bg-primary text-primary-foreground"
-                          : ["client", "products", "review"].indexOf(currentStep) + 1 > step
+                          : ["client", "products", "quantities", "review"].indexOf(currentStep) > index
                           ? "bg-green-500 text-white"
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {["client", "products", "review"].indexOf(currentStep) + 1 > step ? (
+                      {["client", "products", "quantities", "review"].indexOf(currentStep) > index ? (
                         <Check className="h-4 w-4" />
                       ) : (
-                        <span>{step}</span>
+                        <span>{index + 1}</span>
                       )}
                     </div>
                     <span
                       className={`text-xs mt-1 ${
-                        (currentStep === "client" && step === 1) ||
-                        (currentStep === "products" && step === 2) ||
-                        (currentStep === "review" && step === 3)
+                        currentStep === step
                           ? "font-medium"
                           : "text-muted-foreground"
                       }`}
                     >
-                      {step === 1
+                      {step === "client"
                         ? "Cliente"
-                        : step === 2
+                        : step === "products"
                         ? "Productos"
+                        : step === "quantities"
+                        ? "Cantidades"
                         : "Revisión"}
                     </span>
                   </div>
@@ -833,7 +939,7 @@ export default function Page() {
                 <div
                   className="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 transition-all duration-300"
                   style={{
-                    width: `${(currentStep === "client" ? 0 : currentStep === "products" ? 50 : 100)}%`,
+                    width: `${(currentStep === "client" ? 0 : currentStep === "products" ? 33 : currentStep === "quantities" ? 66 : 100)}%`,
                   }}
                 ></div>
               </div>
@@ -843,6 +949,7 @@ export default function Page() {
           <div>
             {currentStep === "client" && <ClientStep />}
             {currentStep === "products" && <ProductsStep />}
+            {currentStep === "quantities" && <QuantitiesStep />}
             {currentStep === "review" && <ReviewStep />}
           </div>
 
@@ -855,13 +962,15 @@ export default function Page() {
                 </Button>
               )}
               <Button onClick={currentStep !== "review" ? nextStep : createSale}>
-                {currentStep !== "review" ? (
+                {currentStep === "review" ? (
+                  "Confirmar Venta"
+                ) : currentStep === "quantities" ? (
+                  "Agregar Productos"
+                ) : (
                   <>
                     Siguiente
                     <ArrowRight className="h-4 w-4 ml-2" />
                   </>
-                ) : (
-                  "Confirmar Venta"
                 )}
               </Button>
             </div>
