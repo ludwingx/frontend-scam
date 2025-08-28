@@ -111,7 +111,7 @@ const data = {
       icon: Box,
       items: [
         {
-          title: "Ingredientes",
+          title: "Insumos",
           url: "/ingredients",
           icon: ShoppingBasket
         },

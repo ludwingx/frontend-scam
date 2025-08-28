@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Sucursal Central", "status": 1 },
+  { "id": 2, "name": "Sucursal Norte", "status": 1 },
+  { "id": 3, "name": "Sucursal Sur", "status": 0 }
+]

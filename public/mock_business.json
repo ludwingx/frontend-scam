@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Negocio Central", "status": 1 },
+  { "id": 2, "name": "Negocio Norte", "status": 1 },
+  { "id": 3, "name": "Negocio Sur", "status": 0 }
+]

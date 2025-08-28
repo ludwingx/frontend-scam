@@ -1,11 +1,11 @@
 "use server";
 
-import { Recipe } from "@/types/recipes";
+import { RecipeData } from "@/types/recipes";
 import { cookies } from "next/headers";
 
 type ApiResponse = {
   success: boolean;
-  data: Recipe[] | Recipe | null;
+  data: RecipeData[] | RecipeData | null;
   message: string;
 };
 
@@ -14,38 +14,43 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 // Función para obtener datos de una receta o todas las recetas
 export const fetchRecipeData = async (
   recetaId?: number
-): Promise<Recipe[] | Recipe | null> => {
-  const token = (await cookies()).get("token")?.value;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
+): Promise<RecipeData[] | RecipeData | null> => {
   try {
-    const url = recetaId
-      ? `${API_URL}/api/receta/${recetaId}`
-      : `${API_URL}/api/receta`;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = (await cookies()).get("token")?.value;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    if (!response.ok) {
-      throw new Error("Error al obtener los datos de las recetas");
+    if (token && API_URL) {
+      const url = recetaId
+        ? `${API_URL}/api/receta/${recetaId}`
+        : `${API_URL}/api/receta`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error al obtener los datos de las recetas");
+      }
+      const apiResponse: ApiResponse = await response.json();
+      if (!apiResponse.success || !apiResponse.data) {
+        throw new Error(apiResponse.message || "Error al obtener los datos de las recetas");
+      }
+      return apiResponse.data;
+    } else {
+      // Modo demo: cargar mock desde /public
+      const res = await fetch('/mock_recipes.json');
+      if (!res.ok) throw new Error('No se pudo cargar mock_recipes.json');
+      const data = await res.json();
+      if (recetaId) {
+        return data.find((r: any) => r.id === recetaId) || null;
+      }
+      return data;
     }
-
-    const apiResponse: ApiResponse = await response.json();
-
-    if (!apiResponse.success || !apiResponse.data) {
-      throw new Error(apiResponse.message || "Error al obtener los datos de las recetas");
-    }
-
-    return apiResponse.data; // Retorna el array o el objeto directamente
   } catch (error) {
     console.error("Error fetching Recipe data:", error);
-    throw new Error("Error al obtener los datos de las recetas");
+    // fallback demo vacío
+    return [];
   }
 };
 

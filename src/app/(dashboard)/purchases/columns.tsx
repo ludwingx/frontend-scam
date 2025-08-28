@@ -37,21 +37,21 @@ export type Purchases = typeof dataFicticia.compras[0];
 export const columns: ColumnDef<Purchases>[] = [
   {
     id: "rowNumber",
-    header: "N°",
+    header: () => <div className="text-center">N°</div>,
     cell: ({ row }) => {
       return <div className="text-center">{row.index + 1}</div>;
     },
   },
   {
     accessorKey: "fecha_compra",
-    header: "Fecha de Compra",
+    header: () => <div className="text-center">Fecha de Compra</div>,
     cell: ({ row }) => {
       return <div className="text-center">{row.original.fecha_compra}</div>;
     },
   },
   {
     accessorKey: "detalle_compra",
-    header: "Detalle de Compra",
+    header: () => <div className="text-center">Detalle de Compra</div>,
     cell: ({ row }) => {
       const detalles = row.original.detalle_compra;
       const totalCompra = row.original.total_compra;
@@ -117,7 +117,7 @@ export const columns: ColumnDef<Purchases>[] = [
   },
   {
     accessorKey: "total_compra",
-    header: "Total de Compra",
+    header: () => <div className="text-center">Total de Compra</div>,
     cell: ({ row }) => {
       return <div className="text-center">Bs. {row.original.total_compra.toFixed(2)}</div>;
     },

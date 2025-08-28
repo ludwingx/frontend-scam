@@ -17,7 +17,7 @@ export default async function Page() {
   const sortedData = data?.sort((a, b) => b.id - a.id);
   const tableData = sortedData ?? undefined;
   return (
-    <div className="flex flex-col min-h-screen p-6 ">
+    <div className="flex flex-col min-h-screen p-6 bg-background text-foreground">
       {/* Header */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
@@ -25,12 +25,12 @@ export default async function Page() {
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="hover:text-primary"
               >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard/inventories"
@@ -39,19 +39,19 @@ export default async function Page() {
                 Inventario
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+              <BreadcrumbPage className="">
                 Materias Primas
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        <h2 className="text-3xl font-semibold text-gray-900">
+        <h2 className="text-3xl font-semibold">
           Materias primas{" "}
         </h2>
-        <small className="text-sm font-medium text-gray-600">
+        <small className="text-sm text-muted-foreground">
           Aquí podrás gestionar las materias primas.
         </small>
       </div>

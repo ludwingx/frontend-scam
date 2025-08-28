@@ -1,0 +1,4 @@
+[
+  { "id": 1, "name": "Receta Pan", "status": 1, "ingredientes": [ { "ingredienteId": 1, "cantidad": 2, "unidad": "kg" } ] },
+  { "id": 2, "name": "Receta Torta", "status": 1, "ingredientes": [ { "ingredienteId": 2, "cantidad": 1, "unidad": "kg" } ] }
+]

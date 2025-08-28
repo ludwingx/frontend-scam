@@ -114,16 +114,16 @@ export function IngredientsActions({ onRefresh, onToggleStatus }: IngredientsAct
       {/* Mostrar el botón "Crear Ingrediente" solo si se están viendo los activos */}
       {showActive && (
         <ReusableDialog
-          title="Crear Ingrediente"
-          description="Aquí podrás crear un ingrediente."
+          title="Crear Insumo"
+          description="Aquí podrás crear un insumo."
           trigger={
            <Button className="text-white flex items-center gap-2 px-4 py-2 rounded-lg transition-colors">
               <CirclePlus />
-              <span>Crear Ingrediente</span>
+              <span>Crear Insumo</span>
             </Button>
           }
           onSubmit={handleCreateIngredient}
-          submitButtonText="Crear Ingrediente"
+          submitButtonText="Crear Insumo"
           isOpen={isDialogOpen} // Pasar el estado de apertura
           onOpenChange={setIsDialogOpen} // Pasar la función para cambiar el estado
         >
@@ -134,7 +134,7 @@ export function IngredientsActions({ onRefresh, onToggleStatus }: IngredientsAct
               </Label>
               <Input
                 id="name"
-                placeholder="Ingresa el nombre del ingrediente"
+                placeholder="Ingresa el nombre del insumo"
                 className="col-span-3"
                 value={name}
                 onChange={(e) => setName(e.target.value)}

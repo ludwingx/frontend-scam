@@ -1,0 +1,4 @@
+[
+  { "id": 1, "name": "Pan de Queso", "business": "Negocio Central", "price": 10, "type": "Panadería", "status": 1 },
+  { "id": 2, "name": "Torta de Chocolate", "business": "Negocio Norte", "price": 50, "type": "Repostería", "status": 1 }
+]

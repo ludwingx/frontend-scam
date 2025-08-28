@@ -37,9 +37,22 @@ const getApiUrl = (): string => {
   }
   return API_URL;
 };
+
 export const fetchUserData = async (): Promise<User[] | null> => {
   const token = await getAuthToken();
   const API_URL = getApiUrl();
+
+  // Si no hay API_URL, usar mock local
+  if (!API_URL) {
+    try {
+      const res = await fetch('/mock_users.json');
+      if (!res.ok) throw new Error('No se pudo cargar mock_users.json');
+      return await res.json();
+    } catch (error) {
+      console.error("Error fetching users from mock:", error);
+      return [];
+    }
+  }
 
   try {
     const response = await fetch(`${API_URL}/api/user`, {
@@ -65,9 +78,10 @@ export const fetchUserData = async (): Promise<User[] | null> => {
     return apiResponse.data as User[];
   } catch (error) {
     console.error("Error fetching users:", error);
-    throw error;
+    return [];
   }
 };
+
 export const login = async (ci: string, password: string) => {
   const API_URL = getApiUrl();
 

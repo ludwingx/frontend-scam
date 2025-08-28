@@ -1,0 +1,5 @@
+[
+  { "id": 1, "name": "Panadería", "status": 1 },
+  { "id": 2, "name": "Repostería", "status": 1 },
+  { "id": 3, "name": "Bebidas", "status": 1 }
+]

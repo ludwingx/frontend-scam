@@ -1,5 +1,7 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchActualIngredientsData } from '@/services/fetchActualIngredientsData';
+import type { Ingredient } from '@/types/ingredients';
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,6 +28,13 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Combobox } from "./ComboBox";
 
+interface Option {
+  id: number;
+  nombre: string;
+  unit_measurement?: string;
+  stock?: number;
+}
+
 interface Item {
   id: number;
   nombre: string;
@@ -37,31 +46,7 @@ interface Item {
   tipo?: "Comestible" | "No comestible";
 }
 
-// Datos de ejemplo
-const comestibles = [
-  {
-    id: 1,
-    nombre: "Harina",
-    quantity: 1,
-    unit_measurement: "kilo(s)",
-    proveedor: "Proveedor A",
-  },
-  {
-    id: 2,
-    nombre: "Azúcar",
-    quantity: 300,
-    unit_measurement: "gramo(s)",
-    proveedor: "Proveedor B",
-  },
-  {
-    id: 3,
-    nombre: "Huevo",
-    quantity: 200,
-    unit_measurement: "unidad(es)",
-    proveedor: "Proveedor C",
-  },
-];
-
+// Insumos reales desde la API
 const noComestibles = [
   {
     id: 4,
@@ -76,6 +61,17 @@ const noComestibles = [
 export function PurchasesActions() {
   const [ingredients, setIngredients] = useState<Item[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [insumos, setInsumos] = useState<Ingredient[]>([]);
+
+  // Cargar insumos reales al abrir el modal
+  useEffect(() => {
+    if (dialogOpen) {
+      fetchActualIngredientsData().then(data => {
+        console.log('Insumos desde API:', data);
+        setInsumos(data);
+      });
+    }
+  }, [dialogOpen]);
 
   const handleRemoveItem = (id: number) => {
     setIngredients((prev) => prev.filter((ing) => ing.id !== id));
@@ -100,10 +96,15 @@ export function PurchasesActions() {
   };
 
   const getAvailableIngredients = (tipo: "Comestible" | "No comestible") => {
-    const allIngredients = tipo === "Comestible" ? comestibles : noComestibles;
-    return allIngredients.filter(
-      (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
-    );
+    if (tipo === "Comestible") {
+      return insumos.filter(
+        (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
+      );
+    } else {
+      return noComestibles.filter(
+        (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
+      );
+    }
   };
 
   // Función modificada para agregar items sin cerrar el diálogo
@@ -189,7 +190,7 @@ export function PurchasesActions() {
                 </TableHeader>
                 <TableBody>
                   {ingredients.map((ing, index) => (
-                    <TableRow key={ing.id}>
+                    <TableRow key={ing.id !== undefined ? ing.id : `${index}-${ing.nombre ?? 'row'}`}>
                       <TableCell className="w-[40px] font-medium">
                         {index + 1}
                       </TableCell>
@@ -229,15 +230,33 @@ export function PurchasesActions() {
                               <div className="inline">
                                 {ing.nombre}{" "}
                                 <span className="text-sm text-muted-foreground">
-                                  {ing.nombre === "" ? "Seleccionar un item" : ""}
                                   {
                                     (ing.tipo === "Comestible"
-                                      ? comestibles
-                                      : noComestibles
-                                    ).find((item) => item.id === ing.id)
-                                      ?.quantity
-                                  }{" "}
-                                  {ing.unit_measurement}
+                                      ? insumos.map(i => ({
+                                          id: i.id,
+                                          nombre: i.name,
+                                          unit_measurement: i.unidad || '',
+                                          stock: typeof i.stock === 'number' ? i.stock : undefined,
+                                        }))
+                                      : noComestibles.map(i => ({
+                                          ...i,
+                                          stock: undefined
+                                        }))
+                                    ).find((item: Option) => item.id === ing.id)?.stock !== undefined
+                                      ? `${(ing.tipo === "Comestible"
+                                          ? insumos.map(i => ({
+                                              id: i.id,
+                                              nombre: i.name,
+                                              unit_measurement: i.unidad || '',
+                                              stock: typeof i.stock === 'number' ? i.stock : undefined,
+                                            }))
+                                          : noComestibles.map(i => ({
+                                              ...i,
+                                              stock: undefined
+                                            }))
+                                        ).find((item: Option) => item.id === ing.id)?.stock} en stock`
+                                      : ''
+                                  } {ing.unit_measurement}
                                 </span>
                               </div>
                             }
@@ -249,13 +268,25 @@ export function PurchasesActions() {
                                 item.unit_measurement;
                               setIngredients(updatedItems);
                             }}
-                            options={getAvailableIngredients(ing.tipo)}
+                            options={
+                              ing.tipo === "Comestible"
+                                ? insumos.map(i => ({
+                                    id: i.id_insumo,
+                                    nombre: i.nombre || '',
+                                    unit_measurement: i.unidad_medida || '',
+                                    stock: typeof i.stock_actual === 'string' ? parseFloat(i.stock_actual) : (typeof i.stock_actual === 'number' ? i.stock_actual : 0),
+                                  }))
+                                : noComestibles.map(i => ({
+                                    ...i,
+                                    stock: undefined
+                                  }))
+                            }
                             placeholder="Seleccionar ítem"
-                            renderOption={(item) => (
+                            renderOption={(item: Option) => (
                               <div className="flex justify-between w-full">
                                 <span>{item.nombre}</span>
                                 <span className="text-sm text-muted-foreground">
-                                  {item.quantity} {item.unit_measurement}
+                                  {typeof item.stock === 'number' ? `${item.stock} en stock` : ''} {item.unit_measurement || ''}
                                 </span>
                               </div>
                             )}

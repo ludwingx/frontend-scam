@@ -21,8 +21,8 @@ import {
 interface Option {
   id: number;
   nombre: string;
-  quantity?: number;
   unit_measurement?: string;
+  stock?: number;
 }
 
 interface ComboboxProps {
@@ -57,25 +57,26 @@ export function Combobox({ value, onSelect, options = [], placeholder }: Combobo
             value={searchValue}
             onValueChange={(value) => setSearchValue(value)}
           />
-          <CommandList>
+          <CommandList className="overflow-y-auto max-h-72" >
             <CommandEmpty>No se encontraron resultados.</CommandEmpty>
             <CommandGroup>
-              {options.map((item) => (
+              {options.map((item, idx) => (
                 <CommandItem
-                  key={item.id}
-                  value={`${item.nombre} ${item.quantity} ${item.unit_measurement}`} // Valor para búsqueda
+                  key={
+                    (item.id !== undefined ? item.id : `idx${idx}`) +
+                    '-' +
+                    (item.unit_measurement ?? item.nombre ?? `idx${idx}`)
+                  }
+                  value={`${item.nombre} ${(typeof item.stock === 'number' ? item.stock : '')} ${item.unit_measurement || ''}`}
                   onSelect={() => {
                     onSelect(item);
                     setOpen(false); // Cierra el popover después de seleccionar
                     setSearchValue(""); // Reinicia el valor de búsqueda
                   }}
                 >
-                  <div className="flex justify-between w-full">
-                    <span>{item.nombre}</span>
-                    <span className="text-sm text-gray-500">
-                      {item.quantity} {item.unit_measurement}
-                    </span>
-                  </div>
+                  <div className="w-full">
+  <span className="text-black dark:text-white font-medium">{item.nombre}</span>
+</div>
                   <Check
                     className={cn(
                       "ml-auto",

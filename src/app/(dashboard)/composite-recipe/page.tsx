@@ -101,7 +101,7 @@ export default function RecipePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-6 ">
+    <div className="flex flex-col min-h-screen p-6 bg-background text-foreground">
       {/* Título de la página */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
@@ -109,30 +109,30 @@ export default function RecipePage() {
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="hover:text-primary"
               >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="hover:text-primary"
               >
                 Gestión de Items
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+              <BreadcrumbPage className="">
                 Recetas
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h2 className="text-3xl font-semibold text-gray-900">Recetas</h2>
-        <small className="text-sm font-medium text-gray-600 pl-1">
+        <h2 className="text-3xl font-semibold">Recetas</h2>
+        <small className="text-sm text-muted-foreground pl-1">
           Aquí podrás gestionar las recetas.
         </small>
       </div>
@@ -144,9 +144,9 @@ export default function RecipePage() {
           onRefresh={loadRecipe}
         />
       </div>
-      <div className="flex flex-col gap-6 p-6 bg-white rounded-lg shadow">
+      <div className="flex flex-col gap-6 p-6 bg-card rounded-lg border border-border shadow-sm">
         {errorMessage ? (
-          <p className="text-red-500">{errorMessage}</p>
+          <p className="text-destructive">{errorMessage}</p>
         ) : (
           <DataTable
             columns={columns(updateRecipeInTable, ingredientsData)}

@@ -169,10 +169,21 @@ export function DataTable<TData, TValue>({
 
       {/* Paginación y selección de filas */}
       <div className="flex items-center justify-end space-x-2 py-4">
-        {enableRowSelection && (
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} de{" "}
-            {table.getFilteredRowModel().rows.length} fila(s) seleccionadas
+        <div className="flex-1 text-sm text-muted-foreground">
+          Mostrando {table.getFilteredRowModel().rows.length} de {table.getPrePaginationRowModel().rows.length} filas
+        </div>
+        {enablePagination && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Filas por página:</span>
+            <select
+              className="border rounded px-2 py-1 text-sm bg-background"
+              value={table.getState().pagination.pageSize}
+              onChange={e => table.setPageSize(Number(e.target.value))}
+            >
+              {[25, 50, 100, 200].map(pageSize => (
+                <option key={pageSize} value={pageSize}>{pageSize}</option>
+              ))}
+            </select>
           </div>
         )}
         {enablePagination && (

@@ -44,7 +44,7 @@ async function getData(): Promise<ProductsBase[]> {
 export default async function Page() {
   const data = await getData();
   return (
-    <div className="flex flex-col min-h-screen p-6 ">
+    <div className="flex flex-col min-h-screen p-6 bg-background text-foreground">
       {/* Header */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
@@ -52,29 +52,29 @@ export default async function Page() {
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+                className="hover:text-primary"
               >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
               <BreadcrumbLink href="/dashboard/inventories" className="text-sm font-medium text-gray-600 hover:text-gray-900">
                 Inventario
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+              <BreadcrumbPage className="">
                 Productos bases
               </BreadcrumbPage>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-muted-foreground" />
           </BreadcrumbList>
         </Breadcrumb>
 
-        <h2 className="text-3xl font-semibold text-gray-900">Productos Bases</h2>
-        <small className="text-sm font-medium text-gray-600">
+        <h2 className="text-3xl font-semibold">Productos Bases</h2>
+        <small className="text-sm text-muted-foreground">
           Aquí podrás gestionar los productos bases.
         </small>
       </div>

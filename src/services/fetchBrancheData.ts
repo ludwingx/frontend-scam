@@ -12,31 +12,32 @@ type ApiResponse = {
 };
 
 export const fetchBrancheData = async (): Promise<Branche[] | null> => {
-  const token = (await cookies()).get('token')?.value;
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
   try {
-    const response = await fetch(`${API_URL}/api/branche`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = (await cookies()).get('token')?.value;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    if (!response.ok) {
-      throw new Error("Error al obtener los datos de los negocios");
+    if (token && API_URL) {
+      const response = await fetch(`${API_URL}/api/branche`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error al obtener los datos de los negocios");
+      }
+      const apiResponse: ApiResponse = await response.json();
+      return apiResponse.data as unknown as Branche[];
+    } else {
+      // Modo demo: cargar mock desde /public
+      const res = await fetch('/mock_branche.json');
+      if (!res.ok) throw new Error('No se pudo cargar mock_branche.json');
+      return await res.json();
     }
-
-    const apiResponse: ApiResponse = await response.json();
-    
-    return apiResponse.data as unknown as Branche[];
   } catch (error) {
     console.error("Error fetching branche data:", error);
-    throw error;
+    // fallback demo vacío
+    return [];
   }
 };
 

@@ -42,7 +42,7 @@ export const columns: ColumnDef<ProductsBase>[] = [
       return (
         <Sheet >
           <SheetTrigger  asChild>
-            <Button variant="outline" className="w-full bg-green-100 hover:bg-green-200" >Ver Ingredientes</Button>
+            <Button variant="outline" className="w-full bg-card text-foreground border hover:bg-accent shadow-sm transition-colors">Ver Ingredientes</Button>
           </SheetTrigger>
           <SheetContent className="sm:max-w-2xl ">
             <SheetHeader>
@@ -76,7 +76,7 @@ export const columns: ColumnDef<ProductsBase>[] = [
             </ScrollArea>
             <SheetFooter className="pt-8">
               <SheetClose asChild>
-                <Button type="button">Cerrar</Button>
+                <Button type="button" className="bg-primary text-primary-foreground hover:bg-primary/90">Cerrar</Button>
               </SheetClose>
             </SheetFooter>
           </SheetContent>

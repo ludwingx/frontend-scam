@@ -12,31 +12,32 @@ type ApiResponse = {
 };
 
 export const fetchBusinessData = async (): Promise<Business[] | null> => {
-  const token = (await cookies()).get('token')?.value;
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
   try {
-    const response = await fetch(`${API_URL}/api/business`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = (await cookies()).get('token')?.value;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    if (!response.ok) {
-      throw new Error("Error al obtener los datos de los negocios");
+    if (token && API_URL) {
+      const response = await fetch(`${API_URL}/api/business`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error al obtener los datos de los negocios");
+      }
+      const apiResponse: ApiResponse = await response.json();
+      return apiResponse.data as unknown as Business[];
+    } else {
+      // Modo demo: cargar mock desde /public
+      const res = await fetch('/mock_business.json');
+      if (!res.ok) throw new Error('No se pudo cargar mock_business.json');
+      return await res.json();
     }
-
-    const apiResponse: ApiResponse = await response.json();
-    
-    return apiResponse.data as unknown as Business[];
   } catch (error) {
     console.error("Error fetching business data:", error);
-    throw error;
+    // fallback demo vacío
+    return [];
   }
 };
 

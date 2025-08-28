@@ -9,34 +9,34 @@ type ApiResponse = {
   message: string;
 };
 
-export const fetchIngredientsData = async (): Promise<
-  Ingredient[] | undefined
-> => {
-  const token = (await cookies()).get("token")?.value;
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!token || !API_URL) {
-    throw new Error("Faltan el token o la API_URL");
-  }
-
+export const fetchIngredientsData = async (): Promise<Ingredient[] | undefined> => {
   try {
-    const response = await fetch(`${API_URL}/api/ingrediente`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+    const token = (await cookies()).get("token")?.value;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-    if (!response.ok) {
-      throw new Error("Error al obtener los datos de los ingredientes");
+    if (token && API_URL) {
+      const response = await fetch(`${API_URL}/api/ingrediente`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error al obtener los datos de los ingredientes");
+      }
+      const apiResponse: ApiResponse = await response.json();
+      return apiResponse.data as unknown as Ingredient[];
+    } else {
+      // Modo demo: cargar mock desde /public
+      const res = await fetch('/mock_ingredients.json');
+      if (!res.ok) throw new Error('No se pudo cargar mock_ingredients.json');
+      return await res.json();
     }
-
-    const apiResponse: ApiResponse = await response.json();
-    return apiResponse.data as unknown as Ingredient[]; // Devuelve `undefined` si no hay datos
   } catch (error) {
     console.error("Error fetching ingredients data:", error);
-    return undefined; // Devuelve `undefined` en caso de error
+    // fallback demo vacío
+    return [];
   }
 };
 

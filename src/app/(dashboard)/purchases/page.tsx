@@ -32,15 +32,15 @@ export default function Page() {
             <BreadcrumbSeparator className="text-muted-foreground" />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-sm font-medium text-foreground">
-                Compras
+                Gestión de Compras
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
 
-        <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Compras</h2>
+        <h2 className="text-2xl md:text-3xl font-semibold text-foreground">Gestión de Compras</h2>
         <small className="text-sm font-medium text-muted-foreground">
-          Aquí podrás gestionar las compras de ingredientes y materiales.
+          Aquí podrás visualizar, registrar, editar y eliminar las compras de ingredientes y materiales.
         </small>
       </div>
 
