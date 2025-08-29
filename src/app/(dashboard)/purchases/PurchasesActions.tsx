@@ -1,8 +1,10 @@
-'use client'
+"use client";
 import { useState, useEffect } from "react";
-import { fetchActualIngredientsData } from '@/services/fetchActualIngredientsData';
-import type { Ingredient } from '@/types/ingredients';
+import { fetchActualIngredientsData } from "@/services/fetchActualIngredientsData";
+import { registerPurchase } from "@/services/purchaseService";
+import type { Ingredient } from "@/types/ingredients";
 import { ReusableDialogWidth } from "@/components/ReusableDialogWidth";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +17,8 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import { CirclePlus, Utensils, Box, Trash2 } from "lucide-react";
+import { CirclePlus, Utensils, Box, Trash2, CalendarIcon } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -26,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Combobox } from "./ComboBox";
+import { SelectInsumo } from "./SelectInsumo";
 
 interface Option {
   id: number;
@@ -43,31 +46,45 @@ interface Item {
   unit_measurement?: string;
   proveedor?: string;
   subtotal?: number;
-  tipo?: "Comestible" | "No comestible";
 }
 
-// Insumos reales desde la API
-const noComestibles = [
-  {
-    id: 4,
-    nombre: "Cajas de cartón",
-    quantity: 100,
-    unit_measurement: "unidad(es)",
-  },
-  { id: 5, nombre: "Lavandina", quantity: 100, unit_measurement: "litro(s)" },
-  { id: 6, nombre: "Stickers", quantity: 100, unit_measurement: "unidad(es)" },
-];
+import { Calendar } from "@/components/ui/calendar";
+import { es } from "date-fns/locale";
 
-export function PurchasesActions() {
-  const [ingredients, setIngredients] = useState<Item[]>([]);
+// Helper to parse yyyy-MM-dd as a local date (no UTC conversion)
+function parseLocalDate(str: string): Date | undefined {
+  if (!str) return undefined;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+interface PurchasesActionsProps {
+  onSuccess?: () => Promise<void>;
+}
+
+export function PurchasesActions({ onSuccess }: PurchasesActionsProps) {
+  // Fecha de compra: valor inicial hoy
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const [fechaCompra, setFechaCompra] = useState(`${yyyy}-${mm}-${dd}`);
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const [ingredients, setIngredients] = useState<Item[]>([
+    {
+      id: Date.now(),
+      nombre: "",
+    },
+  ]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [insumos, setInsumos] = useState<Ingredient[]>([]);
 
   // Cargar insumos reales al abrir el modal
   useEffect(() => {
     if (dialogOpen) {
-      fetchActualIngredientsData().then(data => {
-        console.log('Insumos desde API:', data);
+      fetchActualIngredientsData().then((data) => {
+        console.log("Insumos desde API:", data);
         setInsumos(data);
       });
     }
@@ -90,34 +107,60 @@ export function PurchasesActions() {
     );
   };
 
-  const handleSubmit = () => {
-    console.log("Datos de la compra:", JSON.stringify(ingredients, null, 2));
-    setDialogOpen(false);
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Prepare purchase items
+      const purchaseItems = ingredients
+        .filter((item): item is Item & { id: number; cantidad: number; precioUnitario: number } => 
+          !!item.id && typeof item.cantidad === 'number' && typeof item.precioUnitario === 'number'
+        )
+        .map(item => ({
+          id_insumo: item.id,
+          cantidad: item.cantidad,
+          precio_unitario: item.precioUnitario,
+          ...(item.proveedor && { proveedor: item.proveedor }),
+          // Add any additional fields from your form
+        }));
 
-  const getAvailableIngredients = (tipo: "Comestible" | "No comestible") => {
-    if (tipo === "Comestible") {
-      return insumos.filter(
-        (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
-      );
-    } else {
-      return noComestibles.filter(
-        (ing) => !ingredients.some((selectedIng) => selectedIng.id === ing.id)
-      );
+      if (purchaseItems.length === 0) {
+        toast.error("Por favor, agregue al menos un insumo con cantidad y precio");
+        return;
+      }
+
+      // Submit the purchase
+      const result = await registerPurchase(purchaseItems);
+      
+      // Show success message
+      toast.success("Compra registrada exitosamente");
+      
+      // Close the modal and reset the form
+      setDialogOpen(false);
+      setIngredients([{ id: undefined, nombre: "", cantidad: 0, precioUnitario: 0, subtotal: 0 }]);
+      
+      // Refresh the purchases list if onSuccess callback is provided
+      if (onSuccess) {
+        await onSuccess();
+      }
+      
+    } catch (error) {
+      console.error("Error al registrar la compra:", error);
+      toast.error("Error al registrar la compra. Por favor, intente nuevamente.");
     }
   };
 
   // Función modificada para agregar items sin cerrar el diálogo
-  const addItem = (tipo: "Comestible" | "No comestible") => {
+  const addItem = () => {
     setIngredients((prev) => [
       ...prev,
       {
         id: Date.now(),
         nombre: "",
-        tipo: tipo,
+        // tipo removed, now always API-based insumo
       },
     ]);
-  };
+  }; // End of addItem
 
   return (
     <div className="flex flex-col gap-4">
@@ -126,7 +169,7 @@ export function PurchasesActions() {
         description="Aquí podrás crear una compra."
         submitButtonText="Crear Compra"
         trigger={
-          <Button 
+          <Button
             className="flex items-center gap-2 px-4 py-2 rounded-lg"
             onClick={() => setDialogOpen(true)}
           >
@@ -143,39 +186,50 @@ export function PurchasesActions() {
             <Label htmlFor="name" className="text-right">
               Fecha de la compra
             </Label>
-            <Input 
-              id="name" 
-              type="date" 
-              className="col-span-3"
-            />
+            <div className="relative w-40">
+              <Popover open={showCalendar} onOpenChange={setShowCalendar}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className={`w-48 flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${!fechaCompra ? 'text-muted-foreground' : ''}`}
+                    id="fecha-compra"
+                  >
+                    {fechaCompra ? fechaCompra : "Selecciona la fecha"}
+                    <CalendarIcon className="inline-block h-6 w-6 pb-1 ml-2" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto overflow-hidden p-0 bg-popover text-popover-foreground border-border dark:bg-neutral-900 dark:text-white dark:border-neutral-700" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={fechaCompra ? parseLocalDate(fechaCompra) : undefined}
+                    captionLayout="dropdown"
+                    locale={es}
+                    onSelect={(date: Date | undefined) => {
+                      if (date) {
+                        // Fix: always treat as local date (ignore timezone offset)
+                        const localDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                        const yyyy = localDate.getFullYear();
+                        const mm = String(localDate.getMonth() + 1).padStart(2, "0");
+                        const dd = String(localDate.getDate()).padStart(2, "0");
+                        setFechaCompra(`${yyyy}-${mm}-${dd}`);
+                        setShowCalendar(false);
+                      }
+                    }}
+                    className="rounded-lg border-none bg-transparent dark:bg-neutral-900 dark:text-white"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Sucursal
-            </Label>
-            <Select>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Selecciona una sucursal" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Sucursales:</SelectLabel>
-                  <SelectItem value="radial19">Radial 19</SelectItem>
-                  <SelectItem value="villa1ro">Villa 1ro de mayo</SelectItem>
-                  <SelectItem value="radial26">Radial 26</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Tabla de ítems */}
           <div className="grid items-center gap-4">
             <ScrollArea className="h-[300px] rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[40px]">N°</TableHead>
-                    <TableHead className="w-[220px]">Ítem</TableHead>
+                    <TableHead className="w-[220px] ">
+                      Nombre de Insumo
+                    </TableHead>
                     <TableHead className="w-[100px] text-center">
                       Cantidad
                     </TableHead>
@@ -190,114 +244,57 @@ export function PurchasesActions() {
                 </TableHeader>
                 <TableBody>
                   {ingredients.map((ing, index) => (
-                    <TableRow key={ing.id !== undefined ? ing.id : `${index}-${ing.nombre ?? 'row'}`}>
+                    <TableRow
+                      key={
+                        ing.id !== undefined
+                          ? ing.id
+                          : `${index}-${ing.nombre ?? "row"}`
+                      }
+                    >
+                      {/* Id */}
                       <TableCell className="w-[40px] font-medium">
                         {index + 1}
                       </TableCell>
+                      {/* Nombre */}
                       <TableCell className="w-[220px]">
-                        {!ing.tipo ? (
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                const updatedItems = [...ingredients];
-                                updatedItems[index].tipo = "Comestible";
-                                setIngredients(updatedItems);
-                              }}
-                            >
-                              <Utensils className="w-4 h-4 mr-2" />
-                              Comestible
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                const updatedItems = [...ingredients];
-                                updatedItems[index].tipo = "No comestible";
-                                setIngredients(updatedItems);
-                              }}
-                            >
-                              <Box className="w-4 h-4 mr-2" />
-                              No comestible
-                            </Button>
-                          </div>
-                        ) : (
-                          <Combobox
-                            value={
-                              <div className="inline">
-                                {ing.nombre}{" "}
-                                <span className="text-sm text-muted-foreground">
-                                  {
-                                    (ing.tipo === "Comestible"
-                                      ? insumos.map(i => ({
-                                          id: i.id,
-                                          nombre: i.name,
-                                          unit_measurement: i.unidad || '',
-                                          stock: typeof i.stock === 'number' ? i.stock : undefined,
-                                        }))
-                                      : noComestibles.map(i => ({
-                                          ...i,
-                                          stock: undefined
-                                        }))
-                                    ).find((item: Option) => item.id === ing.id)?.stock !== undefined
-                                      ? `${(ing.tipo === "Comestible"
-                                          ? insumos.map(i => ({
-                                              id: i.id,
-                                              nombre: i.name,
-                                              unit_measurement: i.unidad || '',
-                                              stock: typeof i.stock === 'number' ? i.stock : undefined,
-                                            }))
-                                          : noComestibles.map(i => ({
-                                              ...i,
-                                              stock: undefined
-                                            }))
-                                        ).find((item: Option) => item.id === ing.id)?.stock} en stock`
-                                      : ''
-                                  } {ing.unit_measurement}
-                                </span>
-                              </div>
-                            }
-                            onSelect={(item) => {
-                              const updatedItems = [...ingredients];
-                              updatedItems[index].nombre = item.nombre;
-                              updatedItems[index].id = item.id;
-                              updatedItems[index].unit_measurement =
-                                item.unit_measurement;
-                              setIngredients(updatedItems);
-                            }}
-                            options={
-                              ing.tipo === "Comestible"
-                                ? insumos.map(i => ({
-                                    id: i.id_insumo,
-                                    nombre: i.nombre || '',
-                                    unit_measurement: i.unidad_medida || '',
-                                    stock: typeof i.stock_actual === 'string' ? parseFloat(i.stock_actual) : (typeof i.stock_actual === 'number' ? i.stock_actual : 0),
-                                  }))
-                                : noComestibles.map(i => ({
-                                    ...i,
-                                    stock: undefined
-                                  }))
-                            }
-                            placeholder="Seleccionar ítem"
-                            renderOption={(item: Option) => (
-                              <div className="flex justify-between w-full">
-                                <span>{item.nombre}</span>
-                                <span className="text-sm text-muted-foreground">
-                                  {typeof item.stock === 'number' ? `${item.stock} en stock` : ''} {item.unit_measurement || ''}
-                                </span>
-                              </div>
-                            )}
-                          />
+                        <SelectInsumo
+                        value={ing.id ? String(ing.id) : ""}
+                        onSelect={(value, item) => {
+                          const updatedItems = [...ingredients];
+                          updatedItems[index].nombre = item.nombre;
+                          updatedItems[index].id = item.id;
+                          updatedItems[index].unit_measurement = item.unit_measurement;
+                          setIngredients(updatedItems);
+                        }}
+                        // Pass a Set of all selected ingredient IDs except the current one
+                        selectedIds={new Set(
+                          ingredients
+                            .filter((_, i) => i !== index) // Exclude current row
+                            .map(item => item.id)
+                            .filter((id): id is number => id !== undefined)
                         )}
+                        options={insumos.map((i) => ({
+                          id: i.id_insumo,
+                          nombre: i.nombre || "",
+                          unit_measurement: i.unidad_medida || "",
+                          stock:
+                            typeof i.stock_actual === "string"
+                              ? parseFloat(i.stock_actual)
+                              : typeof i.stock_actual === "number"
+                              ? i.stock_actual
+                              : 0
+                        }))}
+                        className="w-full min-w-[250px]"
+                        placeholder="Seleccionar insumo"
+                      />
                       </TableCell>
+                      {/* Cantidad */}
                       <TableCell className="w-[100px]">
                         <Input
                           className="text-center"
                           type="number"
                           value={ing.cantidad || ""}
+                          placeholder="0"
                           onChange={(e) => {
                             const updatedItems = [...ingredients];
                             updatedItems[index].cantidad = Number(
@@ -307,11 +304,13 @@ export function PurchasesActions() {
                           }}
                         />
                       </TableCell>
+                      {/* Precio Unitario */}
                       <TableCell className="w-[120px] text-center">
                         <Input
                           className="text-center"
                           type="number"
                           value={ing.precioUnitario || ""}
+                          placeholder="0.00"
                           onChange={(e) => {
                             const updatedItems = [...ingredients];
                             updatedItems[index].precioUnitario = Number(
@@ -321,6 +320,7 @@ export function PurchasesActions() {
                           }}
                         />
                       </TableCell>
+                      {/* Subtotal */}
                       <TableCell className="w-[100px] text-right">
                         Bs.{" "}
                         {calculateSubtotal(ing).toFixed(2).replace(".", ",")}
@@ -339,63 +339,22 @@ export function PurchasesActions() {
                       </TableCell>
                     </TableRow>
                   ))}
-                  {/* Fila para agregar un nuevo ítem */}
                   <TableRow>
-                    <TableCell className="w-[40px] font-medium">
-                      {ingredients.length + 1}
+                    <TableCell colSpan={6} className="text-center py-2">
+                      <Button type="button" variant="outline" onClick={addItem}>
+                        + Agregar Insumo
+                      </Button>
                     </TableCell>
-                    <TableCell className="w-[220px]">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            addItem("Comestible");
-                          }}
-                        >
-                          <Utensils className="w-4 h-4 mr-2" />
-                          Comestible
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            addItem("No comestible");
-                          }}
-                        >
-                          <Box className="w-4 h-4 mr-2" />
-                          No comestible
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="w-[100px]">
-                      <Input type="number" disabled />
-                    </TableCell>
-                    <TableCell className="w-[100px] text-center">
-                      <Input type="text" disabled />
-                    </TableCell>
-                    <TableCell className="w-[100px] text-right"></TableCell>
-                    <TableCell className="w-[40px]"></TableCell>
                   </TableRow>
                 </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="text-right font-bold bg-secondary"
-                    >
-                      Total
-                    </TableCell>
-                    <TableCell className="w-[120px] text-right bg-secondary">
-                      Bs. {calculateTotal().toFixed(2).replace(".", ",")}
-                    </TableCell>
-                    <TableCell className="w-[40px] bg-secondary"></TableCell>
-                  </TableRow>
-                </TableFooter>
               </Table>
             </ScrollArea>
+            <div className="flex justify-end mt-2">
+              <div className="flex-1"></div>
+              <div className="bg-secondary px-4 py-2 rounded-md font-bold flex items-center">
+                Total:&nbsp; Bs. {calculateTotal().toFixed(2).replace(".", ",")}
+              </div>
+            </div>
           </div>
         </div>
       </ReusableDialogWidth>

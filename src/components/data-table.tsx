@@ -86,9 +86,9 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-auto">
+    <div className="w-auto p-2">
       {/* Filtro y visibilidad de columnas */}
-      <div className="flex items-center p-2">
+      <div className="flex items-center p-2 ">
         {enableFilter && (
           <Input
             placeholder={filterPlaceholder}

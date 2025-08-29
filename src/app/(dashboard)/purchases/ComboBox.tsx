@@ -33,7 +33,7 @@ interface ComboboxProps {
   renderOption?: (item: Option) => React.ReactNode;
 }
 
-export function Combobox({ value, onSelect, options = [], placeholder }: ComboboxProps) {
+export function Combobox({ value, onSelect, options = [], placeholder, renderOption }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
 
@@ -47,44 +47,68 @@ export function Combobox({ value, onSelect, options = [], placeholder }: Combobo
           className="w-[270px] justify-between"
         >
           {value || placeholder || "Seleccionar..."}
-          <ChevronsUpDown className="opacity-50" />
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
+      <PopoverContent className="w-[300px] p-0 overflow-hidden">
+        <Command className="flex flex-col max-h-[300px]">
           <CommandInput
             placeholder="Buscar..."
             value={searchValue}
-            onValueChange={(value) => setSearchValue(value)}
+            onValueChange={setSearchValue}
+            className="border-b rounded-t-md"
           />
-          <CommandList className="overflow-y-auto max-h-72" >
-            <CommandEmpty>No se encontraron resultados.</CommandEmpty>
-            <CommandGroup>
-              {options.map((item, idx) => (
-                <CommandItem
-                  key={
-                    (item.id !== undefined ? item.id : `idx${idx}`) +
-                    '-' +
-                    (item.unit_measurement ?? item.nombre ?? `idx${idx}`)
-                  }
-                  value={`${item.nombre} ${(typeof item.stock === 'number' ? item.stock : '')} ${item.unit_measurement || ''}`}
-                  onSelect={() => {
-                    onSelect(item);
-                    setOpen(false); // Cierra el popover después de seleccionar
-                    setSearchValue(""); // Reinicia el valor de búsqueda
-                  }}
-                >
-                  <div className="w-full">
-  <span className="text-black dark:text-white font-medium">{item.nombre}</span>
-</div>
-                  <Check
-                    className={cn(
-                      "ml-auto",
-                      value === item.nombre ? "opacity-100" : "opacity-0"
+          <CommandList className="flex-1 overflow-auto">
+            <CommandEmpty className="py-4 text-center text-gray-500">
+              No se encontraron resultados.
+            </CommandEmpty>
+            <CommandGroup className="p-1 max-h-[280px] overflow-y-auto">
+              <div className="pr-1">
+                {options.map((item, idx) => (
+                  <CommandItem
+                    key={
+                      (item.id !== undefined ? item.id : `idx${idx}`) +
+                      '-' +
+                      (item.unit_measurement ?? item.nombre ?? `idx${idx}`)
+                    }
+                    value={`${item.nombre} ${(typeof item.stock === 'number' ? item.stock : '')} ${item.unit_measurement || ''}`}
+                    onSelect={() => {
+                      onSelect(item);
+                      setOpen(false);
+                      setSearchValue("");
+                    }}
+                    className="px-3 py-2 text-sm cursor-pointer rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-between"
+                  >
+                    {renderOption ? (
+                      renderOption(item)
+                    ) : (
+                      <>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {item.nombre}
+                          </div>
+                          {item.unit_measurement && (
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                              {item.unit_measurement}
+                            </div>
+                          )}
+                        </div>
+                        {typeof item.stock === 'number' && (
+                          <div className="ml-2 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                            {item.stock} en stock
+                          </div>
+                        )}
+                        <Check
+                          className={cn(
+                            "ml-2 h-4 w-4 flex-shrink-0",
+                            value === item.nombre ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                      </>
                     )}
-                  />
-                </CommandItem>
-              ))}
+                  </CommandItem>
+                ))}
+              </div>
             </CommandGroup>
           </CommandList>
         </Command>
