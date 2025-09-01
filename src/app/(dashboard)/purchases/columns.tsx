@@ -40,6 +40,17 @@ export const columns: ColumnDef<Purchase>[] = [
     size: 60,
   },
   {
+    accessorKey: "id_compra",
+    header: () => <div className="text-center">ID</div>,
+    cell: ({ row }) => {
+      const id = row.original.id_compra;
+      return (
+        <div className="text-center">{`C${String(id).padStart(5, "0")}`}</div>
+      );
+    },
+    size: 90,
+  },
+  {
     accessorKey: "fecha_compra",
     header: () => <div className="text-center">FECHA</div>,
     cell: ({ row }) => {

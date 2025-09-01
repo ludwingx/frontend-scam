@@ -17,34 +17,41 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { DateRangeFilter } from "@/components/date-range-filter";
-import { Plus } from "lucide-react";
 
-// Import the Purchase type from columns
 import { Purchase } from "./columns";
 
 export default function Page() {
   const [data, setData] = useState<Purchase[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Set default date range to last 30 days
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1), // First day of current month
-    to: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0), // Last day of current month
+    from: thirtyDaysAgo,
+    to: today,
   });
 
   const formatDateForAPI = (date: Date) => {
     return date.toISOString().split('T')[0];
   };
+  
+  // Load data immediately when component mounts
+  useEffect(() => {
+    fetchPurchases();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchPurchases = async () => {
     try {
-      console.log('Starting to fetch purchases...');
       setIsLoading(true);
       setError(null);
       
       const fechaDesde = formatDateForAPI(dateRange.from);
       const fechaHasta = formatDateForAPI(dateRange.to);
-      
-      console.log('Fetching purchases with date range:', { fechaDesde, fechaHasta });
       
       // Get all purchases within the date range
       const allPurchases = await getPurchases({
@@ -52,7 +59,6 @@ export default function Page() {
         fecha_hasta: fechaHasta
       });
       
-      console.log('Raw API response:', allPurchases);
       
       if (!Array.isArray(allPurchases)) {
         throw new Error('Formato de respuesta inválido: Se esperaba un array de compras');
@@ -64,17 +70,14 @@ export default function Page() {
         new Date(b.fecha_compra).getTime() - new Date(a.fecha_compra).getTime()
       );
       
-      console.log(`Loaded ${sortedPurchases.length} purchases for the selected date range`);
       setData(sortedPurchases);
       
       if (sortedPurchases.length === 0) {
-        console.log('No purchases found for the selected date range');
         setError('No se encontraron compras para el rango de fechas seleccionado');
       }
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
-      console.error("Error fetching purchases:", error);
       toast.error(`Error al cargar las compras: ${errorMessage}`);
       setError('No se pudieron cargar las compras. Por favor, intente nuevamente.');
       setData([]);
@@ -83,9 +86,16 @@ export default function Page() {
     }
   };
 
+  // Handle date range changes
+  const handleDateRangeChange = (range: { from: Date; to: Date }) => {
+    setDateRange(range);
+  };
+  console.log('lista de compras', data);
   // Fetch purchases when date range changes
   useEffect(() => {
-    fetchPurchases();
+    if (dateRange.from && dateRange.to) {
+      fetchPurchases();
+    }
   }, [dateRange]);
 
   return (
@@ -118,10 +128,7 @@ export default function Page() {
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <DateRangeFilter 
-          onDateRangeChange={(range) => {
-            setDateRange(range);
-            // No need to call fetchPurchases here, the useEffect will handle it
-          }} 
+          onDateRangeChange={handleDateRangeChange} 
           className="w-full md:w-auto"
         />
         <PurchasesActions onSuccess={fetchPurchases} />

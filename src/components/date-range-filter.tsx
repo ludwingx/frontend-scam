@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
 import { es } from 'date-fns/locale';
+import { Calendar as CalendarIcon } from "lucide-react";
+import { useRef } from 'react';
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,16 +30,40 @@ export function DateRangeFilter({ onDateRangeChange, className }: DateRangeFilte
   const [isFromOpen, setIsFromOpen] = React.useState(false);
   const [isToOpen, setIsToOpen] = React.useState(false);
 
-  // Trigger callback when dates change
+  // Handle initial load and date changes
   React.useEffect(() => {
-    onDateRangeChange({ from: fromDate, to: toDate });
-  }, [fromDate, toDate]);
-  
-  // Initial data load
-  React.useEffect(() => {
-    onDateRangeChange({ from: fromDate, to: toDate });
+    const fetchData = async () => {
+      try {
+        await onDateRangeChange({ from: fromDate, to: toDate });
+      } catch (error) {
+        console.error('Error in date range change:', error);
+      }
+    };
+
+    // Only run once on mount
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 0);
+
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle date changes
+  const prevFromDate = useRef(fromDate);
+  const prevToDate = useRef(toDate);
+
+  React.useEffect(() => {
+    // Only run if dates actually changed
+    if (
+      fromDate.getTime() !== prevFromDate.current.getTime() ||
+      toDate.getTime() !== prevToDate.current.getTime()
+    ) {
+      onDateRangeChange({ from: fromDate, to: toDate });
+      prevFromDate.current = fromDate;
+      prevToDate.current = toDate;
+    }
+  }, [fromDate, toDate]);
 
   const formatDate = (date: Date) => format(date, "dd/MM/yyyy", { locale: es });
   
