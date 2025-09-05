@@ -40,6 +40,7 @@ interface DataTableProps<TData, TValue> {
   enablePagination?: boolean;
   enableRowSelection?: boolean;
   enableColumnVisibility?: boolean;
+  meta?: Record<string, any>;
 }
 
 export function DataTable<TData, TValue>({
@@ -51,6 +52,7 @@ export function DataTable<TData, TValue>({
   enablePagination = false,
   enableRowSelection = false,
   enableColumnVisibility = false,
+  meta,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -83,6 +85,7 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: enableFilter ? getFilteredRowModel() : undefined,
     getPaginationRowModel: enablePagination ? getPaginationRowModel() : undefined,
     getSortedRowModel: getSortedRowModel(),
+    meta,
   });
 
   return (

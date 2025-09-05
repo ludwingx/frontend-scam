@@ -14,23 +14,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 
-export type PurchaseStatus = 'Pagado' | 'Registrado' | 'Anulado';
+export type PurchaseStatus = 'Pendiente' | 'Pagado' | 'Cancelado';
 
-export type Purchase = {
-  id_compra: number;
+export interface PurchaseItem {
   id_insumo: number;
+  nombre_insumo: string;
+  cantidad: number;
+  precio_unitario: number;
+  unidad_medida: string;
+  subtotal: number;
+}
+
+export interface Purchase {
+  id_compra: number;
   fecha_compra: string;
   proveedor: string | null;
   estado: PurchaseStatus;
   fecha_pagado: string | null;
   metodo_pago: string | null;
   observaciones: string | null;
-  cantidad: string;
-  precio_unitario: string;
-  monto_total: string;
-  nombre_insumo?: string;
-  unidad_medida?: string;
-};
+  monto_total: number;
+  items: PurchaseItem[];
+}
 
 export const columns: ColumnDef<Purchase>[] = [
   {
@@ -74,74 +79,63 @@ export const columns: ColumnDef<Purchase>[] = [
     size: 200,
   },
   {
-    accessorKey: "nombre_insumo",
-    header: () => <div className="text-left">INSUMO</div>,
-    cell: ({ row }) => {
+    id: "items",
+    header: () => <div className="text-center">ITEMS</div>,
+    cell: ({ row, table }) => {
       const purchase = row.original;
+      const itemCount = purchase.items.length;
+      const firstItem = purchase.items[0];
+      
       return (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-medium">{purchase.nombre_insumo || `Insumo ${purchase.id_insumo}`}</span>
-            {purchase.unidad_medida && (
-              <span className="text-muted-foreground">
-                ({purchase.unidad_medida})
-              </span>
-            )}
-          </div>
+        <div className="flex flex-col items-center">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              // @ts-ignore - We'll add the onViewItems handler to the table options
+              if (table.options.meta?.onViewItems) {
+                // @ts-ignore
+                table.options.meta.onViewItems(purchase);
+              }
+            }}
+          >
+            Ver {itemCount} {itemCount === 1 ? 'item' : 'items'}
+          </Button>
+          {itemCount > 0 && (
+            <div className="mt-1 text-xs text-muted-foreground text-center">
+              {firstItem.nombre_insumo} y {itemCount - 1} más
+            </div>
+          )}
         </div>
       );
     },
-    size: 250,
-  },
-  {
-    accessorKey: "cantidad",
-    header: () => <div className="text-center">CANTIDAD</div>,
-    cell: ({ row }) => {
-      const cantidad = parseFloat(row.original.cantidad);
-      return (
-        <div className="text-center">
-          {!isNaN(cantidad) ? cantidad.toFixed(3) : row.original.cantidad}
-        </div>
-      );
-    },
-    size: 120,
-  },
-  {
-    accessorKey: "precio_unitario",
-    header: () => <div className="text-center">PRECIO UNIT.</div>,
-    cell: ({ row }) => {
-      const precio = parseFloat(row.original.precio_unitario);
-      return (
-        <div className="text-center">
-          {!isNaN(precio) ? `$${precio.toFixed(2)}` : row.original.precio_unitario}
-        </div>
-      );
-    },
-    size: 130,
+    size: 200,
   },
   {
     accessorKey: "monto_total",
     header: () => <div className="text-center">TOTAL</div>,
-    cell: ({ row }) => {
-      const total = parseFloat(row.original.monto_total);
-      return (
-        <div className="text-center font-medium">
-          {!isNaN(total) ? `$${total.toFixed(2)}` : row.original.monto_total}
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="text-center font-medium">
+        Bs. {row.original.monto_total.toFixed(2)}
+      </div>
+    ),
     size: 120,
   },
   {
     accessorKey: "estado",
     header: () => <div className="text-center">ESTADO</div>,
     cell: ({ row }) => {
-      const estado = row.original.estado;
-      const variant = estado === 'Pagado' ? 'default' : estado === 'Anulado' ? 'destructive' : 'secondary';
+      const status = row.original.estado;
+      const variant = status === 'Cancelado' ? 'destructive' :
+                     status === 'Pagado' ? 'default' : 'secondary';
       return (
         <div className="flex justify-center">
-          <Badge variant={variant} className="whitespace-nowrap">
-            {estado}
+          <Badge 
+            variant={variant} 
+            className={`whitespace-nowrap ${status === 'Pendiente' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : ''}`}
+          >
+            {status}
           </Badge>
         </div>
       );
@@ -187,7 +181,7 @@ export const columns: ColumnDef<Purchase>[] = [
               <DropdownMenuItem className="cursor-pointer">
                 Editar compra
               </DropdownMenuItem>
-              {purchase.estado !== 'Anulado' && (
+              {purchase.estado !== 'Cancelado' && (
                 <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive-foreground">
                   Anular compra
                 </DropdownMenuItem>

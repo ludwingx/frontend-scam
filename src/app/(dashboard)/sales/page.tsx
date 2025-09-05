@@ -104,15 +104,15 @@ const productsByBrand = {
     { id: 4, name: "Empanada de Arroz", description: "Empanada de arroz rellena (120g)", price: 10, stock: 80 },
   ],
   "TortaExpress": [
-    { id: 5, name: "Torta de Oreo", description: "Torta de galletas Oreo (24cm)", price: 480, stock: 5 },
-    { id: 6, name: "Torta de Moka", description: "Torta de café y chocolate (24cm)", price: 520, stock: 3 },
-    { id: 7, name: "Torta de Durazno", description: "Torta con relleno de durazno (24cm)", price: 420, stock: 4 },
-    { id: 8, name: "Torta de Vainilla", description: "Torta clásica de vainilla (24cm)", price: 400, stock: 6 },
-    { id: 9, name: "Torta de Chocolate", description: "Torta de chocolate 3 pisos (24cm)", price: 450, stock: 2 },
-    { id: 10, name: "Torta de Red Velvet", description: "Torta terciopelo rojo (24cm)", price: 500, stock: 3 },
-    { id: 11, name: "Torta de Caramelo", description: "Torta de caramelo (24cm)", price: 480, stock: 1 },
-    { id: 12, name: "Torta de Fresa", description: "Torta de fresa (24cm)", price: 420, stock: 2 },
-    { id: 13, name: "Torta de Limón", description: "Torta de limón (24cm)", price: 400, stock: 4 },
+    { id: 5, name: "Torta de Chocolate Cuchareo Express (CE)", description: "Ideal para 1 persona", price: 25, stock: 10 },
+    { id: 6, name: "Torta de Red Velvet Mini Torta (MT)", description: "Ideal para 2 personas", price: 55, stock: 8 },
+    { id: 7, name: "Torta de Oreo Extra Pequeño (XS)", description: "Ideal para 4 personas", price: 79, stock: 6 },
+    { id: 8, name: "Torta de Tres Leches Pequeño (S)", description: "Ideal para familia 12-16 porciones", price: 119, stock: 4 },
+    { id: 9, name: "Torta de Moka Mediano (M)", description: "Ideal para reunión 25-32 porciones", price: 149, stock: 3 },
+    { id: 10, name: "Torta de Vainilla Grande (L)", description: "Ideal para fiesta 30-38 porciones", price: 179, stock: 2 },
+    { id: 11, name: "Torta de Durazno Extra Grande (XL)", description: "Ideal para evento 40-50 porciones", price: 209, stock: 1 },
+    { id: 12, name: "Torta de Limón Mini Torta (MT)", description: "Ideal para 2 personas", price: 55, stock: 5 },
+    { id: 13, name: "Torta de Fresa Pequeño (S)", description: "Ideal para familia 12-16 porciones", price: 119, stock: 3 },
   ],
 };
 
@@ -138,6 +138,12 @@ type FormStep = "client" | "products" | "quantities" | "review";
 
 export default function Page() {
   const [isCreateSaleOpen, setIsCreateSaleOpen] = useState(false);
+  // Filtros para historial de ventas
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterClient, setFilterClient] = useState("");
+  // Selector de filas y loading
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [isLoading, setIsLoading] = useState(false);
   const [saleForm, setSaleForm] = useState<SaleFormData>({
     client: "",
     brand: "",
@@ -154,46 +160,123 @@ export default function Page() {
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
   const [clients, setClients] = useState(mockClients);
 
-  // Datos de ejemplo para las ventas
+  // Estados posibles para las ventas
+  const statuses = [
+    { id: 'pending', label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800' },
+    { id: 'preparing', label: 'En Cocina', color: 'bg-blue-100 text-blue-800' },
+    { id: 'packing', label: 'Empaquetado', color: 'bg-purple-100 text-purple-800' },
+    { id: 'on_delivery', label: 'En Camino', color: 'bg-indigo-100 text-indigo-800' },
+    { id: 'delivered', label: 'Entregado', color: 'bg-green-100 text-green-800' },
+    { id: 'cancelled', label: 'Cancelado', color: 'bg-red-100 text-red-800' },
+  ];
+
+  // Datos de ejemplo para las ventas con más variedad
   const [salesData, setSalesData] = useState([
     {
-      id: "SCA-001",
+      id: "V00001",
       client: "Restaurante La Cabaña",
-      date: "2023-11-15",
-      amount: 12500,
-      status: "completed",
+      date: "2025-09-05",
+      amount: 125.00,
+      status: "delivered",
       brand: "Mil Sabores",
       products: [
-        { name: "Cuñape", quantity: 70, price: 8 },
-        { name: "Empanada de Arroz", quantity: 30, price: 10 },
+        { name: "Cuñape", quantity: 10, price: 8 },
+        { name: "Empanada de Arroz", quantity: 5, price: 10 },
       ],
     },
     {
-      id: "SCA-002",
+      id: "V00002",
       client: "Cafetería Dulce Tentación",
-      date: "2023-11-16",
-      amount: 18750,
-      status: "processing",
+      date: "2025-09-05",
+      amount: 229.00,
+      status: "on_delivery",
       brand: "TortaExpress",
       products: [
-        { name: "Torta de Chocolate", quantity: 2, price: 450 },
-        { name: "Torta de Red Velvet", quantity: 1, price: 500 },
-        { name: "Torta de Oreo", quantity: 3, price: 480 },
+        { name: "Torta de Chocolate Cuchareo Express (CE)", quantity: 2, price: 25 },
+        { name: "Torta de Red Velvet Mini Torta (MT)", quantity: 3, price: 55 },
       ],
     },
     {
-      id: "SCA-003",
+      id: "V00003",
       client: "Supermercado Del Valle",
-      date: "2023-11-17",
-      amount: 23400,
+      date: "2025-09-04",
+      amount: 320.00,
+      status: "packing",
+      brand: "Mil Sabores",
+      products: [
+        { name: "Sonso", quantity: 20, price: 7 },
+        { name: "Tamales a la olla", quantity: 20, price: 12 },
+      ],
+    },
+    {
+      id: "V00004",
+      client: "Panadería El Trigal",
+      date: "2025-09-04",
+      amount: 353.00,
+      status: "preparing",
+      brand: "TortaExpress",
+      products: [
+        { name: "Torta de Oreo Extra Pequeño (XS)", quantity: 2, price: 79 },
+        { name: "Torta de Limón Mini Torta (MT)", quantity: 3, price: 55 },
+      ],
+    },
+    {
+      id: "V00005",
+      client: "Hotel Los Pinos",
+      date: "2025-09-03",
+      amount: 520.00,
       status: "pending",
       brand: "Mil Sabores",
       products: [
-        { name: "Sonso", quantity: 100, price: 7 },
-        { name: "Tamales a la olla", quantity: 200, price: 12 },
+        { name: "Cuñape", quantity: 40, price: 8 },
+        { name: "Sonso", quantity: 40, price: 7 },
+      ],
+    },
+    {
+      id: "V00006",
+      client: "Catering Sabores Andinos",
+      date: "2025-09-02",
+      amount: 567.00,
+      status: "delivered",
+      brand: "TortaExpress",
+      products: [
+        { name: "Torta de Chocolate Cuchareo Express (CE)", quantity: 3, price: 25 },
+        { name: "Torta de Fresa Pequeño (S)", quantity: 2, price: 119 },
+        { name: "Torta de Durazno Extra Grande (XL)", quantity: 1, price: 209 },
+      ],
+    },
+    {
+      id: "V00007",
+      client: "Restaurante La Cabaña",
+      date: "2025-09-01",
+      amount: 240.00,
+      status: "cancelled",
+      brand: "Mil Sabores",
+      products: [
+        { name: "Empanada de Arroz", quantity: 12, price: 10 },
+        { name: "Tamales a la olla", quantity: 10, price: 12 },
       ],
     },
   ]);
+
+  // Ordenar por fecha (más reciente primero)
+  const sortedSalesData = [...salesData].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  
+  // Función para cambiar el estado de una venta
+  const updateSaleStatus = (saleId: string, newStatus: string) => {
+    setSalesData(prevSales => 
+      prevSales.map(sale => 
+        sale.id === saleId ? { ...sale, status: newStatus } : sale
+      )
+    );
+    toast.success(`Estado de la venta actualizado (ID: ${saleId})`);
+  };
+  
+  
+  // Obtener el estado actual
+  const getStatusInfo = (statusId: string) => {
+    return statuses.find(s => s.id === statusId) || statuses[0];
+  };
 
   // Filtrar clientes basados en la búsqueda
   const filteredClients = clients.filter(client =>
@@ -392,10 +475,9 @@ export default function Page() {
                 <Input
                   id="client"
                   placeholder="Buscar cliente"
-                  value={saleForm.client}
+                  value={clientSearch}
                   onChange={(e) => {
                     setClientSearch(e.target.value);
-                    setSaleForm({...saleForm, client: e.target.value});
                   }}
                   onClick={() => setIsClientDropdownOpen(true)}
                 />
@@ -702,7 +784,7 @@ export default function Page() {
                 </div>
                 <div className="text-right w-24">
                   <p className="text-sm text-muted-foreground">Subtotal</p>
-                  <p className="font-medium">${(product.price * product.quantity).toFixed(2)}</p>
+                  <p className="font-medium">Bs {(product.price * product.quantity).toFixed(2)}</p>
                 </div>
                 <Button
                   variant="ghost"
@@ -725,7 +807,7 @@ export default function Page() {
           </span>
           <div className="text-right space-y-1">
             <p className="text-sm text-muted-foreground">Total</p>
-            <p className="text-2xl font-bold">${calculateTotal().toFixed(2)}</p>
+            <p className="text-2xl font-bold">Bs {calculateTotal().toFixed(2)}</p>
           </div>
         </div>
       </div>
@@ -733,7 +815,12 @@ export default function Page() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50 dark:bg-gray-900">
+    <div className="sales-bg flex flex-col min-h-screen p-6" style={{ backgroundColor: '#f4f6fb' }}>
+      <style>{`
+        html.dark .sales-bg {
+          background-color: #181c24 !important;
+        }
+      `}</style>
       <Breadcrumb className="mb-6">
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -747,7 +834,7 @@ export default function Page() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink className="text-sm font-medium text-foreground">
-              Ventas
+              Gestión de Ventas
             </BreadcrumbLink>
           </BreadcrumbItem>
         </BreadcrumbList>
@@ -757,10 +844,10 @@ export default function Page() {
         <div className="flex justify-between items-center">
           <div>
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-white">
-              Ventas
+              Ordenes de Venta
             </h2>
             <small className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Gestión de pedidos y ventas
+              Listado de órdenes de venta
             </small>
           </div>
           <Button className="gap-2" onClick={() => setIsCreateSaleOpen(true)}>
@@ -770,6 +857,118 @@ export default function Page() {
         </div>
       </div>
 
+      {/* Tabla de ventas de hoy */}
+      <div className="flex-1 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Órdenes de Venta de Hoy</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[120px]">ID</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Marca</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Productos</TableHead>
+                  <TableHead className="text-right">Monto</TableHead>
+                  <TableHead>Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedSalesData.filter(sale => sale.date === "2025-09-05").length > 0 ? (
+                  sortedSalesData.filter(sale => sale.date === "2025-09-05").map((sale) => (
+                    <TableRow key={sale.id}>
+                      <TableCell className="font-medium">{sale.id}</TableCell>
+                      <TableCell>{sale.client}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="capitalize">
+                          {sale.brand}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{sale.date}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col">
+                          {sale.products.map((product, i) => (
+                            <span key={i} className="text-sm">
+                              {product.name} ({product.quantity} unidades)
+                            </span>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        Bs {Number(sale.amount).toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              className={`h-8 px-2 ${getStatusInfo(sale.status).color} hover:opacity-80 cursor-pointer`}
+                            >
+                              {getStatusInfo(sale.status).label}
+                              <ChevronDown className="ml-2 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
+                            {statuses.map((status) => (
+                              <DropdownMenuItem
+                                key={status.id}
+                                className={status.id === sale.status ? 'bg-gray-100 dark:bg-gray-800 dark:text-white' : ''}
+                                onClick={() => updateSaleStatus(sale.id, status.id)}
+                              >
+                                <span className={`w-2 h-2 rounded-full mr-2 ${status.color.split(' ')[0]}`} />
+                                {status.label}
+                                {status.id === sale.status && <Check className="ml-auto h-4 w-4" />}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground">
+                      No hay órdenes de venta para hoy.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Barra de filtros para el historial */}
+      <div className="sticky top-0 z-10 bg-inherit pb-2 flex flex-wrap gap-2 items-center" style={{marginBottom: 0}}>
+        <span className="font-medium text-muted-foreground mr-2">Filtrar por:</span>
+        <Select
+          onValueChange={value => setFilterStatus(value)}
+          value={filterStatus}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los estados</SelectItem>
+            {statuses.map(s => (
+              <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Input
+          className="w-56"
+          placeholder="Buscar cliente..."
+          value={filterClient}
+          onChange={e => setFilterClient(e.target.value)}
+        />
+        <Button variant="outline" onClick={() => { setFilterStatus("all"); setFilterClient(""); }}>Limpiar filtros</Button>
+      </div>
+
+      {/* Historial de ventas */}
       <div className="flex-1">
         <Card>
           <CardHeader>
@@ -786,87 +985,121 @@ export default function Page() {
                   <TableHead>Productos</TableHead>
                   <TableHead className="text-right">Monto</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {salesData.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.id}</TableCell>
-                    <TableCell>{sale.client}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {sale.brand}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{sale.date}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        {sale.products.map((product, i) => (
-                          <span key={i} className="text-sm">
-                            {product.name} ({product.quantity} unidades)
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ${sale.amount.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          sale.status === "completed"
-                            ? "default"
-                            : sale.status === "processing"
-                            ? "secondary"
-                            : sale.status === "pending"
-                            ? "outline"
-                            : "destructive"
-                        }
-                        className="capitalize"
-                      >
-                        {sale.status === "completed"
-                          ? "Completado"
-                          : sale.status === "processing"
-                          ? "En proceso"
-                          : sale.status === "pending"
-                          ? "Pendiente"
-                          : "Cancelado"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                          <DropdownMenuItem className="gap-2">
-                            <FileText className="h-4 w-4" />
-                            Ver detalles
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2">
-                            <ShoppingCart className="h-4 w-4" />
-                            Procesar pedido
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 text-red-500">
-                            <XCircle className="h-4 w-4" />
-                            Cancelar venta
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {(() => {
+                  setTimeout(() => {}, 0); // for React fast refresh warning
+                  let filtered = sortedSalesData
+                    .filter(sale => sale.date !== "2025-09-05")
+                    .filter(sale => filterStatus === 'all' || sale.status === filterStatus)
+                    .filter(sale => !filterClient || sale.client.toLowerCase().includes(filterClient.toLowerCase()));
+                  if (isLoading) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          <span className="animate-spin mr-2">⏳</span> Cargando datos...
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  if (filtered.length === 0) {
+                    return (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                          No hay ventas para mostrar.
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  // Mostrar solo las filas seleccionadas
+                  const rows = filtered.slice(0, rowsPerPage);
+                  // Rellenar con filas vacías si faltan para altura fija
+                  const emptyRows = rowsPerPage - rows.length;
+                  return (
+                    <>
+                      {rows.map((sale) => (
+                        <TableRow key={sale.id}>
+                          <TableCell className="font-medium">{sale.id}</TableCell>
+                          <TableCell>{sale.client}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {sale.brand}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{sale.date}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              {sale.products.map((product, i) => (
+                                <span key={i} className="text-sm">
+                                  {product.name} ({product.quantity} unidades)
+                                </span>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            Bs {Number(sale.amount).toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  className={`h-8 px-2 ${getStatusInfo(sale.status).color} hover:opacity-80 cursor-pointer`}
+                                >
+                                  {getStatusInfo(sale.status).label}
+                                  <ChevronDown className="ml-2 h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start">
+                                <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
+                                {statuses.map((status) => (
+                                  <DropdownMenuItem
+                                    key={status.id}
+                                    className={status.id === sale.status ? 'bg-gray-100 dark:bg-gray-800 dark:text-white' : ''}
+                                    onClick={() => updateSaleStatus(sale.id, status.id)}
+                                  >
+                                    <span className={`w-2 h-2 rounded-full mr-2 ${status.color.split(' ')[0]}`} />
+                                    {status.label}
+                                    {status.id === sale.status && <Check className="ml-auto h-4 w-4" />}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {/* Relleno para mantener altura */}
+                      {Array.from({ length: emptyRows }).map((_, idx) => (
+                        <TableRow key={"empty-"+idx}>
+                          {Array.from({ length: 7 }).map((_, cidx) => (
+                            <TableCell key={cidx}>&nbsp;</TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </>
+                  );
+                })()}
               </TableBody>
             </Table>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <small className="text-sm font-medium text-muted-foreground">
-              Mostrando {salesData.length} de {salesData.length} ventas
-            </small>
+          <CardFooter className="flex flex-col md:flex-row md:justify-between items-center gap-2">
+            <div className="flex items-center gap-2">
+              <small className="text-sm font-medium text-muted-foreground">
+                Mostrando {Math.min(rowsPerPage, sortedSalesData.filter(sale => sale.date !== "2025-09-05").length)} de {sortedSalesData.filter(sale => sale.date !== "2025-09-05").length} ventas
+              </small>
+              <span className="ml-4 font-medium">Filas:</span>
+              <Select value={String(rowsPerPage)} onValueChange={v => setRowsPerPage(Number(v))}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[5, 10, 20, 50].map(n => (
+                    <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled>
                 Anterior

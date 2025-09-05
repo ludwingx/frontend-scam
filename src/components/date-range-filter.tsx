@@ -111,6 +111,8 @@ export function DateRangeFilter({ onDateRangeChange, className }: DateRangeFilte
               initialFocus
               locale={es}
               disabled={false}
+              month={fromDate}
+              onMonthChange={(date) => setFromDate(date)}
             />
           </PopoverContent>
         </Popover>
@@ -143,6 +145,8 @@ export function DateRangeFilter({ onDateRangeChange, className }: DateRangeFilte
               initialFocus
               locale={es}
               disabled={false}
+              month={toDate}
+              onMonthChange={(date) => setToDate(date)}
             />
           </PopoverContent>
         </Popover>
