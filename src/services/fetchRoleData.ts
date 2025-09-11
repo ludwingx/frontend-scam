@@ -23,7 +23,7 @@ export const fetchRoleData = async (): Promise<Role[] | null> => {
 
     try {
         // Hacer la solicitud al backend para obtener los roles
-        const response = await fetch(`${API_URL}/api/rol`, {
+        const response = await fetch(`${API_URL}/api/roleses`, {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -53,7 +53,7 @@ export const fetchRoleData = async (): Promise<Role[] | null> => {
 };
 
 // Función para crear un rol
-export const createRole = async (role: Omit<Role, 'id'>): Promise<Role | null> => {
+export const createRole = async (role: Omit<Role, 'id_rol'>): Promise<Role | null> => {
     const token = (await cookies()).get('token')?.value;
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -63,7 +63,7 @@ export const createRole = async (role: Omit<Role, 'id'>): Promise<Role | null> =
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/rol`, {
+        const response = await fetch(`${API_URL}/api/roleses`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -99,7 +99,7 @@ export const updateRole = async (role: Role): Promise<Role | null> => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/rol/${role.id}`, {
+    const response = await fetch(`${API_URL}/api/roles/${role.id_rol}`, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -139,7 +139,7 @@ export const toggleRoleStatus = async (
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/rol/${roleId}`, {
+    const response = await fetch(`${API_URL}/api/roles/${roleId}`, {
       method: "PUT", // Asegúrate de que el método sea el correcto
       headers: {
         Authorization: `Bearer ${token}`,

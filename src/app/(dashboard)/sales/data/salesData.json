@@ -1,0 +1,113 @@
+{
+  "sales": [
+    {
+      "id": 1,
+      "client": "Restaurante El Buen Sabor",
+      "brand": "Nestlé",
+      "date": "2025-09-09T14:30:00",
+      "products": [
+        { "name": "Leche en polvo", "quantity": 10 },
+        { "name": "Café instantáneo", "quantity": 5 }
+      ],
+      "amount": 1250.75,
+      "status": "Completado"
+    },
+    {
+      "id": 2,
+      "client": "Cafetería Central",
+      "brand": "Dos Pinos",
+      "date": "2025-09-10T10:15:00",
+      "products": [
+        { "name": "Leche entera", "quantity": 20 },
+        { "name": "Queso crema", "quantity": 8 }
+      ],
+      "amount": 980.50,
+      "status": "En proceso"
+    },
+    {
+      "id": 3,
+      "client": "Panadería Dulce Hogar",
+      "brand": "Lala",
+      "date": "2025-09-11T09:00:00",
+      "products": [
+        { "name": "Mantequilla", "quantity": 15 },
+        { "name": "Crema para batir", "quantity": 10 }
+      ],
+      "amount": 1560.25,
+      "status": "Pendiente"
+    },
+    {
+      "id": 4,
+      "client": "Restaurante Mar y Tierra",
+      "brand": "Saputo",
+      "date": "2025-09-12T11:30:00",
+      "products": [
+        { "name": "Queso mozzarella", "quantity": 12 },
+        { "name": "Queso parmesano", "quantity": 5 },
+        { "name": "Mantequilla sin sal", "quantity": 8 }
+      ],
+      "amount": 2345.90,
+      "status": "Pendiente"
+    },
+    {
+      "id": 5,
+      "client": "Cafetería La Esquina",
+      "brand": "Nestlé",
+      "date": "2025-09-11T16:45:00",
+      "products": [
+        { "name": "Leche deslactosada", "quantity": 8 },
+        { "name": "Crema para café", "quantity": 5 }
+      ],
+      "amount": 875.30,
+      "status": "Completado"
+    },
+    {
+      "id": 6,
+      "client": "Cafetería La Esquina",
+      "brand": "Nestlé",
+      "date": "2025-09-08T16:45:00",
+      "products": [
+        { "name": "Leche deslactosada", "quantity": 8 },
+        { "name": "Crema para café", "quantity": 5 }
+      ],
+      "amount": 875.30,
+      "status": "Completado"
+    },
+    {
+      "id": 7,
+      "client": "Cafetería La Esquina",
+      "brand": "Nestlé",
+      "date": "2025-09-11T16:45:00",
+      "products": [
+        { "name": "Leche deslactosada", "quantity": 8 },
+        { "name": "Crema para café", "quantity": 5 }
+      ],
+      "amount": 875.30,
+      "status": "Completado"
+    },
+    {
+      "id": 8,
+      "client": "Cafetería La Esquina",
+      "brand": "Nestlé",
+      "date": "2025-09-11T16:45:00",
+      "products": [
+        { "name": "Leche deslactosada", "quantity": 8 },
+        { "name": "Crema para café", "quantity": 5 }
+      ],
+      "amount": 875.30,
+      "status": "Completado"
+    },
+    {
+      "id": 9,
+      "client": "Cafetería La Esquina",
+      "brand": "Nestlé",
+      "date": "2025-09-11T16:45:00",
+      "products": [
+        { "name": "Leche deslactosada", "quantity": 8 },
+        { "name": "Crema para café", "quantity": 5 }
+      ],
+      "amount": 875.30,
+      "status": "Completado"
+    }
+  ]
+}

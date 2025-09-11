@@ -55,7 +55,7 @@ export const fetchUserData = async (): Promise<User[] | null> => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/user`, {
+    const response = await fetch(`${API_URL}/api/usuarios`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -82,7 +82,7 @@ export const fetchUserData = async (): Promise<User[] | null> => {
   }
 };
 
-export const login = async (ci: string, password: string) => {
+export const login = async (nombre_usuario: string, contrasena: string) => {
   const API_URL = getApiUrl();
 
   // En desarrollo, si no hay API_URL, devolvemos un mock
@@ -94,12 +94,13 @@ export const login = async (ci: string, password: string) => {
   }
 
   try {
+    // Nuevo endpoint y estructura de login
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ci, password }),
+      body: JSON.stringify({ nombre_usuario, contrasena }),
     });
 
     if (!response.ok) {
@@ -107,7 +108,22 @@ export const login = async (ci: string, password: string) => {
       throw new Error(errorData.message || 'Error en la autenticación');
     }
 
-    return await response.json();
+    // Obtener la apikey del header o del body
+    const result = await response.json();
+    const apiKey = result.apiKey || response.headers.get('x-api-key');
+    if (apiKey) {
+      // Guardar la apikey en cookies para futuras peticiones
+      if (typeof window !== 'undefined') {
+        // Cliente
+        document.cookie = `x-api-key=${apiKey}; path=/;`;
+      } else {
+        // Server (Next.js)
+        // @ts-ignore
+        const { cookies } = await import('next/headers');
+        (await cookies()).set('x-api-key', apiKey, { path: '/' });
+      }
+    }
+    return result;
   } catch (error) {
     console.error("Error en la autenticación:", error);
     throw error;
@@ -128,7 +144,7 @@ export const fetchProfileData = async (): Promise<User> => {
   if (!user_id) throw new Error("No se encontró el user_id en las cookies.");
 
   try {
-    const response = await fetch(`${API_URL}/api/user/${user_id}`, {
+    const response = await fetch(`${API_URL}/api/usuarios/${user_id}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -203,7 +219,7 @@ export async function createUserAction(formData: FormData): Promise<User> {
   try {
     const createdUser = await createUser(user as unknown as Omit<User, 'id'>);
     console.log("Usuario creado:", createdUser);
-    revalidatePath("/users-management");
+    revalidatePath("/usuarioss-management");
     return createdUser;
   } catch (error) {
     console.error("Error creating user:", error);
@@ -216,7 +232,7 @@ export async function updateUser(user: User): Promise<User> {
   const API_URL = getApiUrl();
 
   try {
-    const response = await fetch(`${API_URL}/api/user/${user.id}`, {
+    const response = await fetch(`${API_URL}/api/usuarios/${user.id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -231,7 +247,7 @@ export async function updateUser(user: User): Promise<User> {
     }
 
     const updatedUser: User = await response.json();
-    revalidatePath("/users-management");
+    revalidatePath("/usuarioss-management");
     return updatedUser;
   } catch (error) {
     console.error("Error updating user:", error);
@@ -250,7 +266,7 @@ export async function deactivateUser(user: User, newStatus: number): Promise<Use
       status: newStatus,
     };
 
-    const response = await fetch(`${API_URL}/api/user/${user.id}`, {
+    const response = await fetch(`${API_URL}/api/usuarios/${user.id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -265,7 +281,7 @@ export async function deactivateUser(user: User, newStatus: number): Promise<Use
     }
 
     const responseData: User = await response.json();
-    revalidatePath("/users-management/users");
+    revalidatePath("/usuarioss-management/usuarioss");
     return responseData;
   } catch (error) {
     console.error("Error deactivating user:", error);

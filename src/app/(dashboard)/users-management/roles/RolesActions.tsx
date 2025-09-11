@@ -28,10 +28,10 @@ export function RolesActions({ onRefresh, onToggleActiveRoles }: RolesActionsPro
     }
 
     try {
-      const newRole = await createRole({ name: roleName, status: 1 });
+      const newRole = await createRole({ nombre_rol: roleName});
 
       if (newRole) {
-        toast.success(`Rol "${newRole.name}" creado exitosamente.`);
+        toast.success(`Rol "${newRole.nombre_rol}" creado exitosamente.`);
         onRefresh(); // Actualizar la tabla
         setIsDialogOpen(false); // Cerrar el diálogo después de crear el rol
         setRoleName(""); // Limpiar el campo del nombre del rol

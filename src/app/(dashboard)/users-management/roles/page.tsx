@@ -46,7 +46,7 @@ export default function RolesPage() {
     const previousData = [...data];
 
     setData((prevData) =>
-      prevData.map((role) => (role.id === updatedRole.id ? updatedRole : role))
+      prevData.map((role) => (role.id_rol === updatedRole.id_rol ? updatedRole : role))
     );
 
     try {
@@ -56,7 +56,7 @@ export default function RolesPage() {
         throw new Error("No se pudo actualizar el rol.");
       }
 
-      toast.success(`Rol "${updatedRole.name}" actualizado exitosamente.`);
+      toast.success(`Rol "${updatedRole.nombre_rol}" actualizado exitosamente.`);
     } catch (error) {
       console.error("Error updating role:", error);
       toast.error("Error al actualizar el rol. Por favor, inténtalo de nuevo.");
@@ -69,7 +69,7 @@ export default function RolesPage() {
     const previousData = [...data];
   
     // Buscar el rol en la lista de datos
-    const roleToUpdate = data.find((role) => role.id === roleId);
+    const roleToUpdate = data.find((role) => role.id_rol === roleId);
     if (!roleToUpdate) {
       toast.error("Rol no encontrado.");
       return;
@@ -78,20 +78,20 @@ export default function RolesPage() {
     // Actualizar la UI de inmediato (optimistic update)
     setData((prevData) =>
       prevData.map((role) =>
-        role.id === roleId ? { ...role, status: newStatus } : role
+        role.id_rol === roleId ? { ...role, status: newStatus } : role
       )
     );
   
     try {
       // Hacer la petición al servidor para cambiar el estado del rol
-      const response = await toggleRoleStatus(roleId, newStatus, roleToUpdate.name);
+      const response = await toggleRoleStatus(roleId, newStatus, roleToUpdate.nombre_rol);
   
       if (!response) {
         throw new Error("No se pudo cambiar el estado del rol.");
       }
   
       toast.success(
-        `Rol "${roleToUpdate.name}" ha sido ${
+        `Rol "${roleToUpdate.nombre_rol}" ha sido ${
           newStatus === 1 ? "activado" : "desactivado"
         } exitosamente.`
       );
@@ -105,12 +105,6 @@ export default function RolesPage() {
       setData(previousData); // Revertir los cambios en la UI
     }
   };
-
-  // Filtrar roles según el estado
-  const filteredData = data.filter((role) =>
-    showActiveRoles ? role.status === 1 : role.status === 0
-  );
-
   return (
     <div className="flex flex-col min-h-screen p-6 ">
       {/* Header */}
@@ -155,7 +149,7 @@ export default function RolesPage() {
         ) : (
           <DataTable
             columns={columns(updateRoleInTable, toggleRoleStatusInTable)}
-            data={filteredData}
+            data={data}
             enableFilter
             filterPlaceholder="Filtrar por nombre..."
             filterColumn="name"

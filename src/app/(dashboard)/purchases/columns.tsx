@@ -23,6 +23,7 @@ export interface PurchaseItem {
   precio_unitario: number;
   unidad_medida: string;
   subtotal: number;
+  proveedor?: string;
 }
 
 export interface Purchase {
@@ -68,16 +69,7 @@ export const columns: ColumnDef<Purchase>[] = [
     },
     size: 120,
   },
-  {
-    accessorKey: "proveedor",
-    header: () => <div className="text-left">PROVEEDOR</div>,
-    cell: ({ row }) => (
-      <div className="font-medium text-left">
-        {row.original.proveedor || 'No especificado'}
-      </div>
-    ),
-    size: 200,
-  },
+
   {
     id: "items",
     header: () => <div className="text-center">ITEMS</div>,

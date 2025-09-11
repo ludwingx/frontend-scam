@@ -21,23 +21,23 @@ const LoginForm = () => {
         setIsLoading(true);
 
         const formData = new FormData(event.currentTarget);
-        const ci = formData.get('ci') as string;
-        const password = formData.get('password') as string;
+        const nombre_usuario = formData.get('nombre_usuario') as string;
+        const contrasena = formData.get('contrasena') as string;
 
-        if (!ci || !password) {
+        if (!nombre_usuario || !contrasena) {
             setError('Por favor, completa todos los campos.');
             setIsLoading(false);
             return;
         }
 
         try {
-            const response = await login(ci, password);
-            console.log("✅ Respuesta del backend:", response); // Verificar estructura
+            const userData = await login(nombre_usuario, contrasena);
+            console.log("✅ Respuesta del backend:", userData); // Verificar estructura
             console.log("")
         
             // Acceder correctamente al token dentro de `data`
-            const token = response?.data?.token;
-            const userId = response?.data?.user_id;
+            const token = userData?.data?.token;
+            const userId = userData?.data?.user_id;
         
             if (!token) {
                 throw new Error("⚠️ No se recibió un token en la respuesta del backend.");
@@ -66,11 +66,11 @@ const LoginForm = () => {
                     <form onSubmit={handleSubmit} className="p-6 md:p-8">
                         {/* Campos del formulario */}
                         <div className="mb-4">
-                            <label className="mb-2.5 block font-medium text-black dark:text-white">C.I.</label>
+                            <label className="mb-2.5 block font-medium text-black dark:text-white">Usuario</label>
                             <input
-                                name="ci"
-                                type="number"
-                                placeholder="Ingresar número de cédula"
+                                name="nombre_usuario"
+                                type="text"
+                                placeholder="Ingresa tu usuario"
                                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
                                 required
                             />
@@ -78,7 +78,7 @@ const LoginForm = () => {
                         <div className="mb-6">
                             <label className="mb-2.5 block font-medium text-black dark:text-white">Contraseña</label>
                             <input
-                                name="password"
+                                name="contrasena"
                                 type="password"
                                 placeholder="Ingresa tu contraseña"
                                 className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white"
