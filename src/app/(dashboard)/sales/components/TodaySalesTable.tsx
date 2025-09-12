@@ -1,85 +1,92 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, Check } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  ChevronDown,
+  Check,
+  ArrowUpDown,
+  Filter,
+  Truck,
+  Home,
+  Clock,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Mock data for demonstration
-const MOCK_SALES = [
-  {
-    id: 1001,
-    client: "Restaurante El Dorado",
-    brand: "Nestlé",
-    date: new Date().toISOString().split("T")[0],
-    products: [
-      { name: "Leche en polvo", quantity: 5 },
-      { name: "Café instantáneo", quantity: 10 }
-    ],
-    amount: 125.75,
-    status: "Pendiente"
+const STATUS_COLORS = {
+  Pendiente: {
+    base: "bg-yellow-200 text-yellow-800 font-semibold",
+    hover: "hover:bg-yellow-500 hover:text-white",
   },
-  {
-    id: 1002,
-    client: "Cafetería Central",
-    brand: "Dos Pinos",
-    date: new Date().toISOString().split("T")[0],
-    products: [
-      { name: "Leche entera", quantity: 20 },
-      { name: "Queso crema", quantity: 8 }
-    ],
-    amount: 198.50,
-    status: "En Proceso"
+  "En cocina": {
+    base: "bg-orange-200 text-orange-800 font-semibold",
+    hover: "hover:bg-orange-500 hover:text-white",
   },
-  {
-    id: 1003,
-    client: "Panadería Dulce Hogar",
-    brand: "Lala",
-    date: new Date().toISOString().split("T")[0],
-    products: [
-      { name: "Mantequilla", quantity: 15 },
-      { name: "Crema para batir", quantity: 10 }
-    ],
-    amount: 156.25,
-    status: "Completado"
+  "Listo para recoger": {
+    base: "bg-purple-200 text-purple-800 font-semibold",
+    hover: "hover:bg-purple-500 hover:text-white",
   },
-  {
-    id: 1004,
-    client: "Restaurante Mar y Tierra",
-    brand: "Saputo",
-    date: new Date().toISOString().split("T")[0],
-    products: [
-      { name: "Queso mozzarella", quantity: 12 },
-      { name: "Queso parmesano", quantity: 5 },
-      { name: "Mantequilla sin sal", quantity: 8 }
-    ],
-    amount: 234.90,
-    status: "Pendiente"
+  "En camino": {
+    base: "bg-indigo-200 text-indigo-800 font-semibold",
+    hover: "hover:bg-indigo-500 hover:text-white",
   },
-  {
-    id: 1005,
-    client: "Cafetería La Esquina",
-    brand: "Nestlé",
-    date: new Date().toISOString().split("T")[0],
-    products: [
-      { name: "Leche deslactosada", quantity: 8 },
-      { name: "Crema para café", quantity: 5 }
-    ],
-    amount: 87.30,
-    status: "En Proceso"
-  }
-];
+  Entregado: {
+    base: "bg-green-200 text-green-800 font-semibold",
+    hover: "hover:bg-green-500 hover:text-white",
+  },
+  Cancelado: {
+    base: "bg-red-200 text-red-800 font-semibold",
+    hover: "hover:bg-red-500 hover:text-white",
+  },
+};
 
+// OPCIONES DE ESTADO ACTUALIZADAS
 const STATUS_OPTIONS = [
-  { id: "pending", label: "Pendiente", color: "bg-yellow-100 text-yellow-800" },
-  { id: "in-progress", label: "En Proceso", color: "bg-blue-100 text-blue-800" },
-  { id: "completed", label: "Completado", color: "bg-green-100 text-green-800" },
-  { id: "cancelled", label: "Cancelado", color: "bg-red-100 text-red-800" }
+  { id: "pending", label: "Pendiente" },
+  { id: "in-kitchen", label: "En cocina" },
+  { id: "ready", label: "Listo para recoger" },
+  { id: "on-the-way", label: "En camino" },
+  { id: "delivered", label: "Entregado" },
+  { id: "cancelled", label: "Cancelado" },
 ];
+
+// Mapeo de tipos de pedido a iconos y colores
+const ORDER_TYPE_CONFIG = {
+  delivery: {
+    label: "Delivery",
+    icon: Truck,
+    color: "text-amber-600",
+    bgColor: "bg-amber-100",
+  },
+  pickup: {
+    label: "Recoger",
+    icon: Home,
+    color: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+};
 
 interface Sale {
   id: number;
@@ -89,231 +96,351 @@ interface Sale {
   products: { name: string; quantity: number }[];
   amount: number;
   status: string;
+  orderType: "delivery" | "pickup"; // Nuevo campo
 }
-
 interface TodaySalesTableProps {
-  sales?: Sale[];
-  statuses?: { id: string; label: string; color: string }[];
+  sales?: Array<
+    Omit<Sale, "orderType"> & { orderType: string | "delivery" | "recogida" }
+  >;
   updateSaleStatus?: (id: number, statusId: string) => void;
 }
 
-export default function TodaySalesTable({ 
-  sales = MOCK_SALES, 
-  statuses = STATUS_OPTIONS,
-  updateSaleStatus = (id, statusId) => {
-    // In a real app, this would update the status in the backend
-    console.log(`Updating sale ${id} status to ${statusId}`);
-  } 
-}: TodaySalesTableProps) {
-  const [localSales, setLocalSales] = useState<Sale[]>(sales);
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
+function sanitizeSales(sales: any[]): Sale[] {
+  return sales.map((sale) => ({
+    ...sale,
+    orderType: sale.orderType === "pickup" ? "pickup" : "delivery",
+  }));
+}
 
-  const todaySales = useMemo(() => {
+import salesData from "../data/salesData.json";
+
+export default function TodaySalesTable({
+  sales = salesData.sales,
+  updateSaleStatus = (id, statusId) => {
+    console.log(`Updating sale ${id} status to ${statusId}`);
+  },
+}: TodaySalesTableProps) {
+  const [localSales, setLocalSales] = useState<Sale[]>(sanitizeSales(sales));
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [timeSort, setTimeSort] = useState<"asc" | "desc" | "none">("desc");
+  const [amountSort, setAmountSort] = useState<"asc" | "desc" | "none">("none");
+
+  // Obtener la hora actual
+  const currentTime = new Date();
+  
+  // Separar pedidos en próximos y pasados
+  const { upcomingSales, pastSales } = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
-    return localSales.filter(sale => {
-      // Handle both date-only and timestamp formats
+    const filtered = localSales.filter((sale) => {
       const saleDate = sale.date.split("T")[0];
       return saleDate === today;
     });
-  }, [localSales]);
 
+    // Separar en pedidos próximos y pasados
+    const upcoming = [];
+    const past = [];
+    
+    for (const sale of filtered) {
+      const saleTime = new Date(sale.date);
+      // Considerar un pedido como "pasado" si su hora es más de 30 minutos antes de la hora actual
+      const timeDiff = (currentTime.getTime() - saleTime.getTime()) / (1000 * 60);
+      
+      if (timeDiff > 30) {
+        past.push(sale);
+      } else {
+        upcoming.push(sale);
+      }
+    }
+
+    // Ordenar por fecha de forma descendente (más reciente primero)
+    upcoming.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    past.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return { upcomingSales: upcoming, pastSales: past };
+  }, [localSales, currentTime]);
+
+  // Combinar y filtrar las ventas según los filtros aplicados
   const filteredSales = useMemo(() => {
-    return todaySales.filter(sale => 
-      filterStatus === "all" || sale.status === filterStatus
-    );
-  }, [todaySales, filterStatus]);
+    // Primero aplicar filtros a ambos grupos
+    const filterSales = (salesArray: Sale[]) => {
+      let result = salesArray.filter(
+        (sale) => filterStatus === "all" || sale.status === filterStatus
+      );
 
-  const totalPages = Math.ceil(filteredSales.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const paginatedSales = filteredSales.slice(startIndex, startIndex + rowsPerPage);
+      // Ordenar por hora si es necesario
+      if (timeSort !== "none") {
+        result = result.sort((a, b) => {
+          const dateA = new Date(a.date).getTime();
+          const dateB = new Date(b.date).getTime();
+          return timeSort === "asc" ? dateA - dateB : dateB - dateA;
+        });
+      }
 
-  const getStatusInfo = (status: string) => {
-    return statuses.find(s => s.label === status) || 
-           { id: 'unknown', label: status, color: 'bg-gray-100 text-gray-800' };
-  };
+      // Ordenar por monto si es necesario
+      if (amountSort !== "none") {
+        result = result.sort((a, b) => {
+          return amountSort === "asc" ? a.amount - b.amount : b.amount - a.amount;
+        });
+      }
+
+      return result;
+    };
+
+    const filteredUpcoming = filterSales(upcomingSales);
+    const filteredPast = filterSales(pastSales);
+
+    return { upcoming: filteredUpcoming, past: filteredPast };
+  }, [upcomingSales, pastSales, filterStatus, timeSort, amountSort]);
 
   const handleStatusChange = (saleId: number, newStatusId: string) => {
-    const newStatus = statuses.find(s => s.id === newStatusId)?.label || newStatusId;
-    
-    setLocalSales(prevSales => 
-      prevSales.map(sale => 
-        sale.id === saleId 
-          ? { ...sale, status: newStatus }
-          : sale
+    const newStatus =
+      STATUS_OPTIONS.find((s) => s.id === newStatusId)?.label || newStatusId;
+
+    setLocalSales((prevSales) =>
+      prevSales.map((sale) =>
+        sale.id === saleId ? { ...sale, status: newStatus } : sale
       )
     );
-    
+
     updateSaleStatus(saleId, newStatusId);
   };
 
   // Calculate total amount for today's sales
-  const totalAmount = todaySales.reduce((sum, sale) => sum + sale.amount, 0);
-  const formattedTotal = new Intl.NumberFormat('es-BO', {
-    style: 'currency',
-    currency: 'BOB',
-    minimumFractionDigits: 2
+  const allTodaySales = [...upcomingSales, ...pastSales];
+  const totalAmount = allTodaySales.reduce((sum, sale) => sum + sale.amount, 0);
+  const formattedTotal = new Intl.NumberFormat("es-BO", {
+    style: "currency",
+    currency: "BOB",
+    minimumFractionDigits: 2,
   }).format(totalAmount);
 
   // If there are no sales for today, don't render anything
-  if (todaySales.length === 0) {
+  if (allTodaySales.length === 0) {
     return null;
   }
+
+  // Componente para renderizar una fila de venta
+  const renderSaleRow = (sale: Sale) => {
+    const statusColors = STATUS_COLORS[
+      sale.status as keyof typeof STATUS_COLORS
+    ] || {
+      base: "bg-gray-100 text-gray-800",
+      hover: "hover:bg-gray-700 hover:text-white",
+    };
+
+    const orderTypeConfig = ORDER_TYPE_CONFIG[
+      sale.orderType
+    ] || {
+      label: "Desconocido",
+      icon: Home,
+      color: "text-gray-600",
+      bgColor: "bg-gray-100",
+    };
+    const IconComponent = orderTypeConfig.icon;
+
+    return (
+      <TableRow key={sale.id}>
+        <TableCell className="font-medium">{sale.id}</TableCell>
+        <TableCell>{sale.client}</TableCell>
+        <TableCell className="whitespace-nowrap">
+          <div>
+            {new Date(sale.date).toLocaleDateString("es-BO", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "2-digit",
+            })}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {new Date(sale.date).toLocaleTimeString("es-BO", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
+          </div>
+        </TableCell>
+        <TableCell>
+          <div className="flex flex-col space-y-1">
+            {sale.products.map((product, i) => (
+              <div
+                key={i}
+                className="flex items-center text-sm"
+              >
+                <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 flex-shrink-0"></span>
+                {product.name} ({product.quantity} unidades)
+              </div>
+            ))}
+          </div>
+        </TableCell>
+        <TableCell>
+          {new Intl.NumberFormat("es-BO", {
+            style: "currency",
+            currency: "BOB",
+            minimumFractionDigits: 2,
+          }).format(sale.amount)}
+        </TableCell>
+        <TableCell>
+          <div
+            className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${orderTypeConfig.bgColor} ${orderTypeConfig.color}`}
+          >
+            <IconComponent className="h-3 w-3" />
+            {orderTypeConfig.label}
+          </div>
+        </TableCell>
+        <TableCell>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={`h-auto min-h-8 px-2 py-1.5 ${statusColors.base} ${statusColors.hover} cursor-pointer transition-colors whitespace-normal text-wrap text-left max-w-[180px]`}
+              >
+                {sale.status}
+                <ChevronDown className="ml-2 h-4 w-4 flex-shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel>
+                Cambiar estado
+              </DropdownMenuLabel>
+              {STATUS_OPTIONS.map((status) => (
+                <DropdownMenuItem
+                  key={status.id}
+                  className="flex items-center justify-between"
+                  onClick={() =>
+                    handleStatusChange(sale.id, status.id)
+                  }
+                >
+                  <div className="flex items-center">
+                    <span
+                      className={`w-2 h-2 rounded-full mr-2 ${
+                        STATUS_COLORS[
+                          status.label as keyof typeof STATUS_COLORS
+                        ]?.base.split(" ")[0] || "bg-gray-100"
+                      }`}
+                    />
+                    {status.label}
+                  </div>
+                  {status.label === sale.status && (
+                    <Check className="h-4 w-4" />
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    );
+  };
 
   return (
     <div className="flex-1 pb-6">
       <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div>
-          <CardTitle className="text-lg font-medium">Ventas de Hoy</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            {todaySales.length} ventas registradas • Total: {formattedTotal}
-          </p>
-        </div>
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle className="text-xl font-medium font-semibold">
+              Ventas de Hoy
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {allTodaySales.length} ventas registradas • Total: {formattedTotal}
+            </p>
+          </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">ID</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Productos</TableHead>
-                <TableHead className="text-right">Monto</TableHead>
-                <TableHead>Estado</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredSales.length > 0 ? (
-                paginatedSales.map((sale) => (
-                  <TableRow key={sale.id}>
-                    <TableCell className="font-medium">{sale.id}</TableCell>
-                    <TableCell >{sale.client}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {new Date(sale.date).toLocaleString('es-BO', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      }).replace(',', '')}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        {sale.products.map((product, i) => (
-                          <span key={i} className="text-sm">
-                            {product.name} ({product.quantity} unidades)
-                          </span>
-                        ))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {new Intl.NumberFormat('es-BO', {
-                        style: 'currency',
-                        currency: 'BOB',
-                        minimumFractionDigits: 2
-                      }).format(sale.amount)}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            className={`h-8 px-2 ${getStatusInfo(sale.status).color} hover:opacity-80 cursor-pointer`}
-                          >
-                            {getStatusInfo(sale.status).label}
-                            <ChevronDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
-                          {statuses.map((status) => (
-                            <DropdownMenuItem 
-                              key={status.id}
-                              className={`flex items-center justify-between ${status.id === getStatusInfo(sale.status).id ? "bg-gray-100 dark:bg-gray-800" : ""}`}
-                              onClick={() => handleStatusChange(sale.id, status.id)}
-                            >
-                              <div className="flex items-center">
-                                <span className={`w-2 h-2 rounded-full mr-2 ${status.color.split(' ')[0]}`} />
-                                {status.label}
-                              </div>
-                              {status.id === getStatusInfo(sale.status).id && (
-                                <Check className="h-4 w-4" />
-                              )}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+          {/* Filtros - Ordenados según las columnas de la tabla */}
+          <div className="flex flex-wrap gap-4 mb-4 p-4 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <span className="text-sm font-medium">Filtrar por:</span>
+            </div>
+
+            {/* Ordenar por Monto (columna 5) */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Monto:</span>
+              <Select
+                value={amountSort}
+                onValueChange={(value: "asc" | "desc" | "none") =>
+                  setAmountSort(value)
+                }
+              >
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Sin orden" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin orden</SelectItem>
+                  <SelectItem value="asc">Menor a mayor</SelectItem>
+                  <SelectItem value="desc">Mayor a menor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+                {/* Filtro por Estado (columna 7) */}
+                <div className="flex items-center gap-2">
+              <span className="text-sm">Estado:</span>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {STATUS_OPTIONS.map((status) => (
+                    <SelectItem key={status.id} value={status.label}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+          </div>
+
+          <div style={{ minHeight: 600, maxHeight: 600, overflowY: "auto" }}>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="font-semibold">ID</TableHead>
+                  <TableHead className="font-semibold">Cliente</TableHead>
+                  <TableHead className="font-semibold">Fecha</TableHead>
+                  <TableHead className="font-semibold">Productos</TableHead>
+                  <TableHead className="font-semibold">Monto</TableHead>
+                  <TableHead className="font-semibold">
+                    Tipo de Pedido
+                  </TableHead>
+                  <TableHead className="font-semibold">Estado</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredSales.upcoming.length > 0 || filteredSales.past.length > 0 ? (
+                  <>
+                    {/* Pedidos próximos */}
+                    {filteredSales.upcoming.map(renderSaleRow)}
+                    
+                    {/* Separador para pedidos pasados */}
+                    {filteredSales.past.length > 0 && (
+                      <>
+                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                          <TableCell colSpan={7} className="p-0">
+                            <div className="flex items-center px-4 py-2 text-sm font-medium text-black bg-red-200">
+                              <Clock className="h-4 w-4 mr-2" />
+                              <span className="font-semibold">Pedidos con tiempo vencido</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                        {filteredSales.past.map(renderSaleRow)}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      className="text-center text-muted-foreground py-8"
+                    >
+                      No hay ventas para mostrar.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                    No hay ventas para mostrar.
-                  </TableCell>
-                </TableRow>
-              )}
-              
-              {/* Empty rows for consistent height */}
-              {Array.from({ length: Math.max(0, rowsPerPage - paginatedSales.length) }).map((_, index) => (
-                <TableRow key={`empty-${index}`}>
-                  {Array.from({ length: 7 }).map((_, i) => (
-                    <TableCell key={i}>&nbsp;</TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
-        
-        <div className="flex flex-col md:flex-row md:justify-between items-center gap-2 p-4 border-t">
-          <div className="flex items-center gap-2">
-            <small className="text-sm font-medium text-muted-foreground">
-              Mostrando {Math.min(rowsPerPage, filteredSales.length)} de {filteredSales.length} ventas
-            </small>
-            <span className="ml-4 font-medium">Filas:</span>
-            <Select 
-              value={String(rowsPerPage)} 
-              onValueChange={(value) => {
-                setRowsPerPage(Number(value));
-                setCurrentPage(1); // Reset to first page when changing rows per page
-              }}
-            >
-              <SelectTrigger className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[5, 10, 20, 50].map((n) => (
-                  <SelectItem key={n} value={String(n)}>
-                    {n}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage >= totalPages}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
       </Card>
     </div>
   );

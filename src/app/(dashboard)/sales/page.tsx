@@ -17,13 +17,16 @@ export interface Sale {
   products: { name: string; quantity: number }[];
   amount: number;
   status: string;
+  orderType: "delivery" | "pickup";
 }
 
 const statusOptions = [
-  { id: 'pending', label: 'Pendiente', color: 'bg-yellow-100 text-yellow-800' },
-  { id: 'in-progress', label: 'En proceso', color: 'bg-blue-100 text-blue-800' },
-  { id: 'completed', label: 'Completado', color: 'bg-green-100 text-green-800' },
-  { id: 'cancelled', label: 'Cancelado', color: 'bg-red-100 text-red-800' }
+  { id: "pending", label: "Pendiente" },
+  { id: "in-kitchen", label: "En cocina" },
+  { id: "ready", label: "Listo para recoger" },
+  { id: "on-the-way", label: "En camino" },
+  { id: "delivered", label: "Entregado" },
+  { id: "cancelled", label: "Cancelado" },
 ];
 
 export default function Page() {
@@ -56,8 +59,7 @@ export default function Page() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TodaySalesTable 
-          sales={sales} 
-          statuses={statusOptions} 
+          sales={sales as Array<Omit<Sale, "orderType"> & { orderType: string | "delivery" | "pickup" }>} 
           updateSaleStatus={updateSaleStatus} 
         />
         <FutureSalesTable 
@@ -66,13 +68,7 @@ export default function Page() {
           updateSaleStatus={updateSaleStatus} 
         />
       </div>
-      <div className="mt-6">
-        <SalesHistoryTable 
-          sales={sales} 
-          statuses={statusOptions}
-          updateSaleStatus={updateSaleStatus}
-        />
-      </div>
+    
     </div>
   );
 }
