@@ -1,349 +1,180 @@
 {
   "sales": [
     {
-      "id": 1,
-      "client": "Familia Rodríguez",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T14:30:00",
-      "products": [
-        { "name": "Chocolate Mediano (M)", "quantity": 1 }
+      "id_venta": 1,
+      "id_usuario_registro": 1,
+      "id_estado": 1,
+      "fecha_entrega_estimada": "2025-09-18T14:00:00-04:00",
+      "observaciones": "Pedido para fiesta infantil, entregar por la tarde",
+      "fecha_registro": "2025-09-18T13:45:20-04:00",
+      "fecha_actualizacion": "2025-09-18T13:45:20-04:00",
+      "entrega": {
+        "id_entrega": 1,
+        "id_tipo_entrega": 1,
+        "direccion_entrega": "Av. Siempre Viva 742, Planta Baja",
+        "nombre_receptor": "Ana Valdez",
+        "telefono_receptor": "77712345",
+        "costo_delivery": 15.00,
+        "estado_delivery": "Pendiente",
+        "nombre_sucursal": null,
+        "fecha_recojo_programada": null,
+        "observaciones": "Llamar antes de llegar",
+        "costo_total": 415.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 1,
+          "id_producto": 5,
+          "cantidad": 1,
+          "precio_unitario_venta": 150.00,
+          "subtotal": 160.00,
+          "frase": {
+            "frase": "Feliz Cumpleaños, Campeón!",
+            "costo_frase": 10.00
+          }
+        },
+        {
+          "id_detalle": 2,
+          "id_producto": 8,
+          "cantidad": 1,
+          "precio_unitario_venta": 220.00,
+          "subtotal": 245.00,
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 25.00
+          }
+        }
       ],
-      "amount": 224,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
+      "total_general": 415.00
     },
     {
-      "id": 2,
-      "client": "Oficinas Corp",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T10:15:00",
-      "products": [
-        { "name": "Red Velvet Grande (L)", "quantity": 1 },
-        { "name": "Tres leches Mini Torta (MT)", "quantity": 5 }
+      "id_venta": 2,
+      "id_usuario_registro": 3,
+      "id_estado": 2,
+      "fecha_entrega_estimada": "2025-09-18T10:30:00-04:00",
+      "observaciones": "Sin gluten, contacto celíaco",
+      "fecha_registro": "2025-09-19T09:15:33-04:00",
+      "fecha_actualizacion": "2025-09-19T11:20:10-04:00",
+      "entrega": {
+        "id_entrega": 2,
+        "id_tipo_entrega": 2,
+        "direccion_entrega": null,
+        "nombre_receptor": "Carlos Méndez",
+        "telefono_receptor": "77798765",
+        "costo_delivery": 0.00,
+        "estado_delivery": "Recogido",
+        "nombre_sucursal": "Sucursal Centro",
+        "fecha_recojo_programada": "2025-09-12T10:30:00-04:00",
+        "observaciones": "Pago con tarjeta",
+        "costo_total": 285.50
+      },
+      "detalles": [
+        {
+          "id_detalle": 3,
+          "id_producto": 12,
+          "cantidad": 2,
+          "precio_unitario_venta": 120.00,
+          "subtotal": 240.00,
+          "frase": {
+            "frase": "Felicidades por tu graduación",
+            "costo_frase": 5.00
+          }
+        },
+        {
+          "id_detalle": 4,
+          "id_producto": 3,
+          "cantidad": 1,
+          "precio_unitario_venta": 40.50,
+          "subtotal": 40.50,
+          "personalizacion": null
+        }
       ],
-      "amount": 474,
-      "status": "Cancelado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Ana López",
-      "notes": "Entregar en la puerta principal"
+      "total_general": 285.50
     },
     {
-      "id": 3,
-      "client": "Cumpleaños María",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T09:00:00",
-      "products": [
-        { "name": "Chocolate Extra Grande (XL)", "quantity": 1 },
-        { "name": "Moka Pequeño (S)", "quantity": 1 }
+      "id_venta": 3,
+      "id_usuario_registro": 2,
+      "id_estado": 3,
+      "fecha_entrega_estimada": "2025-09-18T18:00:00-04:00",
+      "observaciones": "Decoración con temática superheroes",
+      "fecha_registro": "2025-09-17T16:20:44-04:00",
+      "fecha_actualizacion": "2025-09-18T09:10:15-04:00",
+      "entrega": {
+        "id_entrega": 3,
+        "id_tipo_entrega": 1,
+        "direccion_entrega": "Calle Falsa 123, Edificio B",
+        "nombre_receptor": "María López",
+        "telefono_receptor": "77755678",
+        "costo_delivery": 20.00,
+        "estado_delivery": "Entregado",
+        "nombre_sucursal": null,
+        "fecha_recojo_programada": null,
+        "observaciones": "Timbre azul",
+        "costo_total": 630.75
+      },
+      "detalles": [
+        {
+          "id_detalle": 5,
+          "id_producto": 7,
+          "cantidad": 1,
+          "precio_unitario_venta": 350.00,
+          "subtotal": 380.00,
+          "personalizacion": {
+            "imagen_base64": "data:image/png;base64,iVBORw0KGgoAAA...",
+            "costo_personalizacion": 30.00
+          }
+        },
+        {
+          "id_detalle": 6,
+          "id_producto": 15,
+          "cantidad": 3,
+          "precio_unitario_venta": 75.25,
+          "subtotal": 225.75,
+          "frase": null
+        }
       ],
-      "amount": 328,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
+      "total_general": 630.75
     },
     {
-      "id": 4,
-      "client": "Restaurante Sabores",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T11:30:00",
-      "products": [
-        { "name": "Vainilla Mediano (M)", "quantity": 2 },
-        { "name": "Durazno Cuchareo Express (CE)", "quantity": 10 }
+      "id_venta": 4,
+      "id_usuario_registro": 5,
+      "id_estado": 4,
+      "fecha_entrega_estimada": "2025-09-18T12:00:00-04:00",
+      "observaciones": "Cancelado por cliente",
+      "fecha_registro": "2025-09-18T14:30:00-04:00",
+      "fecha_actualizacion": "2025-09-19T08:45:22-04:00",
+      "entrega": {
+        "id_entrega": 4,
+        "id_tipo_entrega": 1,
+        "direccion_entrega": "Av. Central 456",
+        "nombre_receptor": null,
+        "telefono_receptor": null,
+        "costo_delivery": 18.00,
+        "estado_delivery": "Cancelado",
+        "nombre_sucursal": null,
+        "fecha_recojo_programada": null,
+        "observaciones": "Reembolso solicitado",
+        "costo_total": 0.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 7,
+          "id_producto": 1,
+          "cantidad": 1,
+          "precio_unitario_venta": 10.00,
+          "subtotal": 10.00,
+          "frase": null
+        },
+        {
+          "id_detalle": 8,
+          "id_producto": 2,
+          "cantidad": 2,
+          "precio_unitario_venta": 20.00,
+          "subtotal": 40.00,
+          "frase": null
+        }
       ],
-      "amount": 548,
-      "status": "Completado",
-      "orderType": "pickup",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 5,
-      "client": "Cafetería Central",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T16:45:00",
-      "products": [
-        { "name": "Mermelada de frutilla Mini Torta (MT)", "quantity": 8 }
-      ],
-      "amount": 622,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 6,
-      "client": "Boda Ana y Carlos",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-10T16:45:00",
-      "products": [
-        { "name": "Chocolate Extra Grande (XL)", "quantity": 3 },
-        { "name": "Red Velvet Grande (L)", "quantity": 2 }
-      ],
-      "amount": 985,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 7,
-      "client": "Empresa TechSol",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-13T16:45:00",
-      "products": [
-        { "name": "Oreo Extra Pequeño (XS)", "quantity": 4 }
-      ],
-      "amount": 356,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 8,
-      "client": "Colegio San Miguel",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-12T08:45:00",
-      "products": [
-        { "name": "Tres leches Pequeño (S)", "quantity": 3 },
-        { "name": "Vainilla Cuchareo Express (CE)", "quantity": 15 }
-      ],
-      "amount": 732,
-      "status": "Completado",
-      "orderType": "pickup",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 9,
-      "client": "Restaurante El Buen Gusto",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-12T07:45:00",
-      "products": [
-        { "name": "Durazno Mediano (M)", "quantity": 1 },
-        { "name": "Moka Mini Torta (MT)", "quantity": 6 }
-      ],
-      "amount": 503,
-      "status": "En cocina",
-      "orderType": "pickup",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 10,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 }
-      ],
-      "amount": 679,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"  
-    },
-    {
-      "id": 11,
-      "client": "Aniversario Empresarial",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-12T16:45:00",
-      "products": [
-        { "name": "Red Velvet Extra Grande (XL)", "quantity": 2 }
-      ],
-      "amount": 890,
-      "status": "Pendiente",
-      "orderType": "pickup",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 12,
-      "client": "Cena Romántica",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T11:45:00",
-      "products": [
-        { "name": "Moka Cuchareo Express (CE)", "quantity": 2 },
-        { "name": "Tres leches Cuchareo Express (CE)", "quantity": 2 }
-      ],
-      "amount": 100,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 13,
-      "client": "Reunión Familiar",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T12:45:00",
-      "products": [
-        { "name": "Vainilla Pequeño (S)", "quantity": 1 }
-      ],
-      "amount": 296,
-      "status": "Completado",
-      "orderType": "pickup",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 14,
-      "client": "Celebración de Graduación",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T16:45:00",
-      "products": [
-        { "name": "Chocolate Extra Grande (XL)", "quantity": 1 },
-        { "name": "Red Velvet Mediano (M)", "quantity": 1 }
-      ],
-      "amount": 358,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 15,
-      "client": "Evento Corporativo",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T18:45:00",
-      "products": [
-        { "name": "Oreo Extra Pequeño (XS)", "quantity": 5 }
-      ],
-      "amount": 745,
-      "status": "Completado",
-      "orderType": "pickup",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 16,
-      "client": "Baby Shower",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-12T16:45:00",
-      "products": [
-        { "name": "Tres leches Grande (L)", "quantity": 1 },
-        { "name": "Vainilla Mini Torta (MT)", "quantity": 4 }
-      ],
-      "amount": 415,
-      "status": "Listo para recoger",
-      "orderType": "pickup",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 17,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-12T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 },
-        { "name": "Oreo Cuchareo Express (CE)", "quantity": 20 }
-      ],
-      "amount": 679,
-      "status": "Listo para recoger",
-      "orderType": "delivery",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 18,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-13T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 },
-        { "name": "Oreo Cuchareo Express (CE)", "quantity": 20 }
-      ],
-      "amount": 679,
-      "status": "Listo para recoger",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 19,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-14T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 },
-        { "name": "Oreo Cuchareo Express (CE)", "quantity": 20 }
-      ],
-      "amount": 679,
-      "status": "Listo para recoger",
-      "orderType": "delivery",
-      "paymentMethod": "Efectivo",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 20,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 },
-        { "name": "Oreo Cuchareo Express (CE)", "quantity": 20 }
-      ],
-      "amount": 679,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 21,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 },
-        { "name": "Oreo Cuchareo Express (CE)", "quantity": 20 }
-      ],
-      "amount": 679,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
-    },
-    {
-      "id": 22,
-      "client": "Fiesta Infantil Lucas",
-      "brand": "Dulce Tentación",
-      "date": "2025-09-11T16:45:00",
-      "products": [
-        { "name": "Chocolate Grande (L)", "quantity": 1 },
-        { "name": "Oreo Cuchareo Express (CE)", "quantity": 20 }
-      ],
-      "amount": 679,
-      "status": "Completado",
-      "orderType": "delivery",
-      "paymentMethod": "QR",
-      "seller": "Juan Pérez",
-      "notes": "Entregar en la puerta principal"
+      "total_general": 0.00
     }
   ]
 }

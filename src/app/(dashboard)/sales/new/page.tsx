@@ -24,10 +24,7 @@ export default function NewSalePage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement form submission logic
     console.log('Form submitted:', formData);
-    // After successful submission, you might want to redirect back to the sales list
-    // router.push('/dashboard/sales');
   };
 
   const handleAddProduct = () => {

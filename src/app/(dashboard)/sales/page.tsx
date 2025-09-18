@@ -59,7 +59,7 @@ export default function Page() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TodaySalesTable 
-          sales={sales as Array<Omit<Sale, "orderType"> & { orderType: string | "delivery" | "pickup" }>} 
+          sales={sales} 
           updateSaleStatus={updateSaleStatus} 
         />
         <FutureSalesTable 

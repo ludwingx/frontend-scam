@@ -7,62 +7,353 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TrendingUp, Users, Package, CreditCard, Calendar, Download, Filter, BarChart3, DollarSign, ShoppingCart, Truck, CheckCircle, XCircle, Clock, Target } from "lucide-react";
+import { TrendingUp, Users, Package, CreditCard, Calendar, Download, Filter, BarChart3, DollarSign, ShoppingCart, Truck, CheckCircle, XCircle, Clock, Target, TrendingDown } from "lucide-react";
 import SalesHistoryTable from "../components/SalesHistoryTable";
 import salesData from "../data/salesData.json";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 
-// Función para actualizar el estado de una venta
-const updateSaleStatus = (id: number, statusId: string) => {
-  console.log(`Updating sale ${id} status to ${statusId}`);
-  // En una aplicación real, aquí harías una llamada a la API
+// Función para formatear fechas
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES');
 };
 
-// Componente para gráfico de ventas (placeholder mejorado)
-const SalesChart = ({ timeRange }: { timeRange: string }) => (
-  <div className="h-[300px] bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center p-4">
-    <div className="text-center">
-      <BarChart3 className="h-12 w-12 text-blue-400 mx-auto mb-2" />
-      <p className="text-blue-600 font-medium">Tendencia de Ventas ({timeRange})</p>
-      <p className="text-blue-400 text-sm mt-2">Aquí se mostrará un gráfico de líneas con la evolución de tus ventas</p>
-      <div className="mt-4 flex justify-center">
-        <div className="h-2 w-40 bg-blue-200 rounded-full overflow-hidden">
-          <div className="h-full bg-blue-500" style={{ width: '65%' }}></div>
-        </div>
-      </div>
-      <p className="text-xs text-blue-500 mt-2">+15% vs período anterior</p>
-    </div>
-  </div>
-);
+// Función para filtrar ventas por período de tiempo
+const filterSalesByTimeRange = (sales: any[], timeRange: string) => {
+  const now = new Date();
+  const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  return sales.filter(sale => {
+    const saleDate = new Date(sale.date);
+    
+    switch (timeRange) {
+      case "day":
+        return saleDate.toDateString() === currentDate.toDateString();
+      
+      case "week":
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + (currentDate.getDay() === 0 ? -6 : 1));
+        startOfWeek.setHours(0, 0, 0, 0);
+        
+        const endOfWeek = new Date(startOfWeek);
+        endOfWeek.setDate(startOfWeek.getDate() + 6);
+        endOfWeek.setHours(23, 59, 59, 999);
+        
+        return saleDate >= startOfWeek && saleDate <= endOfWeek;
+      
+      case "month":
+        return saleDate.getMonth() === currentDate.getMonth() && 
+               saleDate.getFullYear() === currentDate.getFullYear();
+      
+      case "year":
+        return saleDate.getFullYear() === currentDate.getFullYear();
+      
+      default:
+        return true;
+    }
+  });
+};
 
-// Componente para gráfico de métodos de pago (mejorado)
-const PaymentMethodsChart = () => {
-  const paymentMethods = [
-    { name: "Tarjeta", value: 65, color: "bg-blue-500" },
-    { name: "Efectivo", value: 25, color: "bg-green-500" },
-    { name: "Transferencia", value: 8, color: "bg-purple-500" },
-    { name: "Otros", value: 2, color: "bg-gray-500" },
-  ];
+// Configuración del gráfico
+const chartConfig = {
+  presencial: {
+    label: "En puerta",
+    color: "hsl(var(--chart-1))",
+  },
+  delivery: {
+    label: "Delivery",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig;
+
+// Formatear montos en bolivianos
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('es-BO', {
+    style: 'currency',
+    currency: 'BOB',
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2
+  }).format(amount);
+};
+
+// Componente para gráfico de ventas con datos reales
+const SalesChart = ({ timeRange, sales, onTimeRangeChange }: { timeRange: string; sales: any[]; onTimeRangeChange: (value: string) => void }) => {
+  const chartData = useMemo(() => {
+    if (!sales || sales.length === 0) return [];
+
+    // Agrupar ventas por período seleccionado
+    const groupedData: Record<string, { presencial: number; delivery: number }> = {};
+
+    sales.forEach(sale => {
+      const saleDate = new Date(sale.date);
+      let key = '';
+
+      if (timeRange === "day") {
+        const hour = saleDate.getHours();
+        const hourLabel = `${hour}:00`;
+        key = hourLabel;
+      } else if (timeRange === "week") {
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        key = days[saleDate.getDay()];
+      } else if (timeRange === "month") {
+        key = saleDate.getDate().toString();
+      } else if (timeRange === "year") {
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        key = months[saleDate.getMonth()];
+      }
+
+      if (!groupedData[key]) {
+        groupedData[key] = { presencial: 0, delivery: 0 };
+      }
+
+      if (sale.orderType === 'delivery') {
+        groupedData[key].delivery += sale.amount;
+      } else {
+        groupedData[key].presencial += sale.amount;
+      }
+    });
+
+    // Convertir to array y ordenar
+    let result = Object.entries(groupedData).map(([key, value]) => ({
+      key,
+      presencial: value.presencial,
+      delivery: value.delivery
+    }));
+
+    // Ordenar según el período
+    if (timeRange === "day") {
+      result.sort((a, b) => parseInt(a.key) - parseInt(b.key));
+      // Formatear etiquetas de hora
+      result = result.map(item => ({
+        ...item,
+        key: `${item.key}`
+      }));
+    } else if (timeRange === "week") {
+      const dayOrder = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+      result.sort((a, b) => dayOrder.indexOf(a.key) - dayOrder.indexOf(b.key));
+    } else if (timeRange === "month") {
+      result.sort((a, b) => parseInt(a.key) - parseInt(b.key));
+    } else if (timeRange === "year") {
+      const monthOrder = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      result.sort((a, b) => monthOrder.indexOf(a.key) - monthOrder.indexOf(b.key));
+    }
+
+    return result;
+  }, [sales, timeRange]);
+
+  const xAxisKey = "key";
+  
+  // Calcular el valor máximo para el eje Y
+  const maxValue = Math.max(...chartData.map(item => item.presencial + item.delivery), 0);
+  // Calcular un valor máximo redondeado para el eje Y
+  const maxYValue = Math.ceil(maxValue / 500) * 500;
+  
+  return (
+    <ChartContainer config={chartConfig} className="h-[550px] w-full">
+      <AreaChart
+        accessibilityLayer
+        data={chartData}
+        margin={{
+          left: 12,
+          right: 12,
+          top: 12,
+        }}
+      >
+        <CartesianGrid vertical={false} />
+        <XAxis
+          dataKey={xAxisKey}
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          minTickGap={32}
+          tickFormatter={(value) => value}
+        />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          tickCount={6}
+          domain={[0, maxYValue]}
+          tickFormatter={(value) => new Intl.NumberFormat('es-BO', {
+            style: 'currency',
+            currency: 'BOB',
+            minimumFractionDigits: 0
+          }).format(value)}
+        />
+        <ChartTooltip 
+          cursor={false} 
+          content={
+            <ChartTooltipContent 
+              indicator="dot"
+              labelFormatter={(value) => value}
+              formatter={(value, name) => [
+                new Intl.NumberFormat('es-BO', {
+                  style: 'currency',
+                  currency: 'BOB',
+                  minimumFractionDigits: 2
+                }).format(Number(value)),
+                name === 'presencial' ? 'En puerta' : 'Delivery'
+              ]}
+            />
+          }
+        />
+        <defs>
+          <linearGradient id="fillPresencial" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="5%"
+              stopColor="var(--color-presencial)"
+              stopOpacity={0.8}
+            />
+            <stop
+              offset="95%"
+              stopColor="var(--color-presencial)"
+              stopOpacity={0.1}
+            />
+          </linearGradient>
+          <linearGradient id="fillDelivery" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="5%"
+              stopColor="var(--color-delivery)"
+              stopOpacity={0.8}
+            />
+            <stop
+              offset="95%"
+              stopColor="var(--color-delivery)"
+              stopOpacity={0.1}
+            />
+          </linearGradient>
+        </defs>
+        <Area
+          dataKey="delivery"
+          type="natural"
+          fill="url(#fillDelivery)"
+          fillOpacity={0.4}
+          stroke="var(--color-delivery)"
+          stackId="a"
+        />
+        <Area
+          dataKey="presencial"
+          type="natural"
+          fill="url(#fillPresencial)"
+          fillOpacity={0.4}
+          stroke="var(--color-presencial)"
+          stackId="a"
+        />
+        <ChartLegend 
+          content={<ChartLegendContent />}
+        />
+      </AreaChart>
+    </ChartContainer>
+  );
+};
+
+// Componente para gráfico de métodos de pago (mejorado y corregido)
+const PaymentMethodsChart = ({ sales }: { sales: any[] }) => {
+  // Calcular distribución de métodos de pago desde los datos reales
+  const paymentData = useMemo(() => {
+    const methods: Record<string, {count: number, total: number}> = {};
+    
+    sales.forEach(sale => {
+      const method = sale.paymentMethod || 'Otros';
+      if (!methods[method]) {
+        methods[method] = { count: 0, total: 0 };
+      }
+      methods[method].count += 1;
+      methods[method].total += sale.amount;
+    });
+    
+    const totalTransactions = sales.length;
+    const totalAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
+    
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+    
+    return Object.entries(methods)
+      .sort((a, b) => b[1].count - a[1].count)
+      .map(([name, data], index) => ({
+        name,
+        count: data.count,
+        total: data.total,
+        percentage: Math.round((data.count / totalTransactions) * 100),
+        color: COLORS[index % COLORS.length],
+        avgTransaction: data.count > 0 ? data.total / data.count : 0
+      }));
+  }, [sales]);
+
+  const totalTransactions = sales.length;
+  const totalAmount = sales.reduce((sum, sale) => sum + sale.amount, 0);
+
+  // Personalizar leyenda - corregida
+  const renderLegend = (props: any) => {
+    const { payload } = props;
+    return (
+      <div className="flex flex-wrap justify-center gap-3 mt-4 px-2">
+        {payload.map((entry: any, index: number) => {
+          const data = paymentData.find(p => p.name === entry.value);
+          return (
+            <div key={`legend-${index}`} className="flex items-center text-xs bg-muted/40 px-2 py-1 rounded-md">
+              <div 
+                className="w-3 h-3 rounded-full mr-2 flex-shrink-0" 
+                style={{ backgroundColor: entry.color }}
+              />
+              <span className="font-medium mr-1">{entry.value}:</span>
+              <span className="text-muted-foreground">
+                {data?.percentage}% ({data?.count})
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Personalizar tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-background border rounded-md p-3 shadow-md">
+          <p className="font-medium">{data.name}</p>
+          <p className="text-sm">Transacciones: {data.count}</p>
+          <p className="text-sm">Porcentaje: {data.percentage}%</p>
+          <p className="text-sm">Monto total: {formatCurrency(data.total)}</p>
+          <p className="text-sm">Ticket promedio: {formatCurrency(data.avgTransaction)}</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
-    <div className="h-[200px] p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-medium">Métodos de Pago</h3>
-        <span className="text-xs text-muted-foreground">Últimos 30 días</span>
+    <div className="h-[340px] flex flex-col">
+      <div className="text-center mb-2">
+        <h3 className="font-medium">Distribución de Métodos de Pago</h3>
+        <p className="text-xs text-muted-foreground">
+          {totalTransactions} transacciones • {formatCurrency(totalAmount)} total
+        </p>
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        {paymentMethods.map((method, index) => (
-          <div key={index} className="flex items-center">
-            <div className={`w-3 h-3 rounded-full ${method.color} mr-2`}></div>
-            <span className="text-xs">{method.name}</span>
-            <span className="text-xs font-medium ml-auto">{method.value}%</span>
-          </div>
-        ))}
-      </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-blue-500 h-2 rounded-full" 
-          style={{ width: '65%' }}
-        ></div>
+      
+      <div className="flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={paymentData}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={2}
+              dataKey="count"
+              label={({ name, percentage }) => `${percentage}%`}
+              labelLine={false}
+            >
+              {paymentData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <ChartTooltip content={<CustomTooltip />} />
+            <Legend content={renderLegend} />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );
@@ -105,28 +396,25 @@ export default function SalesHistoryPage() {
   const [sales] = useState(salesData.sales);
   const [timeRange, setTimeRange] = useState("month");
 
-  // Calcular métricas
+  // Filtrar ventas según el período de tiempo seleccionado
+  const filteredSales = useMemo(() => {
+    return filterSalesByTimeRange(sales, timeRange);
+  }, [sales, timeRange]);
+
+  // Calcular métricas principales basadas en las ventas filtradas
   const metrics = useMemo(() => {
-    const totalSales = sales.reduce((sum, sale) => sum + sale.amount, 0);
-    const averageSale = sales.length > 0 ? totalSales / sales.length : 0;
-    const completedSales = sales.filter(sale => sale.status === "Completado").length;
-    const deliverySales = sales.filter(sale => sale.orderType === "delivery").length;
-    const pendingSales = sales.filter(sale => sale.status === "Pendiente").length;
-    const cancelledSales = sales.filter(sale => sale.status === "Cancelado").length;
+    const totalSales = filteredSales.reduce((sum, sale) => sum + sale.amount, 0);
+    const averageSale = filteredSales.length > 0 ? totalSales / filteredSales.length : 0;
+    const completedSales = filteredSales.filter(sale => sale.status === "Completado").length;
+    const deliverySales = filteredSales.filter(sale => sale.orderType === "delivery").length;
+    const pendingSales = filteredSales.filter(sale => sale.status === "Pendiente").length;
+    const cancelledSales = filteredSales.filter(sale => sale.status === "Cancelado").length;
     
-    // Encontrar la venta más alta
-    const highestSale = sales.length > 0 
-      ? sales.reduce((max, sale) => sale.amount > max.amount ? sale : max, sales[0])
-      : null;
-
-    // Calcular ventas por categoría (ejemplo)
-    const salesByCategory = [
-      { category: "Electrónicos", value: 42, color: "bg-blue-500" },
-      { category: "Ropa", value: 28, color: "bg-green-500" },
-      { category: "Hogar", value: 15, color: "bg-purple-500" },
-      { category: "Otros", value: 15, color: "bg-gray-500" },
-    ];
-
+    // Calcular porcentajes de crecimiento (simulados para este ejemplo)
+    // En una aplicación real, estos valores vendrían de una comparación con el período anterior
+    const growthTotalSales = 15.2;
+    const growthAverageSale = 5.3;
+    
     return {
       totalSales,
       averageSale,
@@ -134,23 +422,25 @@ export default function SalesHistoryPage() {
       deliverySales,
       pendingSales,
       cancelledSales,
-      totalTransactions: sales.length,
-      highestSale,
-      salesByCategory
+      totalTransactions: filteredSales.length,
+      growthTotalSales,
+      growthAverageSale,
+      deliveryPercentage: filteredSales.length > 0 ? Math.round((deliverySales / filteredSales.length) * 100) : 0
     };
-  }, [sales]);
+  }, [filteredSales]);
 
-  // Formatear montos en bolivianos
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-BO', {
-      style: 'currency',
-      currency: 'BOB',
-      minimumFractionDigits: 2
-    }).format(amount);
+  // Determinar si el crecimiento es positivo o negativo
+  const GrowthIcon = ({ value }: { value: number }) => {
+    if (value > 0) {
+      return <TrendingUp className="h-3 w-3 text-green-600 mr-1" />;
+    } else if (value < 0) {
+      return <TrendingDown className="h-3 w-3 text-red-600 mr-1" />;
+    }
+    return null;
   };
 
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-50">
+    <div className="flex flex-col min-h-screen p-6 bg-background dark:bg-background">
       {/* Header */}
       <div className="flex flex-col gap-4 mb-6">
         <Breadcrumb>
@@ -158,18 +448,17 @@ export default function SalesHistoryPage() {
             <BreadcrumbItem>
               <BreadcrumbLink
                 href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
               >
                 Panel de Control
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator className="text-gray-400" />
+            <BreadcrumbSeparator className="text-gray-400 dark:text-gray-600" />
             <BreadcrumbItem>
               <BreadcrumbLink href="/sales">Ventas</BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator className="text-gray-400 dark:text-gray-600" />
             <BreadcrumbItem>
-              <BreadcrumbPage className="text-sm font-medium text-gray-900">
+              <BreadcrumbPage className="text-sm font-medium text-gray-900 dark:text-gray-100">
                 Historial de Ventas
               </BreadcrumbPage>
             </BreadcrumbItem>
@@ -178,7 +467,7 @@ export default function SalesHistoryPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-semibold text-gray-900">Historial de Ventas</h2>
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Historial de Ventas</h2>
             <p className="text-sm text-muted-foreground mt-1">
               Visualiza y analiza el rendimiento de tus ventas
             </p>
@@ -192,7 +481,6 @@ export default function SalesHistoryPage() {
                 <SelectItem value="day">Hoy</SelectItem>
                 <SelectItem value="week">Esta semana</SelectItem>
                 <SelectItem value="month">Este mes</SelectItem>
-                <SelectItem value="quarter">Este trimestre</SelectItem>
                 <SelectItem value="year">Este año</SelectItem>
               </SelectContent>
             </Select>
@@ -210,6 +498,7 @@ export default function SalesHistoryPage() {
 
       {/* Dashboard Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Ventas Totales */}
         <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ventas Totales</CardTitle>
@@ -220,15 +509,16 @@ export default function SalesHistoryPage() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(metrics.totalSales)}</div>
             <div className="flex items-center mt-1">
-              <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+              <GrowthIcon value={metrics.growthTotalSales} />
               <p className="text-xs text-muted-foreground">
-                +15.2% desde el último {timeRange}
+                {metrics.growthTotalSales > 0 ? '+' : ''}{metrics.growthTotalSales}% desde el último {timeRange}
               </p>
             </div>
           </CardContent>
           <div className="absolute bottom-0 left-0 w-full h-1 bg-blue-500"></div>
         </Card>
 
+        {/* Transacciones */}
         <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Transacciones</CardTitle>
@@ -245,6 +535,7 @@ export default function SalesHistoryPage() {
           <div className="absolute bottom-0 left-0 w-full h-1 bg-green-500"></div>
         </Card>
 
+        {/* Ticket Promedio */}
         <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ticket Promedio</CardTitle>
@@ -255,15 +546,16 @@ export default function SalesHistoryPage() {
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(metrics.averageSale)}</div>
             <div className="flex items-center mt-1">
-              <TrendingUp className="h-3 w-3 text-green-600 mr-1" />
+              <GrowthIcon value={metrics.growthAverageSale} />
               <p className="text-xs text-muted-foreground">
-                +5.3% desde el último {timeRange}
+                {metrics.growthAverageSale > 0 ? '+' : ''}{metrics.growthAverageSale}% desde el último {timeRange}
               </p>
             </div>
           </CardContent>
           <div className="absolute bottom-0 left-0 w-full h-1 bg-purple-500"></div>
         </Card>
 
+        {/* Delivery */}
         <Card className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Delivery</CardTitle>
@@ -274,7 +566,7 @@ export default function SalesHistoryPage() {
           <CardContent>
             <div className="text-2xl font-bold">{metrics.deliverySales}</div>
             <p className="text-xs text-muted-foreground">
-              {sales.length > 0 ? Math.round((metrics.deliverySales / sales.length) * 100) : 0}% de pedidos
+              {metrics.deliveryPercentage}% de pedidos
             </p>
           </CardContent>
           <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500"></div>
@@ -287,17 +579,17 @@ export default function SalesHistoryPage() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Resumen de Ventas</CardTitle>
-              <CardDescription>
-                Tendencia de ventas en el período seleccionado
+              <CardDescription className="text-sm text-muted-foreground pt-2">
+                Tendencia de ventas basada en datos reales
               </CardDescription>
             </div>
             <Badge variant="outline" className="flex items-center">
               <TrendingUp className="h-3 w-3 mr-1 text-green-600" />
-              +15.2%
+              {timeRange === "day" ? "Hoy" : timeRange === "week" ? "Esta semana" : timeRange === "month" ? "Este mes" : "Este año"}
             </Badge>
           </CardHeader>
-          <CardContent>
-            <SalesChart timeRange={timeRange} />
+          <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+            <SalesChart timeRange={timeRange} sales={filteredSales} onTimeRangeChange={setTimeRange} />
           </CardContent>
         </Card>
         
@@ -305,12 +597,9 @@ export default function SalesHistoryPage() {
           <Card>
             <CardHeader>
               <CardTitle>Métodos de Pago</CardTitle>
-              <CardDescription>
-                Distribución de formas de pago
-              </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
-              <PaymentMethodsChart />
+            <CardContent>
+              <PaymentMethodsChart sales={filteredSales} />
             </CardContent>
           </Card>
           
@@ -332,82 +621,17 @@ export default function SalesHistoryPage() {
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Venta Más Alta</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {metrics.highestSale ? (
-              <div className="space-y-2">
-                <div className="text-2xl font-bold">
-                  {formatCurrency(metrics.highestSale.amount)}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Cliente: {metrics.highestSale.client}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  ID: #{metrics.highestSale.id.toString().padStart(4, '0')}
-                </p>
-              </div>
-            ) : (
-              <p className="text-muted-foreground">No hay datos de ventas</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categorías Populares</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {metrics.salesByCategory.map((category, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm">{category.category}</span>
-                  <Badge variant="secondary">{category.value}%</Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Objetivo Mensual</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold">75%</span>
-                <span className="text-sm text-muted-foreground">15,000/20,000 BOB</span>
-              </div>
-              <Progress value={75} className="h-2" />
-              <p className="text-xs text-muted-foreground">+12% respecto al mes anterior</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Sales Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detalle de Ventas</CardTitle>
-          <CardDescription>
-            Lista completa de todas las transacciones
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SalesHistoryTable 
-            sales={sales} 
-            updateSaleStatus={updateSaleStatus}
-          />
-        </CardContent>
-      </Card>
+      <SalesHistoryTable 
+        sales={filteredSales.map(sale => ({
+          ...sale,
+          orderType: sale.orderType === 'delivery' ? 'delivery' as const : 'pickup' as const,
+          products: sale.products.map((product: any) => ({
+            name: product.name,
+            quantity: product.quantity,
+            price: 'price' in product ? Number(product.price) : 0
+          }))
+        }))}
+      />
     </div>
   );
 }

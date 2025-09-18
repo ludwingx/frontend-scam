@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, Check, ChevronLeft, ChevronRight, Filter, Home, Truck } from "lucide-react";
+import { ChevronDown, Check, ChevronLeft, ChevronRight, Filter, Home, Truck, Calendar } from "lucide-react";
 
 // Modificar los textos a una sola palabra
 const ORDER_TYPE_CONFIG = {
@@ -157,7 +157,29 @@ export default function FutureSalesTable({
   };
 
   if (futureSales.length === 0) {
-    return null;
+    return (
+      <div className="flex-1 pb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-xl font-medium font-semibold">
+                Ventas Futuras
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                No hay ventas futuras programadas
+              </p>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+              <Calendar className="h-16 w-16 mb-4 text-gray-300" />
+              <p className="text-lg font-medium">No hay ventas programadas</p>
+              <p className="text-sm text-gray-400">Las ventas futuras aparecerán aquí</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const totalAmount = futureSales.reduce((sum, sale) => sum + sale.amount, 0);
@@ -355,14 +377,47 @@ export default function FutureSalesTable({
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      No hay ventas para mostrar.
+                    <TableCell colSpan={7} className="py-8">
+                      <div className="flex flex-col items-center justify-center text-gray-500">
+                        <Calendar className="h-12 w-12 mb-4 text-gray-300" />
+                        <p className="text-lg font-medium">No se encontraron ventas</p>
+                        <p className="text-sm text-gray-400">Intenta con otros filtros</p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
           </div>
+          
+          {filteredSales.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-2 border-t">
+              <div className="text-sm text-muted-foreground">
+                Mostrando {Math.min(startIndex + 1, filteredSales.length)}-{Math.min(startIndex + rowsPerPage, filteredSales.length)} de {filteredSales.length} ventas
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-sm">
+                  Página {currentPage} de {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
