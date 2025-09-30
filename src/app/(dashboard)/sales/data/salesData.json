@@ -3,21 +3,26 @@
     {
       "id_venta": 1,
       "id_usuario_registro": 1,
-      "id_estado": 1,
-      "fecha_entrega_estimada": "2025-09-18T14:00:00-04:00",
+      "nombre_usuario_registro": "Ludwing",
+      "id_cliente": 1,
+      "nombre_cliente": "Juan Perez",
+      "fecha_entrega_estimada": "2025-09-30T14:00:00-04:00",
+      "fecha_entrega_real": "2025-09-30T14:00:00-05:00",
       "observaciones": "Pedido para fiesta infantil, entregar por la tarde",
-      "fecha_registro": "2025-09-18T13:45:20-04:00",
-      "fecha_actualizacion": "2025-09-18T13:45:20-04:00",
+      "fecha_registro": "2025-09-30T13:45:20-04:00",
+      "fecha_actualizacion": "2025-09-30T13:45:20-04:00",
+      "id_estado_entrega": 1,
+      "nombre_estado_entrega": "Pendiente",
       "entrega": {
         "id_entrega": 1,
         "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
         "direccion_entrega": "Av. Siempre Viva 742, Planta Baja",
         "nombre_receptor": "Ana Valdez",
         "telefono_receptor": "77712345",
         "costo_delivery": 15.00,
         "estado_delivery": "Pendiente",
         "nombre_sucursal": null,
-        "fecha_recojo_programada": null,
         "observaciones": "Llamar antes de llegar",
         "costo_total": 415.00
       },
@@ -25,23 +30,23 @@
         {
           "id_detalle": 1,
           "id_producto": 5,
+          "sabor_producto": "Chocolate",
+          "tamaño_producto": "XL",
+          "precio_producto": 206.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
           "cantidad": 1,
           "precio_unitario_venta": 150.00,
           "subtotal": 160.00,
           "frase": {
             "frase": "Feliz Cumpleaños, Campeón!",
-            "costo_frase": 10.00
-          }
-        },
-        {
-          "id_detalle": 2,
-          "id_producto": 8,
-          "cantidad": 1,
-          "precio_unitario_venta": 220.00,
-          "subtotal": 245.00,
+            "costo_frase": 10.00,
+            "comentario_frase": "Además de la frase, dibujar un símbolo sencillo como lo pidió el cliente"
+          },
           "personalizacion": {
             "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
-            "costo_personalizacion": 25.00
+            "costo_personalizacion": 25.00,
+            "comentario_personalizacion": "Usar colores pastel y agregar borde dorado"
           }
         }
       ],
@@ -49,132 +54,899 @@
     },
     {
       "id_venta": 2,
-      "id_usuario_registro": 3,
-      "id_estado": 2,
-      "fecha_entrega_estimada": "2025-09-18T10:30:00-04:00",
-      "observaciones": "Sin gluten, contacto celíaco",
-      "fecha_registro": "2025-09-19T09:15:33-04:00",
-      "fecha_actualizacion": "2025-09-19T11:20:10-04:00",
+      "id_usuario_registro": 2,
+      "nombre_usuario_registro": "María",
+      "id_cliente": 2,
+      "nombre_cliente": "Carlos Mendoza",
+      "fecha_entrega_estimada": "2025-09-30T16:30:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta para aniversario de bodas, entregar en punto",
+      "fecha_registro": "2025-09-29T10:20:15-04:00",
+      "fecha_actualizacion": "2025-09-29T10:20:15-04:00",
+      "id_estado_entrega": 2,
+      "nombre_estado_entrega": "En preparación",
       "entrega": {
         "id_entrega": 2,
         "id_tipo_entrega": 2,
+        "nombre_tipo_entrega": "Recojo en tienda",
         "direccion_entrega": null,
-        "nombre_receptor": "Carlos Méndez",
-        "telefono_receptor": "77798765",
+        "nombre_receptor": "Carlos Mendoza",
+        "telefono_receptor": "77754321",
         "costo_delivery": 0.00,
-        "estado_delivery": "Recogido",
-        "nombre_sucursal": "Sucursal Centro",
-        "fecha_recojo_programada": "2025-09-12T10:30:00-04:00",
-        "observaciones": "Pago con tarjeta",
-        "costo_total": 285.50
+        "estado_delivery": "No aplica",
+        "nombre_sucursal": "Sucursal Central",
+        "observaciones": "Cliente recogerá a las 16:30",
+        "costo_total": 280.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 2,
+          "id_producto": 3,
+          "sabor_producto": "Red Velvet",
+          "tamaño_producto": "Mediano",
+          "precio_producto": 180.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 180.00,
+          "subtotal": 200.00,
+          "frase": {
+            "frase": "25 años juntos, nuestro mejor capítulo",
+            "costo_frase": 15.00,
+            "comentario_frase": "Letra cursiva elegante"
+          },
+          "personalizacion": {
+            "imagen_base64": null,
+            "costo_personalizacion": 5.00,
+            "comentario_personalizacion": "Decorar con rosas rojas de fondant"
+          }
+        }
+      ],
+      "total_general": 280.00
+    },
+    {
+      "id_venta": 3,
+      "id_usuario_registro": 3,
+      "nombre_usuario_registro": "Roberto",
+      "id_cliente": 3,
+      "nombre_cliente": "Empresa Tech Solutions",
+      "fecha_entrega_estimada": "2025-09-30T09:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Pedido corporativo para desayuno de equipo",
+      "fecha_registro": "2025-09-28T16:30:00-04:00",
+      "fecha_actualizacion": "2025-09-28T16:30:00-04:00",
+      "id_estado_entrega": 3,
+      "nombre_estado_entrega": "Listo para recoger",
+      "entrega": {
+        "id_entrega": 3,
+        "id_tipo_entrega": 2,
+        "nombre_tipo_entrega": "Recojo en tienda",
+        "direccion_entrega": null,
+        "nombre_receptor": "Laura Gutierrez",
+        "telefono_receptor": "77788899",
+        "costo_delivery": 0.00,
+        "estado_delivery": "No aplica",
+        "nombre_sucursal": "Sucursal Norte",
+        "observaciones": "Pedido para 15 personas",
+        "costo_total": 650.00
       },
       "detalles": [
         {
           "id_detalle": 3,
-          "id_producto": 12,
+          "id_producto": 7,
+          "sabor_producto": "Oreo",
+          "tamaño_producto": "Grande",
+          "precio_producto": 220.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
           "cantidad": 2,
-          "precio_unitario_venta": 120.00,
-          "subtotal": 240.00,
+          "precio_unitario_venta": 220.00,
+          "subtotal": 440.00,
           "frase": {
-            "frase": "Felicidades por tu graduación",
-            "costo_frase": 5.00
+            "frase": "Innovación y Trabajo en Equipo",
+            "costo_frase": 20.00,
+            "comentario_frase": "Estilo corporativo minimalista"
+          },
+          "personalizacion": {
+            "imagen_base64": null,
+            "costo_personalizacion": 0.00,
+            "comentario_personalizacion": "Sin personalización adicional"
           }
         },
         {
           "id_detalle": 4,
-          "id_producto": 3,
+          "id_producto": 4,
+          "sabor_producto": "Zanahoria",
+          "tamaño_producto": "Mediano",
+          "precio_producto": 190.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
           "cantidad": 1,
-          "precio_unitario_venta": 40.50,
-          "subtotal": 40.50,
+          "precio_unitario_venta": 190.00,
+          "subtotal": 190.00,
+          "frase": null,
           "personalizacion": null
         }
       ],
-      "total_general": 285.50
+      "total_general": 650.00
     },
     {
-      "id_venta": 3,
-      "id_usuario_registro": 2,
-      "id_estado": 3,
-      "fecha_entrega_estimada": "2025-09-18T18:00:00-04:00",
-      "observaciones": "Decoración con temática superheroes",
-      "fecha_registro": "2025-09-17T16:20:44-04:00",
-      "fecha_actualizacion": "2025-09-18T09:10:15-04:00",
+      "id_venta": 4,
+      "id_usuario_registro": 1,
+      "nombre_usuario_registro": "Ludwing",
+      "id_cliente": 4,
+      "nombre_cliente": "María Elena Torres",
+      "fecha_entrega_estimada": "2025-10-01T18:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta para graduación universitaria",
+      "fecha_registro": "2025-09-27T11:15:30-04:00",
+      "fecha_actualizacion": "2025-09-27T11:15:30-04:00",
+      "id_estado_entrega": 4,
+      "nombre_estado_entrega": "En camino",
       "entrega": {
-        "id_entrega": 3,
+        "id_entrega": 4,
         "id_tipo_entrega": 1,
-        "direccion_entrega": "Calle Falsa 123, Edificio B",
-        "nombre_receptor": "María López",
-        "telefono_receptor": "77755678",
-        "costo_delivery": 20.00,
-        "estado_delivery": "Entregado",
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Calle Beni #1234, Urb. Los Lotes",
+        "nombre_receptor": "Roberto Torres",
+        "telefono_receptor": "77745678",
+        "costo_delivery": 25.00,
+        "estado_delivery": "En ruta",
         "nombre_sucursal": null,
-        "fecha_recojo_programada": null,
-        "observaciones": "Timbre azul",
-        "costo_total": 630.75
+        "observaciones": "Casa color amarillo, portón negro",
+        "costo_total": 520.00
       },
       "detalles": [
         {
           "id_detalle": 5,
-          "id_producto": 7,
+          "id_producto": 6,
+          "sabor_producto": "Tres Leches",
+          "tamaño_producto": "XL",
+          "precio_producto": 250.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
           "cantidad": 1,
-          "precio_unitario_venta": 350.00,
-          "subtotal": 380.00,
+          "precio_unitario_venta": 250.00,
+          "subtotal": 275.00,
+          "frase": {
+            "frase": "¡Felicidades Ingeniera!",
+            "costo_frase": 15.00,
+            "comentario_frase": "Incluir símbolo de la universidad"
+          },
           "personalizacion": {
-            "imagen_base64": "data:image/png;base64,iVBORw0KGgoAAA...",
-            "costo_personalizacion": 30.00
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 30.00,
+            "comentario_personalizacion": "Foto del graduado en chocolate"
           }
         },
         {
           "id_detalle": 6,
-          "id_producto": 15,
-          "cantidad": 3,
-          "precio_unitario_venta": 75.25,
-          "subtotal": 225.75,
-          "frase": null
+          "id_producto": 8,
+          "sabor_producto": "Fresa",
+          "tamaño_producto": "Pequeño",
+          "precio_producto": 120.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 120.00,
+          "subtotal": 120.00,
+          "frase": null,
+          "personalizacion": null
         }
       ],
-      "total_general": 630.75
+      "total_general": 520.00
     },
     {
-      "id_venta": 4,
-      "id_usuario_registro": 5,
-      "id_estado": 4,
-      "fecha_entrega_estimada": "2025-09-18T12:00:00-04:00",
-      "observaciones": "Cancelado por cliente",
-      "fecha_registro": "2025-09-18T14:30:00-04:00",
-      "fecha_actualizacion": "2025-09-19T08:45:22-04:00",
+      "id_venta": 5,
+      "id_usuario_registro": 2,
+      "nombre_usuario_registro": "María",
+      "id_cliente": 5,
+      "nombre_cliente": "Colegio Santa María",
+      "fecha_entrega_estimada": "2025-10-03T12:00:00-04:00",
+      "fecha_entrega_real": "2025-10-03T11:45:00-04:00",
+      "observaciones": "Pedido para evento escolar - Día del Estudiante",
+      "fecha_registro": "2025-09-26T14:20:00-04:00",
+      "fecha_actualizacion": "2025-10-03T11:50:00-04:00",
+      "id_estado_entrega": 5,
+      "nombre_estado_entrega": "Entregado",
       "entrega": {
-        "id_entrega": 4,
+        "id_entrega": 5,
         "id_tipo_entrega": 1,
-        "direccion_entrega": "Av. Central 456",
-        "nombre_receptor": null,
-        "telefono_receptor": null,
-        "costo_delivery": 18.00,
-        "estado_delivery": "Cancelado",
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Av. Cristo Redentor #567, Colegio Santa María",
+        "nombre_receptor": "Directora Elena Rojas",
+        "telefono_receptor": "77733445",
+        "costo_delivery": 30.00,
+        "estado_delivery": "Entregado",
         "nombre_sucursal": null,
-        "fecha_recojo_programada": null,
-        "observaciones": "Reembolso solicitado",
-        "costo_total": 0.00
+        "observaciones": "Entregar en dirección del colegio",
+        "costo_total": 850.00
       },
       "detalles": [
         {
           "id_detalle": 7,
           "id_producto": 1,
-          "cantidad": 1,
-          "precio_unitario_venta": 10.00,
-          "subtotal": 10.00,
-          "frase": null
-        },
+          "sabor_producto": "Vainilla",
+          "tamaño_producto": "XL",
+          "precio_producto": 200.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 3,
+          "precio_unitario_venta": 200.00,
+          "subtotal": 600.00,
+          "frase": {
+            "frase": "¡Feliz Día del Estudiante 2025!",
+            "costo_frase": 25.00,
+            "comentario_frase": "Colores del colegio: azul y blanco"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 45.00,
+            "comentario_personalizacion": "Escudo del colegio en cada torta"
+          }
+        }
+      ],
+      "total_general": 850.00
+    },
+    {
+      "id_venta": 6,
+      "id_usuario_registro": 3,
+      "nombre_usuario_registro": "Roberto",
+      "id_cliente": 6,
+      "nombre_cliente": "Ana Patricia Lopez",
+      "fecha_entrega_estimada": "2025-10-03T15:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta para baby shower, tema de ositos",
+      "fecha_registro": "2025-09-25T09:45:00-04:00",
+      "fecha_actualizacion": "2025-09-25T09:45:00-04:00",
+      "id_estado_entrega": 6,
+      "nombre_estado_entrega": "Cancelado",
+      "entrega": {
+        "id_entrega": 6,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Calle Mato Grosso #789, B. Los Chacos",
+        "nombre_receptor": "Carlos Lopez",
+        "telefono_receptor": "77766778",
+        "costo_delivery": 20.00,
+        "estado_delivery": "Cancelado",
+        "nombre_sucursal": null,
+        "observaciones": "Cancelado por cliente - cambio de fecha",
+        "costo_total": 320.00
+      },
+      "detalles": [
         {
           "id_detalle": 8,
           "id_producto": 2,
-          "cantidad": 2,
-          "precio_unitario_venta": 20.00,
-          "subtotal": 40.00,
-          "frase": null
+          "sabor_producto": "Chocolate Blanco",
+          "tamaño_producto": "Grande",
+          "precio_producto": 210.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 210.00,
+          "subtotal": 230.00,
+          "frase": {
+            "frase": "Bienvenido bebé!",
+            "costo_frase": 12.00,
+            "comentario_frase": "Tema azul celeste con ositos"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 18.00,
+            "comentario_personalizacion": "Ecografía del bebé en azúcar"
+          }
         }
       ],
-      "total_general": 0.00
+      "total_general": 320.00
+    },
+    {
+      "id_venta": 7,
+      "id_usuario_registro": 1,
+      "nombre_usuario_registro": "Ludwing",
+      "id_cliente": 7,
+      "nombre_cliente": "Restaurant La Casona",
+      "fecha_entrega_estimada": "2025-10-04T08:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Pedido regular para restaurant - tortas individuales",
+      "fecha_registro": "2025-09-24T17:30:00-04:00",
+      "fecha_actualizacion": "2025-09-24T17:30:00-04:00",
+      "id_estado_entrega": 2,
+      "nombre_estado_entrega": "En preparación",
+      "entrega": {
+        "id_entrega": 7,
+        "id_tipo_entrega": 2,
+        "nombre_tipo_entrega": "Recojo en tienda",
+        "direccion_entrega": null,
+        "nombre_receptor": "Chef Andrés",
+        "telefono_receptor": "77788990",
+        "costo_delivery": 0.00,
+        "estado_delivery": "No aplica",
+        "nombre_sucursal": "Sucursal Central",
+        "observaciones": "Recogerá el personal del restaurant a las 8:00 AM",
+        "costo_total": 480.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 9,
+          "id_producto": 9,
+          "sabor_producto": "Limón",
+          "tamaño_producto": "Individual",
+          "precio_producto": 25.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 12,
+          "precio_unitario_venta": 25.00,
+          "subtotal": 300.00,
+          "frase": null,
+          "personalizacion": null
+        },
+        {
+          "id_detalle": 10,
+          "id_producto": 10,
+          "sabor_producto": "Queso",
+          "tamaño_producto": "Individual",
+          "precio_producto": 28.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 6,
+          "precio_unitario_venta": 28.00,
+          "subtotal": 168.00,
+          "frase": null,
+          "personalizacion": null
+        }
+      ],
+      "total_general": 480.00
+    },
+    {
+      "id_venta": 8,
+      "id_usuario_registro": 2,
+      "nombre_usuario_registro": "María",
+      "id_cliente": 8,
+      "nombre_cliente": "David Rodriguez",
+      "fecha_entrega_estimada": "2025-10-04T19:30:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Sorpresa de cumpleaños - entregar discretamente",
+      "fecha_registro": "2025-09-23T15:20:00-04:00",
+      "fecha_actualizacion": "2025-09-23T15:20:00-04:00",
+      "id_estado_entrega": 1,
+      "nombre_estado_entrega": "Pendiente",
+      "entrega": {
+        "id_entrega": 8,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Calle Sucre #456, Edificio Las Palmas",
+        "nombre_receptor": "Sofia Martinez",
+        "telefono_receptor": "77711223",
+        "costo_delivery": 18.00,
+        "estado_delivery": "Pendiente",
+        "nombre_sucursal": null,
+        "observaciones": "Sorpresa - no mencionar nada por teléfono",
+        "costo_total": 195.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 11,
+          "id_producto": 5,
+          "sabor_producto": "Chocolate",
+          "tamaño_producto": "Mediano",
+          "precio_producto": 160.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 160.00,
+          "subtotal": 177.00,
+          "frase": {
+            "frase": "¡Te amo! Sorpresa",
+            "costo_frase": 8.00,
+            "comentario_frase": "Letras con corazones"
+          },
+          "personalizacion": null
+        }
+      ],
+      "total_general": 195.00
+    },
+    {
+      "id_venta": 9,
+      "id_usuario_registro": 3,
+      "nombre_usuario_registro": "Roberto",
+      "id_cliente": 9,
+      "nombre_cliente": "Centro Médico San Lucas",
+      "fecha_entrega_estimada": "2025-10-05T10:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Pedido para celebración de aniversario del centro médico",
+      "fecha_registro": "2025-09-22T11:10:00-04:00",
+      "fecha_actualizacion": "2025-09-22T11:10:00-04:00",
+      "id_estado_entrega": 3,
+      "nombre_estado_entrega": "Listo para recoger",
+      "entrega": {
+        "id_entrega": 9,
+        "id_tipo_entrega": 2,
+        "nombre_tipo_entrega": "Recojo en tienda",
+        "direccion_entrega": null,
+        "nombre_receptor": "Dr. Miguel Angel",
+        "telefono_receptor": "77744556",
+        "costo_delivery": 0.00,
+        "estado_delivery": "No aplica",
+        "nombre_sucursal": "Sucursal Sur",
+        "observaciones": "Pedido para 50 personas",
+        "costo_total": 1200.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 12,
+          "id_producto": 1,
+          "sabor_producto": "Vainilla",
+          "tamaño_producto": "XL",
+          "precio_producto": 200.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 4,
+          "precio_unitario_venta": 200.00,
+          "subtotal": 800.00,
+          "frase": {
+            "frase": "15 años de Servicio y Excelencia",
+            "costo_frase": 30.00,
+            "comentario_frase": "Incluir símbolo médico"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 70.00,
+            "comentario_personalizacion": "Logo del centro médico en cada torta"
+          }
+        },
+        {
+          "id_detalle": 13,
+          "id_producto": 3,
+          "sabor_producto": "Red Velvet",
+          "tamaño_producto": "Grande",
+          "precio_producto": 220.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 220.00,
+          "subtotal": 220.00,
+          "frase": null,
+          "personalizacion": null
+        }
+      ],
+      "total_general": 1200.00
+    },
+    {
+      "id_venta": 10,
+      "id_usuario_registro": 1,
+      "nombre_usuario_registro": "Ludwing",
+      "id_cliente": 10,
+      "nombre_cliente": "Boda Laura y Miguel",
+      "fecha_entrega_estimada": "2025-10-05T16:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta de bodas premium - entrega en salón de eventos",
+      "fecha_registro": "2025-09-21T10:00:00-04:00",
+      "fecha_actualizacion": "2025-09-21T10:00:00-04:00",
+      "id_estado_entrega": 2,
+      "nombre_estado_entrega": "En preparación",
+      "entrega": {
+        "id_entrega": 10,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Salón de Eventos 'El Jardín', Av. Las Bahías",
+        "nombre_receptor": "Wedding Planner - Carolina",
+        "telefono_receptor": "77799887",
+        "costo_delivery": 50.00,
+        "estado_delivery": "Programado",
+        "nombre_sucursal": null,
+        "observaciones": "Entregar directamente al wedding planner, manejar con cuidado",
+        "costo_total": 1800.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 14,
+          "id_producto": 11,
+          "sabor_producto": "Torta Nupcial Premium",
+          "tamaño_producto": "4 Pisos",
+          "precio_producto": 1500.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 1500.00,
+          "subtotal": 1550.00,
+          "frase": {
+            "frase": "Laura & Miguel - Por siempre",
+            "costo_frase": 50.00,
+            "comentario_frase": "Letras doradas sobre fondo blanco"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 100.00,
+            "comentario_personalizacion": "Foto de la pareja en azúcar, diseño floral personalizado"
+          }
+        }
+      ],
+      "total_general": 1800.00
+    },
+    {
+      "id_venta": 10,
+      "id_usuario_registro": 2,
+      "nombre_usuario_registro": "María",
+      "id_cliente": 8,
+      "nombre_cliente": "Cafetería El Buen Sabor",
+      "fecha_entrega_estimada": "2025-09-30T10:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Pedido semanal de pasteles",
+      "fecha_registro": "2025-09-29T16:20:00-04:00",
+      "fecha_actualizacion": "2025-09-29T16:20:00-04:00",
+      "id_estado_entrega": 3,
+      "nombre_estado_entrega": "Listo para recoger",
+      "entrega": {
+        "id_entrega": 8,
+        "id_tipo_entrega": 2,
+        "nombre_tipo_entrega": "Recojo en tienda",
+        "direccion_entrega": null,
+        "nombre_receptor": "Sofía Méndez",
+        "telefono_receptor": "77711223",
+        "costo_delivery": 0.00,
+        "estado_delivery": "No aplica",
+        "nombre_sucursal": "Sucursal Central",
+        "observaciones": "Pedido recurrente de los lunes",
+        "costo_total": 420.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 11,
+          "id_producto": 3,
+          "sabor_producto": "Red Velvet",
+          "tamaño_producto": "Grande",
+          "precio_producto": 220.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 220.00,
+          "subtotal": 220.00,
+          "frase": null,
+          "personalizacion": null
+        },
+        {
+          "id_detalle": 12,
+          "id_producto": 4,
+          "sabor_producto": "Zanahoria",
+          "tamaño_producto": "Mediano",
+          "precio_producto": 190.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 190.00,
+          "subtotal": 190.00,
+          "frase": null,
+          "personalizacion": null
+        }
+      ],
+      "total_general": 420.00
+    },
+    {
+      "id_venta": 11,
+      "id_usuario_registro": 3,
+      "nombre_usuario_registro": "Roberto",
+      "id_cliente": 9,
+      "nombre_cliente": "David Rojas",
+      "fecha_entrega_estimada": "2025-09-30T13:30:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta para cumpleaños sorpresa",
+      "fecha_registro": "2025-09-29T18:15:00-04:00",
+      "fecha_actualizacion": "2025-09-29T18:15:00-04:00",
+      "id_estado_entrega": 2,
+      "nombre_estado_entrega": "En preparación",
+      "entrega": {
+        "id_entrega": 9,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Calle Murillo #456, Zona Sur",
+        "nombre_receptor": "Carolina Rojas",
+        "telefono_receptor": "77744556",
+        "costo_delivery": 20.00,
+        "estado_delivery": "Pendiente",
+        "nombre_sucursal": null,
+        "observaciones": "Llamar antes de llegar para confirmar dirección",
+        "costo_total": 340.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 13,
+          "id_producto": 5,
+          "sabor_producto": "Chocolate",
+          "tamaño_producto": "Grande",
+          "precio_producto": 220.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 220.00,
+          "subtotal": 240.00,
+          "frase": {
+            "frase": "¡Feliz Cumpleaños Carlos!",
+            "costo_frase": 15.00,
+            "comentario_frase": "¡Sorpresa!"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 25.00,
+            "comentario_personalizacion": "Foto del festejado"
+          }
+        }
+      ],
+      "total_general": 340.00
+    },
+    {
+      "id_venta": 12,
+      "id_usuario_registro": 1,
+      "nombre_usuario_registro": "Ludwing",
+      "id_cliente": 10,
+      "nombre_cliente": "Oficinas TechCorp",
+      "fecha_entrega_estimada": "2025-09-30T15:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Pedido para reunión de equipo",
+      "fecha_registro": "2025-09-30T09:30:00-04:00",
+      "fecha_actualizacion": "2025-09-30T09:30:00-04:00",
+      "id_estado_entrega": 1,
+      "nombre_estado_entrega": "Pendiente",
+      "entrega": {
+        "id_entrega": 10,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Av. San Martín #789, Piso 5, Oficina 502",
+        "nombre_receptor": "Recepción TechCorp",
+        "telefono_receptor": "77799887",
+        "costo_delivery": 25.00,
+        "estado_delivery": "Pendiente",
+        "nombre_sucursal": null,
+        "observaciones": "Dejar en recepción con el guardia de seguridad",
+        "costo_total": 625.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 14,
+          "id_producto": 9,
+          "sabor_producto": "Limón",
+          "tamaño_producto": "Individual",
+          "precio_producto": 25.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 15,
+          "precio_unitario_venta": 25.00,
+          "subtotal": 375.00,
+          "frase": null,
+          "personalizacion": null
+        },
+        {
+          "id_detalle": 15,
+          "id_producto": 10,
+          "sabor_producto": "Queso",
+          "tamaño_producto": "Individual",
+          "precio_producto": 28.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 8,
+          "precio_unitario_venta": 28.00,
+          "subtotal": 224.00,
+          "frase": {
+            "frase": "TechCorp 2025",
+            "costo_frase": 10.00,
+            "comentario_frase": "Logo de la empresa"
+          },
+          "personalizacion": null
+        }
+      ],
+      "total_general": 625.00
+    },
+    {
+      "id_venta": 17,
+      "id_usuario_registro": 2,
+      "nombre_usuario_registro": "María",
+      "id_cliente": 11,
+      "nombre_cliente": "Ana Valeria Suárez",
+      "fecha_entrega_estimada": "2025-09-30T17:30:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta para aniversario de bodas",
+      "fecha_registro": "2025-09-30T11:45:00-04:00",
+      "fecha_actualizacion": "2025-09-30T11:45:00-04:00",
+      "id_estado_entrega": 1,
+      "nombre_estado_entrega": "Pendiente",
+      "entrega": {
+        "id_entrega": 11,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Calle Junín #321, Zona Central",
+        "nombre_receptor": "Diego Suárez",
+        "telefono_receptor": "77733445",
+        "costo_delivery": 15.00,
+        "estado_delivery": "Pendiente",
+        "nombre_sucursal": null,
+        "observaciones": "Entregar antes de las 18:00 para la cena",
+        "costo_total": 385.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 18,
+          "id_producto": 6,
+          "sabor_producto": "Tres Leches",
+          "tamaño_producto": "Grande",
+          "precio_producto": 230.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 230.00,
+          "subtotal": 260.00,
+          "frase": {
+            "frase": "10 años juntos",
+            "costo_frase": 20.00,
+            "comentario_frase": "Con corazones y la fecha de boda"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 30.00,
+            "comentario_personalizacion": "Foto de la boda"
+          }
+        },
+        {
+          "id_detalle": 19,
+          "id_producto": 7,
+          "sabor_producto": "Oreo",
+          "tamaño_producto": "Pequeño",
+          "precio_producto": 80.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 80.00,
+          "subtotal": 80.00,
+          "frase": null,
+          "personalizacion": null
+        }
+      ],
+      "total_general": 385.00
+    },
+    {
+      "id_venta": 16,
+      "id_usuario_registro": 1,
+      "nombre_usuario_registro": "Ludwing",
+      "id_cliente": 11,
+      "nombre_cliente": "Restaurante El Fogón",
+      "fecha_entrega_estimada": "2025-10-01T10:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Pedido semanal de postres",
+      "fecha_registro": "2025-09-30T08:15:00-04:00",
+      "fecha_actualizacion": "2025-09-30T08:15:00-04:00",
+      "id_estado_entrega": 2,
+      "nombre_estado_entrega": "En preparación",
+      "entrega": {
+        "id_entrega": 16,
+        "id_tipo_entrega": 2,
+        "nombre_tipo_entrega": "Recojo en tienda",
+        "direccion_entrega": null,
+        "nombre_receptor": "Chef Marcelo",
+        "telefono_receptor": "77711223",
+        "costo_delivery": 0.00,
+        "estado_delivery": "No aplica",
+        "nombre_sucursal": "Sucursal Central",
+        "observaciones": "Recogerán a las 10:00 AM",
+        "costo_total": 725.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 20,
+          "id_producto": 9,
+          "sabor_producto": "Limón",
+          "tamaño_producto": "Individual",
+          "precio_producto": 25.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 15,
+          "precio_unitario_venta": 25.00,
+          "subtotal": 375.00,
+          "frase": null,
+          "personalizacion": null
+        },
+        {
+          "id_detalle": 21,
+          "id_producto": 10,
+          "sabor_producto": "Queso",
+          "tamaño_producto": "Individual",
+          "precio_producto": 28.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 10,
+          "precio_unitario_venta": 28.00,
+          "subtotal": 280.00,
+          "frase": null,
+          "personalizacion": null
+        },
+        {
+          "id_detalle": 22,
+          "id_producto": 1,
+          "sabor_producto": "Vainilla",
+          "tamaño_producto": "Mediano",
+          "precio_producto": 140.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 70.00,
+          "subtotal": 70.00,
+          "frase": {
+            "frase": "El Fogón - Especial del Chef",
+            "costo_frase": 0.00,
+            "comentario_frase": "Solo texto simple"
+          },
+          "personalizacion": null
+        }
+      ],
+      "total_general": 725.00
+    },
+    {
+      "id_venta": 17,
+      "id_usuario_registro": 2,
+      "nombre_usuario_registro": "María",
+      "id_cliente": 12,
+      "nombre_cliente": "Claudia Ríos",
+      "fecha_entrega_estimada": "2025-10-02T17:00:00-04:00",
+      "fecha_entrega_real": null,
+      "observaciones": "Torta para despedida de soltera - tema de viajes",
+      "fecha_registro": "2025-09-30T11:20:00-04:00",
+      "fecha_actualizacion": "2025-09-30T11:20:00-04:00",
+      "id_estado_entrega": 1,
+      "nombre_estado_entrega": "Pendiente",
+      "entrega": {
+        "id_entrega": 17,
+        "id_tipo_entrega": 1,
+        "nombre_tipo_entrega": "Delivery",
+        "direccion_entrega": "Calle Murillo #456, Zona Sur",
+        "nombre_receptor": "Valentina Ríos",
+        "telefono_receptor": "77799887",
+        "costo_delivery": 20.00,
+        "estado_delivery": "Pendiente",
+        "nombre_sucursal": null,
+        "observaciones": "Timbre blanco con nombre 'Ríos'",
+        "costo_total": 420.00
+      },
+      "detalles": [
+        {
+          "id_detalle": 23,
+          "id_producto": 6,
+          "sabor_producto": "Tres Leches",
+          "tamaño_producto": "Grande",
+          "precio_producto": 220.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 220.00,
+          "subtotal": 240.00,
+          "frase": {
+            "frase": "¡Aventúrate en el amor!",
+            "costo_frase": 15.00,
+            "comentario_frase": "Estilo bohemio con letras doradas"
+          },
+          "personalizacion": {
+            "imagen_base64": "data:image/jpeg;base64,/9j/4AAQ...",
+            "costo_personalizacion": 35.00,
+            "comentario_personalizacion": "Siluetas de maletas y pasaportes en fondant"
+          }
+        },
+        {
+          "id_detalle": 24,
+          "id_producto": 11,
+          "sabor_producto": "Cupcakes Variados",
+          "tamaño_producto": "Paquete x12",
+          "precio_producto": 150.00,
+          "id_negocio": 1,
+          "nombre_negocio": "Mil Sabores",
+          "cantidad": 1,
+          "precio_unitario_venta": 150.00,
+          "subtotal": 150.00,
+          "frase": null,
+          "personalizacion": {
+            "imagen_base64": null,
+            "costo_personalizacion": 10.00,
+            "comentario_personalizacion": "Decoración temática de viajes"
+          }
+        }
+      ],
+      "total_general": 420.00
     }
   ]
 }

@@ -21,7 +21,11 @@ import {
   UserCog,
   Users,
   Wheat,
-  Warehouse
+  Warehouse,
+  ChartLine,
+  CalendarDays,
+  Settings,
+  ChartNoAxesCombined
 } from "lucide-react"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
@@ -165,7 +169,50 @@ const data = {
           icon: Building
         },
       ]
+    },
+    {
+      title: "Marketing",
+      url: "/marketing",
+      icon: ChartNoAxesCombined,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/marketing",
+          icon: ChartLine
+        },
+        {
+          title: "Configuración",
+          url: "/marketing/settings",
+          icon: Settings
+        },
+        {
+          title: "Plan de Marketing",
+          url: "/marketing/marketing-plan",
+          icon: CalendarDays
+        },
+        {
+          title: "Ideas de Contenido",
+          url: "/marketing/content-ideas",
+          icon: ScanText
+        },
+        {
+          title: "Calendario de Publicaciones",
+          url: "/marketing/calendar",
+          icon: CalendarDays
+        },
+        {
+          title: "Gestión de Campañas",
+          url: "/marketing/campaigns",
+          icon: Briefcase
+        },
+        {
+          title: "Analítica & Reportes",
+          url: "/marketing/analytics",
+          icon: ChartLine
+        }
+      ]
     }
+    
   ],
 }
 
