@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -33,141 +33,20 @@ import {
   ShoppingCart,
   Eye,
   Calendar,
-  User,
+  Users,
   Package,
   DollarSign,
   MapPin,
-  Phone,
   MessageCircle,
   ImageIcon,
   ChevronDown,
-  Users,
   Search,
+  RefreshCw,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-
-// Mapeo de estados
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En cocina", 
-  3: "Listo para recoger",
-  4: "En camino",
-  5: "Entregado",
-  6: "Cancelado"
-};
-
-// Colores para los estados (versiones más claras para fondos)
-const STATUS_BG_COLORS = {
-  1: "bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800",
-  2: "bg-orange-100 hover:bg-orange-200 border-orange-300 text-orange-800",
-  3: "bg-purple-100 hover:bg-purple-200 border-purple-300 text-purple-800",
-  4: "bg-indigo-100 hover:bg-indigo-200 border-indigo-300 text-indigo-800",
-  5: "bg-green-100 hover:bg-green-200 border-green-300 text-green-800",
-  6: "bg-red-100 hover:bg-red-200 border-red-300 text-red-800",
-};
-
-const DELIVERY_TYPE_MAP: Record<number, string> = {
-  1: "Delivery",
-  2: "Recoger en tienda"
-};
-
-const STATUS_OPTIONS = [
-  { id: "1", label: "Pendiente" },
-  { id: "2", label: "En cocina" },
-  { id: "3", label: "Listo para recoger" },
-  { id: "4", label: "En camino" },
-  { id: "5", label: "Entregado" },
-  { id: "6", label: "Cancelado" },
-];
-
-interface ProductDetail {
-  id_detalle: number;
-  id_producto: number;
-  sabor_producto: string;
-  tamaño_producto: string;
-  precio_producto: number;
-  id_negocio: number;
-  nombre_negocio: string;
-  cantidad: number;
-  precio_unitario_venta: number;
-  subtotal: number;
-  frase?: {
-    frase: string;
-    costo_frase: number;
-    comentario_frase: string;
-  };
-  personalizacion?: {
-    imagen_base64: string;
-    costo_personalizacion: number;
-    comentario_personalizacion: string;
-  };
-}
-
-interface DeliveryInfo {
-  id_entrega: number;
-  id_tipo_entrega: number;
-  nombre_tipo_entrega: string;
-  direccion_entrega: string;
-  nombre_receptor: string;
-  telefono_receptor: string;
-  costo_delivery: number;
-  estado_delivery: string;
-  nombre_sucursal: string | null;
-  observaciones: string;
-  costo_total: number;
-}
-
-interface Sale {
-  id_venta: number;
-  id_usuario_registro: number;
-  nombre_usuario_registro: string;
-  id_cliente: number;
-  nombre_cliente: string;
-  fecha_entrega_estimada: string;
-  fecha_entrega_real: string | null;
-  observaciones: string;
-  fecha_registro: string;
-  fecha_actualizacion: string;
-  id_estado_entrega: number;
-  nombre_estado_entrega: string;
-  entrega: DeliveryInfo;
-  detalles: ProductDetail[];
-  total_general: number;
-  tempId: string;
-  id_estado?: number;
-}
-
-interface TodaySalesTableProps {
-  sales?: Sale[];
-  updateSaleStatus?: (id: string, statusId: string) => void;
-}
-
-// Tipo para los datos de venta sin el tempId
-type SaleInput = Omit<Sale, 'tempId'> & {
-  id_venta: number;
-  id_estado_entrega: number;
-  entrega: Omit<DeliveryInfo, 'direccion_entrega'> & {
-    direccion_entrega: string | null;
-  };
-};
-
-// Función para sanitizar y adaptar los datos
-function sanitizeSales(sales: SaleInput[]): Sale[] {
-  return sales.map((sale, index) => ({
-    ...sale,
-    tempId: `sale-${sale.id_venta}-${index}`,
-    // Asegurar que id_estado tenga un valor por defecto si no está definido
-    id_estado: sale.id_estado_entrega || 1, // 1 = Pendiente por defecto
-    // Asegurar que la dirección de entrega sea un string vacío si es null
-    entrega: {
-      ...sale.entrega,
-      direccion_entrega: sale.entrega.direccion_entrega || '',
-    },
-  } as Sale));
-}
-
-import salesData from "../data/salesData.json";
+import { Sale } from "@/types/sales";
+import { useEstadosEntrega } from "@/hooks/use-estados-entrega";
 
 // Componente para mostrar el icono según el tipo de entrega
 function DeliveryTypeIcon({ typeId }: { typeId: number }) {
@@ -181,42 +60,105 @@ function DeliveryTypeIcon({ typeId }: { typeId: number }) {
   }
 }
 
-// Type assertion for the imported sales data
-const typedSalesData = salesData.sales as unknown as SaleInput[];
+interface TodaySalesTableProps {
+  sales?: Sale[];
+  updateSaleStatus?: (id: string, statusId: string) => void;
+}
+
+const DELIVERY_TYPE_MAP: Record<number, string> = {
+  1: "Delivery",
+  2: "Recoger en tienda"
+};
+
+// Colores base para estados
+const BASE_STATUS_COLORS = [
+  "bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800",
+  "bg-orange-100 hover:bg-orange-200 border-orange-300 text-orange-800", 
+  "bg-purple-100 hover:bg-purple-200 border-purple-300 text-purple-800",
+  "bg-indigo-100 hover:bg-indigo-200 border-indigo-300 text-indigo-800",
+  "bg-green-100 hover:bg-green-200 border-green-300 text-green-800",
+  "bg-red-100 hover:bg-red-200 border-red-300 text-red-800",
+];
 
 export default function TodaySalesTable({
-  sales,
+  sales = [],
   updateSaleStatus = (id, statusId) => {
     console.log(`Updating sale ${id} status to ${statusId}`);
   },
 }: TodaySalesTableProps) {
-  // Sanitize the sales data
-  const sanitizedDefaultSales = useMemo(() => sanitizeSales(typedSalesData), []);
-  const sanitizedPropSales = useMemo(() => sales ? sanitizeSales(sales as unknown as SaleInput[]) : null, [sales]);
+  // ✅ ELIMINADO: estado interno localSales
+  // ✅ USAMOS directamente las props sales
   
-  // Use the provided sales if available, otherwise use the default
-  const [localSales, setLocalSales] = useState<Sale[]>(sanitizedPropSales || sanitizedDefaultSales);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [timeSort] = useState<"asc" | "desc" | "none">("asc");
 
+  const { estados, loading: loadingEstados, error: errorEstados, actualizarEstadoVenta } = useEstadosEntrega();
+
+  // Mapeo dinámico de estados - SOLO datos reales de la API
+  const STATUS_MAP = useMemo(() => {
+    const map: Record<number, string> = {};
+    if (estados && estados.length > 0) {
+      estados.forEach((estado) => {
+        map[estado.id_estado_entrega] = estado.nombre_estado_entrega;
+      });
+    }
+    return map;
+  }, [estados]);
+
+  // Opciones para el filtro de estados - SOLO datos reales
+  const STATUS_OPTIONS = useMemo(() => {
+    if (estados && estados.length > 0) {
+      return estados.map((estado) => ({
+        id: estado.id_estado_entrega.toString(),
+        label: estado.nombre_estado_entrega
+      }));
+    }
+    return [];
+  }, [estados]);
+
+  // Colores dinámicos para los estados - basados en datos reales
+  const STATUS_BG_COLORS = useMemo(() => {
+    const colors: Record<number, string> = {};
+    
+    if (estados && estados.length > 0) {
+      estados.forEach((estado, index) => {
+        colors[estado.id_estado_entrega] = BASE_STATUS_COLORS[index % BASE_STATUS_COLORS.length];
+      });
+    }
+    
+    return colors;
+  }, [estados]);
+
   // Obtener la hora actual
-  const currentTime = new Date();
+  const currentTime = useMemo(() => new Date(), []);
   
-  // Separar pedidos en próximos y pasados
+  // Separar pedidos en próximos y pasados - usando las props sales
   const { upcomingSales, pastSales } = useMemo(() => {
     const today = new Date().toISOString().split("T")[0];
-    const filtered = localSales.filter((sale) => {
-      const saleDate = sale.fecha_entrega_estimada.split("T")[0];
-      return saleDate === today;
+    const filtered = sales.filter((sale) => {
+      if (!sale.fecha_entrega_estimada || typeof sale.fecha_entrega_estimada !== 'string') {
+        return false;
+      }
+      
+      try {
+        const saleDate = sale.fecha_entrega_estimada.split("T")[0];
+        const saleDateTime = new Date(sale.fecha_entrega_estimada);
+        return !isNaN(saleDateTime.getTime()) && saleDate === today;
+      } catch {
+        return false;
+      }
     });
 
-    // Separar en pedidos próximos y pasados
     const upcoming = [];
     const past = [];
     
     for (const sale of filtered) {
+      if (!sale.fecha_entrega_estimada) continue;
+      
       const saleTime = new Date(sale.fecha_entrega_estimada);
+      if (isNaN(saleTime.getTime())) continue;
+      
       const timeDiff = (currentTime.getTime() - saleTime.getTime()) / (1000 * 60);
       
       if (timeDiff > 30) {
@@ -226,12 +168,20 @@ export default function TodaySalesTable({
       }
     }
 
-    // Ordenar por fecha de forma ascendente (más tempranas primero)
-    upcoming.sort((a, b) => new Date(a.fecha_entrega_estimada).getTime() - new Date(b.fecha_entrega_estimada).getTime());
-    past.sort((a, b) => new Date(a.fecha_entrega_estimada).getTime() - new Date(b.fecha_entrega_estimada).getTime());
+    // Ordenar por fecha de forma ascendente
+    upcoming.sort((a, b) => {
+      const dateA = new Date(a.fecha_entrega_estimada).getTime();
+      const dateB = new Date(b.fecha_entrega_estimada).getTime();
+      return dateA - dateB;
+    });
+    past.sort((a, b) => {
+      const dateA = new Date(a.fecha_entrega_estimada).getTime();
+      const dateB = new Date(b.fecha_entrega_estimada).getTime();
+      return dateA - dateB;
+    });
 
     return { upcomingSales: upcoming, pastSales: past };
-  }, [localSales, currentTime]);
+  }, [sales, currentTime]); // ✅ Dependencia de sales (props)
 
   // Combinar y filtrar las ventas según los filtros aplicados
   const filteredSales = useMemo(() => {
@@ -262,22 +212,40 @@ export default function TodaySalesTable({
     const filteredPast = filterSales(pastSales);
 
     return { upcoming: filteredUpcoming, past: filteredPast };
-  }, [upcomingSales, pastSales, filterStatus, searchTerm, timeSort]);
+  }, [upcomingSales, pastSales, filterStatus, searchTerm, timeSort, STATUS_MAP]);
 
-  const handleStatusChange = (saleId: string, newStatusId: string) => {
+  const handleStatusChange = async (saleId: string, newStatusId: string) => {
     const newStatus = parseInt(newStatusId);
+    const sale = sales.find(s => s.tempId === saleId); // ✅ Buscar en las props sales
+    
+    if (!sale) {
+      console.error('❌ Venta no encontrada:', saleId);
+      return;
+    }
 
-    setLocalSales((prevSales) =>
-      prevSales.map((sale) =>
-        sale.tempId === saleId ? { 
-          ...sale, 
-          id_estado_entrega: newStatus,
-          nombre_estado_entrega: STATUS_MAP[newStatus] || "Desconocido"
-        } : sale
-      )
-    );
+    console.log('🔄 Iniciando cambio de estado:', {
+      saleId,
+      ventaId: sale.id_venta,
+      estadoAnterior: sale.id_estado_entrega,
+      nuevoEstado: newStatus
+    });
 
-    updateSaleStatus(saleId, newStatusId);
+    // ✅ ELIMINADO: No actualizamos estado local, solo llamamos a la API y al callback del padre
+
+    try {
+      const success = await actualizarEstadoVenta(sale.id_venta, newStatus);
+      
+      if (success) {
+        console.log('✅ Estado actualizado exitosamente en la API');
+        // ✅ Solo llamamos al callback del padre para que actualice las props
+        updateSaleStatus(saleId, newStatusId);
+      } else {
+        throw new Error('La API retornó success: false');
+      }
+    } catch (error) {
+      console.error('❌ Error al actualizar estado en la API:', error);
+      alert('Error al actualizar el estado. Por favor, intenta nuevamente.');
+    }
   };
 
   // Calculate total amount for today's sales
@@ -289,17 +257,62 @@ export default function TodaySalesTable({
     minimumFractionDigits: 2,
   }).format(totalAmount);
 
-  // Estadísticas rápidas
-  const stats = useMemo(() => {
-    const total = allTodaySales.length;
-    const pending = allTodaySales.filter(s => s.id_estado_entrega === 1).length;
-    const inProgress = allTodaySales.filter(s => s.id_estado_entrega === 2).length;
-    const delivered = allTodaySales.filter(s => s.id_estado_entrega === 5).length;
+  // Loading state para estados
+  if (loadingEstados && estados.length === 0) {
+    return (
+      <Card className="h-full flex flex-col">
+        <CardHeader className="pb-3">
+          <CardTitle>Pedidos de Hoy</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Cargando estados de entrega...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-    return { total, pending, inProgress, delivered };
-  }, [allTodaySales]);
+  // Error state para estados
+  if (errorEstados) {
+    return (
+      <Card className="h-full flex flex-col">
+        <CardHeader className="pb-3">
+          <CardTitle>Pedidos de Hoy</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <ShoppingCart className="h-8 w-8 text-destructive" />
+            <p className="font-medium">Error al cargar los estados</p>
+            <p className="text-sm text-muted-foreground">{errorEstados}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  // If there are no sales for today
+  // Si no hay estados cargados después de terminar la carga
+  if (estados.length === 0 && !loadingEstados) {
+    return (
+      <Card className="h-full flex flex-col">
+        <CardHeader className="pb-3">
+          <CardTitle>Pedidos de Hoy</CardTitle>
+        </CardHeader>
+        <CardContent className="flex-1 flex flex-col items-center justify-center gap-4">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <Package className="h-8 w-8 text-muted-foreground" />
+            <p className="font-medium">No hay estados configurados</p>
+            <p className="text-sm text-muted-foreground">
+              Los estados de entrega no están disponibles en este momento
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Si no hay ventas para hoy
   if (allTodaySales.length === 0) {
     return (
       <Card className="h-full flex flex-col">
@@ -325,6 +338,9 @@ export default function TodaySalesTable({
   const renderSaleRow = (sale: Sale) => {
     const deliveryType = DELIVERY_TYPE_MAP[sale.entrega.id_tipo_entrega] || "Desconocido";
     const isPast = pastSales.some(pastSale => pastSale.tempId === sale.tempId);
+    const currentStatus = sale.id_estado_entrega || 1;
+    const statusName = STATUS_MAP[currentStatus] || "Desconocido";
+    const statusColor = STATUS_BG_COLORS[currentStatus] || "bg-gray-100 text-gray-800";
 
     return (
       <TableRow key={sale.tempId} className={`hover:bg-muted/50 ${isPast ? 'bg-red-50' : ''}`}>
@@ -369,12 +385,12 @@ export default function TodaySalesTable({
         </TableCell>
         <TableCell>
           <Select
-            value={sale.id_estado_entrega.toString()}
+            value={currentStatus.toString()}
             onValueChange={(value) => handleStatusChange(sale.tempId, value)}
           >
-            <SelectTrigger className={`h-8 w-full ${STATUS_BG_COLORS[sale.id_estado_entrega as keyof typeof STATUS_BG_COLORS] || "bg-gray-100 text-gray-800"} transition-colors duration-200`}>
+            <SelectTrigger className={`h-8 w-full ${statusColor} transition-colors duration-200`}>
               <div className="flex items-center justify-between w-full">
-                <span className="font-medium">{STATUS_MAP[sale.id_estado_entrega] || "Desconocido"}</span>
+                <span className="font-medium">{statusName}</span>
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </div>
             </SelectTrigger>
@@ -383,7 +399,7 @@ export default function TodaySalesTable({
                 <SelectItem 
                   key={status.id} 
                   value={status.id}
-                  className={`${STATUS_BG_COLORS[parseInt(status.id) as keyof typeof STATUS_BG_COLORS] || "bg-gray-100 text-gray-800"} mb-1 last:mb-0 rounded-md`}
+                  className={`${STATUS_BG_COLORS[parseInt(status.id)] || "bg-gray-100 text-gray-800"} mb-1 last:mb-0 rounded-md`}
                 >
                   {status.label}
                 </SelectItem>
@@ -392,7 +408,13 @@ export default function TodaySalesTable({
           </Select>
         </TableCell>
         <TableCell>
-          <SaleDetailsDialog sale={sale} onStatusChange={handleStatusChange} />
+          <SaleDetailsDialog 
+            sale={sale} 
+            onStatusChange={handleStatusChange}
+            statusMap={STATUS_MAP}
+            statusBgColors={STATUS_BG_COLORS}
+            deliveryTypeMap={DELIVERY_TYPE_MAP}
+          />
         </TableCell>
       </TableRow>
     );
@@ -403,27 +425,10 @@ export default function TodaySalesTable({
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle>Pedidos de Hoy</CardTitle>
-          <div className="text-sm font-medium bg-primary/10 px-3 py-1 rounded-md">
-            Total: {formattedTotal}
-          </div>
-        </div>
-        {/* Estadísticas rápidas */}
-        <div className="flex gap-4 mt-2">
-          <div className="flex items-center gap-1 text-sm">
-            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-            <span>Total: {stats.total}</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-            <span>Pendientes: {stats.pending}</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-            <span>En cocina: {stats.inProgress}</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Entregados: {stats.delivered}</span>
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-medium bg-primary/10 px-3 py-1 rounded-md">
+              Total: {formattedTotal}
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -474,18 +479,16 @@ export default function TodaySalesTable({
                 <TableBody>
                   {filteredSales.upcoming.length > 0 && (
                     <>
-                      {filteredSales.upcoming.length > 0 && (
-                        <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableCell colSpan={7} className="p-0">
-                            <div className="flex items-center px-4 py-2 text-sm font-medium text-foreground bg-green-50">
-                              <Clock className="h-4 w-4 mr-2 text-green-600" />
-                              <span className="font-semibold text-green-700">
-                                Próximos pedidos ({filteredSales.upcoming.length})
-                              </span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
+                      <TableRow className="bg-muted/30 hover:bg-muted/30">
+                        <TableCell colSpan={7} className="p-0">
+                          <div className="flex items-center px-4 py-2 text-sm font-medium text-foreground bg-green-50">
+                            <Clock className="h-4 w-4 mr-2 text-green-600" />
+                            <span className="font-semibold text-green-700">
+                              Próximos pedidos ({filteredSales.upcoming.length})
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                       {filteredSales.upcoming.map(renderSaleRow)}
                     </>
                   )}
@@ -525,13 +528,19 @@ export default function TodaySalesTable({
 function SaleDetailsDialog({ 
   sale, 
   onStatusChange,
+  statusMap,
+  statusBgColors,
+  deliveryTypeMap,
 }: { 
   sale: Sale; 
   onStatusChange: (id: string, statusId: string) => void;
+  statusMap: Record<number, string>;
+  statusBgColors: Record<number, string>;
+  deliveryTypeMap: Record<number, string>;
 }) {
   const [open, setOpen] = useState(false);
-  const status = STATUS_MAP[sale.id_estado_entrega] || "Desconocido";
-  const deliveryType = DELIVERY_TYPE_MAP[sale.entrega.id_tipo_entrega] || "Desconocido";
+  const status = statusMap[sale.id_estado_entrega] || "Desconocido";
+  const deliveryType = deliveryTypeMap[sale.entrega.id_tipo_entrega] || "Desconocido";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -619,7 +628,7 @@ function SaleDetailsDialog({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Estado:</span>
-                    <div className={`px-2 py-1 rounded-md text-xs font-medium ${STATUS_BG_COLORS[sale.id_estado_entrega as keyof typeof STATUS_BG_COLORS] || "bg-gray-100 text-gray-800"}`}>
+                    <div className={`px-2 py-1 rounded-md text-xs font-medium ${statusBgColors[sale.id_estado_entrega as keyof typeof statusBgColors] || "bg-gray-100 text-gray-800"}`}>
                       {status}
                     </div>
                   </div>
@@ -672,22 +681,21 @@ function SaleDetailsDialog({
           <div className="border rounded-lg p-4">
             <h3 className="font-medium mb-3 flex items-center gap-2">
               <Package className="h-4 w-4" />
-              Productos ({sale.detalles.length})
+              Productos ({(sale.detalles || []).length})
             </h3>
             <div className="space-y-4">
-              {sale.detalles.map((detalle) => {
-                const productTotal = detalle.cantidad * detalle.precio_unitario_venta;
+              {(sale.detalles || []).map((detalle) => {
+                const productTotal = (detalle.cantidad || 0) * (detalle.precio_unitario_venta || 0);
                 const hasFrase = detalle.frase && detalle.frase.frase;
                 const hasPersonalizacion = detalle.personalizacion && detalle.personalizacion.imagen_base64;
-                const extrasTotal = (detalle.frase?.costo_frase || 0) + (detalle.personalizacion?.costo_personalizacion || 0);
                 
                 return (
-                  <div key={detalle.id_detalle} className="border rounded-lg p-4 bg-muted/5">
+                  <div key={detalle.id_detalle || `detalle-${Math.random()}`} className="border rounded-lg p-4 bg-muted/5">
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
-                        <div className="font-medium text-lg">{detalle.sabor_producto}</div>
+                        <div className="font-medium text-lg">{detalle.sabor_producto || "Producto sin nombre"}</div>
                         <div className="text-sm text-muted-foreground">
-                          {detalle.tamaño_producto} • Cantidad: {detalle.cantidad}
+                          {detalle.tamaño_producto || "Tamaño no especificado"} • Cantidad: {detalle.cantidad || 0}
                         </div>
                       </div>
                       <div className="text-right">
@@ -699,11 +707,11 @@ function SaleDetailsDialog({
                           }).format(productTotal)}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {detalle.cantidad} × {new Intl.NumberFormat("es-BO", {
+                          {detalle.cantidad || 0} × {new Intl.NumberFormat("es-BO", {
                             style: "currency",
                             currency: "BOB",
                             minimumFractionDigits: 2,
-                          }).format(detalle.precio_unitario_venta)}
+                          }).format(detalle.precio_unitario_venta || 0)}
                         </div>
                       </div>
                     </div>
@@ -722,7 +730,7 @@ function SaleDetailsDialog({
                                   style: "currency",
                                   currency: "BOB",
                                   minimumFractionDigits: 2,
-                                }).format(detalle.frase!.costo_frase)}
+                                }).format(detalle.frase!.costo_frase || 0)}
                               </div>
                             </div>
                           </div>
@@ -739,7 +747,7 @@ function SaleDetailsDialog({
                                   style: "currency",
                                   currency: "BOB",
                                   minimumFractionDigits: 2,
-                                }).format(detalle.personalizacion!.costo_personalizacion)}
+                                }).format(detalle.personalizacion!.costo_personalizacion || 0)}
                               </div>
                             </div>
                           </div>

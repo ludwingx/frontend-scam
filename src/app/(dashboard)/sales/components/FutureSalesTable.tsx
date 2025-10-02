@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ChevronDown, Check, Filter, Home, Truck, Calendar, Eye, Users, Package, DollarSign, MapPin, Phone, Clock, FileText } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sale } from "@/types/sales";
 
 // Mapeo de estados (consistente con TodaySalesTable)
 const STATUS_MAP: Record<number, string> = {
@@ -43,64 +44,6 @@ const STATUS_OPTIONS = [
   { id: "5", label: "Entregado" },
   { id: "6", label: "Cancelado" },
 ];
-
-// Interfaces (consistentes con TodaySalesTable)
-interface ProductDetail {
-  id_detalle: number;
-  id_producto: number;
-  sabor_producto: string;
-  tamaño_producto: string;
-  precio_producto: number;
-  id_negocio: number;
-  nombre_negocio: string;
-  cantidad: number;
-  precio_unitario_venta: number;
-  subtotal: number;
-  frase?: {
-    frase: string;
-    costo_frase: number;
-    comentario_frase: string;
-  };
-  personalizacion?: {
-    imagen_base64: string;
-    costo_personalizacion: number;
-    comentario_personalizacion: string;
-  };
-}
-
-interface DeliveryInfo {
-  id_entrega: number;
-  id_tipo_entrega: number;
-  nombre_tipo_entrega: string;
-  direccion_entrega: string;
-  nombre_receptor: string;
-  telefono_receptor: string;
-  costo_delivery: number;
-  estado_delivery: string;
-  nombre_sucursal: string | null;
-  observaciones: string;
-  costo_total: number;
-}
-
-interface Sale {
-  id_venta: number;
-  id_usuario_registro: number;
-  nombre_usuario_registro: string;
-  id_cliente: number;
-  nombre_cliente: string;
-  fecha_entrega_estimada: string;
-  fecha_entrega_real: string | null;
-  observaciones: string;
-  fecha_registro: string;
-  fecha_actualizacion: string;
-  id_estado_entrega: number;
-  nombre_estado_entrega: string;
-  entrega: DeliveryInfo;
-  detalles: ProductDetail[];
-  total_general: number;
-  tempId: string;
-  id_estado?: number;
-}
 
 interface FutureSalesTableProps {
   sales?: Sale[];
@@ -162,7 +105,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                   <h4 className="font-semibold">
                     {deliveryType === "Delivery" ? "Dirección de entrega" : "Sucursal de recogida"}
                   </h4>
-                  <p className="text-sm">{sale.entrega.direccion_entrega}</p>
+                  <p className="text-sm">{sale.entrega.direccion_entrega || "No especificada"}</p>
                   {deliveryType === "Recoger en tienda" && sale.entrega.nombre_sucursal && (
                     <p className="text-sm text-muted-foreground">{sale.entrega.nombre_sucursal}</p>
                   )}
@@ -173,7 +116,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                 <Phone className="h-5 w-5 text-muted-foreground mt-0.5" />
                 <div className="space-y-1">
                   <h4 className="font-semibold">Teléfono</h4>
-                  <p className="text-sm">{sale.entrega.telefono_receptor}</p>
+                  <p className="text-sm">{sale.entrega.telefono_receptor || "No especificado"}</p>
                 </div>
               </div>
 
@@ -228,16 +171,16 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
             <div className="space-y-3">
               <h4 className="font-semibold flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                Productos ({sale.detalles.length})
+                Productos ({(sale.detalles || []).length})
               </h4>
               <div className="space-y-3">
-                {sale.detalles.map((detalle, index) => (
-                  <div key={detalle.id_detalle} className="border rounded-lg p-3">
+                {(sale.detalles || []).map((detalle, index) => (
+                  <div key={detalle.id_detalle || `detalle-${index}`} className="border rounded-lg p-3">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="font-medium">{detalle.sabor_producto}</p>
-                        <p className="text-sm text-muted-foreground">{detalle.tamaño_producto}</p>
-                        <p className="text-sm text-muted-foreground">Negocio: {detalle.nombre_negocio}</p>
+                        <p className="font-medium">{detalle.sabor_producto || "Producto sin nombre"}</p>
+                        <p className="text-sm text-muted-foreground">{detalle.tamaño_producto || "Tamaño no especificado"}</p>
+                        <p className="text-sm text-muted-foreground">Negocio: {detalle.nombre_negocio || "No especificado"}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-medium">
@@ -245,14 +188,14 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                             style: "currency",
                             currency: "BOB",
                             minimumFractionDigits: 2,
-                          }).format(detalle.subtotal)}
+                          }).format(detalle.subtotal || 0)}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {detalle.cantidad} × {new Intl.NumberFormat("es-BO", {
+                          {detalle.cantidad || 0} × {new Intl.NumberFormat("es-BO", {
                             style: "currency",
                             currency: "BOB",
                             minimumFractionDigits: 2,
-                          }).format(detalle.precio_unitario_venta)}
+                          }).format(detalle.precio_unitario_venta || 0)}
                         </p>
                       </div>
                     </div>
@@ -270,7 +213,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                             style: "currency",
                             currency: "BOB",
                             minimumFractionDigits: 2,
-                          }).format(detalle.frase.costo_frase)}
+                          }).format(detalle.frase.costo_frase || 0)}
                         </p>
                       </div>
                     )}
@@ -287,7 +230,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                             style: "currency",
                             currency: "BOB",
                             minimumFractionDigits: 2,
-                          }).format(detalle.personalizacion.costo_personalizacion)}
+                          }).format(detalle.personalizacion.costo_personalizacion || 0)}
                         </p>
                         {detalle.personalizacion.imagen_base64 && (
                           <div className="mt-2">
@@ -315,7 +258,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                     style: "currency",
                     currency: "BOB",
                     minimumFractionDigits: 2,
-                  }).format(sale.detalles.reduce((sum, detalle) => sum + detalle.subtotal, 0))}
+                  }).format((sale.detalles || []).reduce((sum, detalle) => sum + (detalle.subtotal || 0), 0))}
                 </span>
               </div>
 
@@ -327,7 +270,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                       style: "currency",
                       currency: "BOB",
                       minimumFractionDigits: 2,
-                    }).format(sale.entrega.costo_delivery)}
+                    }).format(sale.entrega.costo_delivery || 0)}
                   </span>
                 </div>
               )}
@@ -339,7 +282,7 @@ function SaleDetailsDialog({ sale }: { sale: Sale }) {
                     style: "currency",
                     currency: "BOB",
                     minimumFractionDigits: 2,
-                  }).format(sale.total_general)}
+                  }).format(sale.total_general || 0)}
                 </span>
               </div>
             </div>
@@ -361,7 +304,7 @@ function getDaysUntilDelivery(deliveryDate: string): string {
   const diffTime = delivery.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return "¡Hoy!";
+  // Como ahora solo mostramos de mañana en adelante, no necesitamos "¡Hoy!"
   if (diffDays === 1) return "Mañana";
   if (diffDays === 2) return "En 2 días";
   if (diffDays === 3) return "En 3 días";
@@ -378,7 +321,6 @@ function getDaysUntilDelivery(deliveryDate: string): string {
 
 // Función para obtener el color según los días restantes
 function getDaysColor(daysText: string): string {
-  if (daysText === "¡Hoy!") return "text-red-600 font-semibold";
   if (daysText === "Mañana") return "text-orange-600 font-semibold";
   if (daysText.includes("2 días") || daysText.includes("3 días")) return "text-blue-600 font-medium";
   if (daysText.includes("4 días") || daysText.includes("5 días") || daysText.includes("6 días")) return "text-green-600 font-medium";
@@ -395,22 +337,33 @@ export default function FutureSalesTable({
   const [localSales, setLocalSales] = useState<Sale[]>(sales);
   const [filterStatus, setFilterStatus] = useState("all");
 
-  // Filtrar ventas futuras (después de hoy)
+  // Filtrar ventas futuras (mañana en adelante, excluyendo hoy)
   const futureSales = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    
     return localSales.filter((sale) => {
-      const saleDate = new Date(sale.fecha_entrega_estimada);
-      saleDate.setHours(0, 0, 0, 0);
-      return saleDate.getTime() > today.getTime();
+      if (!sale.fecha_entrega_estimada) return false;
+      
+      try {
+        const saleDate = new Date(sale.fecha_entrega_estimada);
+        saleDate.setHours(0, 0, 0, 0);
+        
+        return !isNaN(saleDate.getTime()) && saleDate.getTime() >= tomorrow.getTime();
+      } catch {
+        return false;
+      }
     });
   }, [localSales]);
 
   // Filtrar y ordenar ventas
   const filteredSales = useMemo(() => {
     let result = futureSales.filter(sale => 
-      filterStatus === "all" || STATUS_MAP[sale.id_estado_entrega] === filterStatus
+      filterStatus === "all" || STATUS_MAP[sale.id_estado_entrega || 1] === filterStatus
     );
 
     // Ordenar por fecha de entrega (más próximas primero)
@@ -438,7 +391,7 @@ export default function FutureSalesTable({
   };
 
   // Calcular total de ventas futuras
-  const totalAmount = futureSales.reduce((sum, sale) => sum + sale.total_general, 0);
+  const totalAmount = futureSales.reduce((sum, sale) => sum + (sale.total_general || 0), 0);
   const formattedTotal = new Intl.NumberFormat('es-BO', {
     style: 'currency',
     currency: 'BOB',
@@ -561,7 +514,7 @@ export default function FutureSalesTable({
                           style: "currency",
                           currency: "BOB",
                           minimumFractionDigits: 2,
-                        }).format(sale.total_general)}
+                        }).format(sale.total_general || 0)}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -577,10 +530,10 @@ export default function FutureSalesTable({
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
-                              className={`h-8 w-full ${STATUS_BG_COLORS[sale.id_estado_entrega as keyof typeof STATUS_BG_COLORS] || "bg-gray-100 text-gray-800"} transition-colors duration-200`}
+                              className={`h-8 w-full ${STATUS_BG_COLORS[(sale.id_estado_entrega || 1) as keyof typeof STATUS_BG_COLORS] || "bg-gray-100 text-gray-800"} transition-colors duration-200`}
                             >
                               <div className="flex items-center justify-between w-full">
-                                <span className="font-medium">{STATUS_MAP[sale.id_estado_entrega] || "Desconocido"}</span>
+                                <span className="font-medium">{STATUS_MAP[sale.id_estado_entrega || 1] || "Desconocido"}</span>
                                 <ChevronDown className="h-4 w-4 opacity-50" />
                               </div>
                             </Button>
@@ -601,7 +554,7 @@ export default function FutureSalesTable({
                                   />
                                   {status.label}
                                 </div>
-                                {status.label === STATUS_MAP[sale.id_estado_entrega] && (
+                                {status.label === STATUS_MAP[sale.id_estado_entrega || 1] && (
                                   <Check className="h-4 w-4" />
                                 )}
                               </DropdownMenuItem>

@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Filter, Home, Truck, Search, Download, BadgeDollarSign, QrCode, CreditCard, Calendar, X } from "lucide-react";
+import { Filter, Home, Truck, Search, Download, BadgeDollarSign, QrCode, CreditCard, Calendar, X, Users, Package } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -49,27 +49,25 @@ const PAYMENT_METHOD_CONFIG = {
     icon: CreditCard,
     color: "text-blue-600 font-semibold",
     bgColor: "bg-blue-200",
+  },
+  transferencia: {
+    label: "Transferencia",
+    icon: CreditCard,
+    color: "text-orange-600 font-semibold",
+    bgColor: "bg-orange-200",
   }
 };
 
 // Función para normalizar el método de pago
 const normalizePaymentMethod = (method: string) => {
-  return method.toLowerCase().replace(/\s+/g, '');
+  const normalized = method.toLowerCase().replace(/\s+/g, '');
+  return normalized in PAYMENT_METHOD_CONFIG ? normalized : 'efectivo';
 };
 
-// Definir colores de estado
+// Definir colores de estado (basado en los estados reales de tu API)
 const STATUS_COLORS = {
   Pendiente: {
     base: "bg-yellow-200 text-yellow-800 font-semibold",
-  },
-  "En proceso": {
-    base: "bg-blue-200 text-blue-800 font-semibold",
-  },
-  Completado: {
-    base: "bg-green-200 text-green-800 font-semibold",
-  },
-  Cancelado: {
-    base: "bg-red-200 text-red-800 font-semibold",
   },
   "En cocina": {
     base: "bg-orange-200 text-orange-800 font-semibold",
@@ -82,6 +80,9 @@ const STATUS_COLORS = {
   },
   Entregado: {
     base: "bg-green-200 text-green-800 font-semibold",
+  },
+  Cancelado: {
+    base: "bg-red-200 text-red-800 font-semibold",
   },
 };
 
@@ -101,6 +102,7 @@ export interface Sale {
   orderType: "delivery" | "pickup";
   paymentMethod: string;
   notes?: string;
+  receptor?: string; // Agregado para mostrar el receptor
 }
 
 interface SalesHistoryTableProps {
@@ -111,13 +113,12 @@ interface SalesHistoryTableProps {
 export default function SalesHistoryTable({ 
   sales = [], 
   statuses = [
-    { id: "pending", label: "Pendiente" },
-    { id: "in-kitchen", label: "En cocina" },
-    { id: "ready", label: "Listo para recoger" },
-    { id: "on-the-way", label: "En camino" },
-    { id: "delivered", label: "Entregado" },
-    { id: "completed", label: "Completado" },
-    { id: "cancelled", label: "Cancelado" },
+    { id: "1", label: "Pendiente" },
+    { id: "2", label: "En cocina" },
+    { id: "3", label: "Listo para recoger" },
+    { id: "4", label: "En camino" },
+    { id: "5", label: "Entregado" },
+    { id: "6", label: "Cancelado" },
   ],
 }: SalesHistoryTableProps) {
   const [localSales] = useState<Sale[]>(sales);
@@ -142,41 +143,46 @@ export default function SalesHistoryTable({
     });
   }, []);
 
-  const historySales = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return localSales.filter(sale => {
-      const saleDate = new Date(sale.date);
-      return saleDate < today;
-    });
-  }, [localSales]);
+  // QUITAR el filtro de ventas históricas - mostrar TODAS las ventas
+  const allSales = localSales;
 
   const filteredSales = useMemo(() => {
-    return historySales.filter(sale => {
+    return allSales.filter(sale => {
       const matchesStatus = filterStatus === "all" || sale.status === filterStatus;
-      const matchesPaymentMethod = filterPaymentMethod === "all" || sale.paymentMethod === filterPaymentMethod;
+      const matchesPaymentMethod = filterPaymentMethod === "all" || 
+                                  normalizePaymentMethod(sale.paymentMethod) === filterPaymentMethod;
       const matchesOrderType = filterOrderType === "all" || sale.orderType === filterOrderType;
       
       const matchesSearch = searchTerm === "" || 
         sale.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
         sale.id.toString().includes(searchTerm) ||
+        (sale.receptor && sale.receptor.toLowerCase().includes(searchTerm.toLowerCase())) ||
         sale.products.some(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
       
       // Filtro por rango de fechas
       const saleDate = new Date(sale.date);
       const matchesDateRange = (!dateRange.from || saleDate >= dateRange.from) && 
-                              (!dateRange.to || saleDate <= new Date(dateRange.to.getTime() + 86400000)); // +1 día para incluir el día completo
+                              (!dateRange.to || saleDate <= new Date(dateRange.to.getTime() + 86400000));
 
       return matchesStatus && matchesPaymentMethod && matchesOrderType && 
              matchesSearch && matchesDateRange;
     });
-  }, [historySales, filterStatus, filterPaymentMethod, filterOrderType, searchTerm, dateRange]);
+  }, [allSales, filterStatus, filterPaymentMethod, filterOrderType, searchTerm, dateRange]);
 
   // Métodos de pago únicos
   const paymentMethods = useMemo(() => {
-    const methods = new Set(historySales.map(sale => sale.paymentMethod));
+    const methods = new Set(allSales.map(sale => normalizePaymentMethod(sale.paymentMethod)));
     return Array.from(methods);
-  }, [historySales]);
+  }, [allSales]);
+
+  // Estados únicos
+  const uniqueStatuses = useMemo(() => {
+    const statusSet = new Set(allSales.map(sale => sale.status));
+    return Array.from(statusSet).map(status => ({
+      id: status,
+      label: status
+    }));
+  }, [allSales]);
 
   // Limpiar todos los filtros
   const clearAllFilters = () => {
@@ -201,39 +207,43 @@ export default function SalesHistoryTable({
                           filterPaymentMethod !== "all" || 
                           filterOrderType !== "all" || 
                           searchTerm !== "" || 
-                          (dateRange.from && dateRange.from.getTime() !== startOfMonth(new Date()).getTime()) || // Si no es el primer día del mes
-                          (dateRange.to && dateRange.to.getTime() !== endOfDay(new Date()).getTime()); // Si no es hoy
+                          (dateRange.from && dateRange.from.getTime() !== startOfMonth(new Date()).getTime()) ||
+                          (dateRange.to && dateRange.to.getTime() !== endOfDay(new Date()).getTime());
 
   // Función para formatear el rango de fechas en el botón
   const formatDateRange = () => {
     if (!dateRange.from) return "Seleccionar rango";
     
     if (!dateRange.to) {
-      // Solo fecha from seleccionada
       return format(dateRange.from, "dd MMM yyyy", { locale: es });
     }
     
-    // Ambas fechas seleccionadas
     const from = dateRange.from;
     const to = dateRange.to;
     
-    // Si son el mismo año y mes, mostrar solo día y mes para ambas
     if (isSameYear(from, to) && isSameMonth(from, to)) {
       return `${format(from, "dd", { locale: es })} - ${format(to, "dd MMM yyyy", { locale: es })}`;
     }
     
-    // Si son el mismo año pero meses diferentes, mostrar día y mes para ambas con año al final
     if (isSameYear(from, to)) {
       return `${format(from, "dd MMM", { locale: es })} - ${format(to, "dd MMM yyyy", { locale: es })}`;
     }
     
-    // Diferentes años, mostrar año completo para ambas
     return `${format(from, "dd MMM yyyy", { locale: es })} - ${format(to, "dd MMM yyyy", { locale: es })}`;
   };
 
-  // If there are no history sales, don't render anything
-  if (historySales.length === 0) {
-    return null;
+  // Si no hay ventas, mostrar mensaje
+  if (allSales.length === 0) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="p-6">
+          <div className="text-center text-muted-foreground">
+            <Package className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <p>No hay ventas disponibles</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
   const totalAmount = filteredSales.reduce((sum, sale) => sum + sale.amount, 0);
@@ -247,9 +257,9 @@ export default function SalesHistoryTable({
     <Card className="mb-6 h-[800px] flex flex-col">
       <CardHeader className="flex flex-col space-y-4 pb-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div>
-          <CardTitle className="text-xl font-medium font-semibold">Ventas registradas</CardTitle>
+          <CardTitle className="text-xl font-medium font-semibold">Historial de Ventas</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {filteredSales.length} de {historySales.length} ventas • Total: {formattedTotal}
+            {filteredSales.length} de {allSales.length} ventas • Total: {formattedTotal}
           </p>
         </div>
         <Button variant="outline" size="sm" className="hidden sm:flex">
@@ -272,7 +282,7 @@ export default function SalesHistoryTable({
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="ID, cliente o producto..."
+                  placeholder="ID, cliente, producto o receptor..."
                   className="pl-8 w-full h-9"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -280,7 +290,7 @@ export default function SalesHistoryTable({
               </div>
             </div>
 
-            {/* Filtro de Rango de Fechas - MEJORADO */}
+            {/* Filtro de Rango de Fechas */}
             <div className="space-y-1 min-w-[200px]">
               <Label className="text-xs">Fecha</Label>
               <Popover>
@@ -321,7 +331,7 @@ export default function SalesHistoryTable({
                   <SelectItem value="all">Todos</SelectItem>
                   {paymentMethods.map((method) => (
                     <SelectItem key={method} value={method}>
-                      {method}
+                      {PAYMENT_METHOD_CONFIG[method as keyof typeof PAYMENT_METHOD_CONFIG]?.label || method}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -352,8 +362,8 @@ export default function SalesHistoryTable({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  {statuses.map((status) => (
-                    <SelectItem key={status.id} value={status.label}>
+                  {uniqueStatuses.map((status) => (
+                    <SelectItem key={status.id} value={status.id}>
                       {status.label}
                     </SelectItem>
                   ))}
@@ -387,6 +397,7 @@ export default function SalesHistoryTable({
                 <TableRow>
                   <TableHead className="font-semibold">ID</TableHead>
                   <TableHead className="font-semibold">Cliente</TableHead>
+                  <TableHead className="font-semibold">Receptor</TableHead>
                   <TableHead className="font-semibold">Fecha</TableHead>
                   <TableHead className="font-semibold">Productos</TableHead>
                   <TableHead className="font-semibold text-right">Monto</TableHead>
@@ -429,7 +440,15 @@ export default function SalesHistoryTable({
                     return (
                       <TableRow key={sale.id}>
                         <TableCell className="font-mono text-xs">#{sale.id.toString().padStart(4, '0')}</TableCell>
-                        <TableCell className="font-medium">{sale.client}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-3 w-3 text-muted-foreground" />
+                            {sale.client}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {sale.receptor || sale.client}
+                        </TableCell>
                         <TableCell className="whitespace-nowrap">
                           <div>
                             {new Date(sale.date).toLocaleDateString("es-BO", {
@@ -447,20 +466,13 @@ export default function SalesHistoryTable({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-col space-y-1">
+                          <div className="flex flex-col space-y-1 max-w-[200px]">
                             {sale.products.map((product, i) => (
                               <div key={i} className="flex items-center text-sm">
                                 <span className="w-2 h-2 rounded-full bg-blue-500 mr-2 flex-shrink-0"></span>
-                                {product.name} ({product.quantity})
-                                {product.price > 0 && (
-                                  <span className="text-muted-foreground ml-1">
-                                    ({new Intl.NumberFormat('es-BO', {
-                                      style: 'currency',
-                                      currency: 'BOB',
-                                      minimumFractionDigits: 2
-                                    }).format(product.price)})
-                                  </span>
-                                )}
+                                <span className="truncate">
+                                  {product.name} (x{product.quantity})
+                                </span>
                               </div>
                             ))}
                           </div>
@@ -502,7 +514,7 @@ export default function SalesHistoryTable({
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                       No hay ventas que coincidan con los filtros aplicados.
                     </TableCell>
                   </TableRow>
