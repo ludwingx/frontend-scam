@@ -61,9 +61,10 @@ export function useEstadosEntrega() {
 
   const actualizarEstadoVenta = async (idVenta: number, idEstado: number): Promise<boolean> => {
     try {
-      console.log('🔄 Enviando actualización a API:', { idVenta, idEstado });
+      console.log('🔄 Enviando actualización de estado a la API:', { idVenta, idEstado });
       
-      const response = await fetch('/api/actualizar-entrega', { // ✅ ENDPOINT CORREGIDO
+      // Usar el endpoint local de Next.js que manejará la autenticación
+      const response = await fetch('/api/actualizar-entrega', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,18 +77,56 @@ export function useEstadosEntrega() {
 
       console.log('📡 Response status:', response.status);
       
-      const result = await response.json();
-      console.log('📦 Response data:', result);
+      // Verificar si la respuesta está vacía
+      const responseText = await response.text();
+      console.log('📦 Raw response:', responseText);
       
-      if (result.success) {
-        console.log(`✅ Estado de venta ${idVenta} actualizado a ${idEstado}`);
+      // Si la respuesta está vacía pero el estado es 200, asumimos éxito
+      if (response.status === 200 && !responseText.trim()) {
+        console.log(`✅ Estado de venta ${idVenta} actualizado exitosamente a ${idEstado} (respuesta vacía)`);
         return true;
-      } else {
-        console.error('❌ Error del servidor:', result.error);
-        return false;
       }
-    } catch (error) {
-      console.error('❌ Error de red:', error);
+      
+      // Si hay contenido, intentar parsear como JSON
+      if (responseText.trim()) {
+        try {
+          const result = JSON.parse(responseText);
+          console.log('📦 Parsed response:', result);
+          
+          // Verificar si la respuesta indica éxito
+          const success = result.success === true || result.actualizado === true || 
+                         (result.data && (result.data.success === true || result.data.actualizado === true));
+          
+          if (success) {
+            console.log(`✅ Estado de venta ${idVenta} actualizado exitosamente a ${idEstado}`);
+            return true;
+          } else {
+            const errorMsg = result.error?.message || result.message || 'La API no pudo actualizar el estado';
+            throw new Error(errorMsg);
+          }
+        } catch (parseError) {
+          console.error('❌ Error al analizar la respuesta JSON:', parseError);
+          // Si no es JSON válido pero el estado es 200, asumimos éxito
+          if (response.ok) {
+            console.log(`✅ Estado de venta ${idVenta} actualizado exitosamente a ${idEstado} (respuesta no JSON)`);
+            return true;
+          }
+          throw new Error('La respuesta del servidor no es válida');
+        }
+      }
+      
+      // Si llegamos aquí y el estado no es 200, hubo un error
+      if (!response.ok) {
+        throw new Error(`Error del servidor (${response.status}): ${response.statusText}`);
+      }
+      
+      return true;
+      
+    } catch (error: any) {
+      console.error('❌ Error al actualizar el estado de la venta:', error);
+      // Mostrar un mensaje más amigable al usuario
+      const errorMessage = error.message || 'Error al conectar con el servidor';
+      alert(`Error: ${errorMessage}`);
       return false;
     }
   };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -42,6 +42,7 @@ import {
   ChevronDown,
   Search,
   RefreshCw,
+  ZoomIn,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -62,7 +63,7 @@ function DeliveryTypeIcon({ typeId }: { typeId: number }) {
 
 interface TodaySalesTableProps {
   sales?: Sale[];
-  updateSaleStatus?: (id: string, statusId: string) => void;
+  updateSaleStatus?: (saleId: number, statusId: number) => Promise<{ success: boolean; error?: string }>;
 }
 
 const DELIVERY_TYPE_MAP: Record<number, string> = {
@@ -80,20 +81,75 @@ const BASE_STATUS_COLORS = [
   "bg-red-100 hover:bg-red-200 border-red-300 text-red-800",
 ];
 
+// Componente para mostrar imagen en base64 con zoom
+function Base64Image({ base64String, alt, className = "w-20 h-20" }: { 
+  base64String: string; 
+  alt: string;
+  className?: string;
+}) {
+  const [isZoomed, setIsZoomed] = useState(false);
+
+  if (!base64String) return null;
+
+  // Asegurarse de que el base64 tenga el formato correcto
+  const formattedBase64 = base64String.startsWith('data:image') 
+    ? base64String 
+    : `data:image/jpeg;base64,${base64String}`;
+
+  return (
+    <>
+      <div className="relative inline-block">
+        <img 
+          src={formattedBase64}
+          alt={alt}
+          className={`${className} object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity`}
+          onClick={() => setIsZoomed(true)}
+        />
+        <button
+          onClick={() => setIsZoomed(true)}
+          className="absolute top-1 right-1 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
+        >
+          <ZoomIn className="h-3 w-3" />
+        </button>
+      </div>
+
+      {/* Modal de zoom */}
+      {isZoomed && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsZoomed(false)}
+        >
+          <div className="relative max-w-4xl max-h-full">
+            <img 
+              src={formattedBase64}
+              alt={alt}
+              className="max-w-full max-h-full object-contain"
+            />
+            <button
+              onClick={() => setIsZoomed(false)}
+              className="absolute top-4 right-4 bg-white/20 text-white p-2 rounded-full hover:bg-white/30 transition-colors"
+            >
+              <ZoomIn className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function TodaySalesTable({
   sales = [],
-  updateSaleStatus = (id, statusId) => {
-    console.log(`Updating sale ${id} status to ${statusId}`);
+  updateSaleStatus = async (saleId, statusId) => {
+    console.log(`Updating sale ${saleId} status to ${statusId}`);
+    return { success: true };
   },
 }: TodaySalesTableProps) {
-  // ✅ ELIMINADO: estado interno localSales
-  // ✅ USAMOS directamente las props sales
-  
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [timeSort] = useState<"asc" | "desc" | "none">("asc");
-
-  const { estados, loading: loadingEstados, error: errorEstados, actualizarEstadoVenta } = useEstadosEntrega();
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const { estados, loading: loadingEstados, error: errorEstados } = useEstadosEntrega();
 
   // Mapeo dinámico de estados - SOLO datos reales de la API
   const STATUS_MAP = useMemo(() => {
@@ -181,7 +237,7 @@ export default function TodaySalesTable({
     });
 
     return { upcomingSales: upcoming, pastSales: past };
-  }, [sales, currentTime]); // ✅ Dependencia de sales (props)
+  }, [sales, currentTime]);
 
   // Combinar y filtrar las ventas según los filtros aplicados
   const filteredSales = useMemo(() => {
@@ -214,37 +270,52 @@ export default function TodaySalesTable({
     return { upcoming: filteredUpcoming, past: filteredPast };
   }, [upcomingSales, pastSales, filterStatus, searchTerm, timeSort, STATUS_MAP]);
 
-  const handleStatusChange = async (saleId: string, newStatusId: string) => {
+  const handleStatusChange = async (saleTempId: string, newStatusId: string) => {
     const newStatus = parseInt(newStatusId);
-    const sale = sales.find(s => s.tempId === saleId); // ✅ Buscar en las props sales
+    const sale = sales.find(s => s.tempId === saleTempId);
     
     if (!sale) {
-      console.error('❌ Venta no encontrada:', saleId);
+      console.error('❌ Venta no encontrada:', saleTempId);
+      alert('Venta no encontrada. Por favor, recarga la página.');
       return;
     }
-
+  
+    // Evitar múltiples clics
+    if (updatingStatus === saleTempId) return;
+    
+    setUpdatingStatus(saleTempId);
+  
     console.log('🔄 Iniciando cambio de estado:', {
-      saleId,
+      saleTempId,
       ventaId: sale.id_venta,
       estadoAnterior: sale.id_estado_entrega,
       nuevoEstado: newStatus
     });
-
-    // ✅ ELIMINADO: No actualizamos estado local, solo llamamos a la API y al callback del padre
-
+  
     try {
-      const success = await actualizarEstadoVenta(sale.id_venta, newStatus);
-      
-      if (success) {
-        console.log('✅ Estado actualizado exitosamente en la API');
-        // ✅ Solo llamamos al callback del padre para que actualice las props
-        updateSaleStatus(saleId, newStatusId);
-      } else {
-        throw new Error('La API retornó success: false');
+      // Llamar a la Server Action
+      const result = await updateSaleStatus(sale.id_venta, newStatus);
+  
+      if (!result.success) {
+        console.error('❌ No se pudo actualizar el estado:', result.error);
+        alert(`Error: ${result.error}\n\nPor favor, contacta al administrador para verificar la configuración del backend.`);
+        return;
       }
+  
+      // Si fue exitoso, recargar la página para reflejar los cambios
+      console.log('✅ Estado actualizado exitosamente:', result.message);
+      alert(result.message || 'Estado actualizado correctamente');
+      
+      // Pequeño delay antes de recargar para que el usuario vea el mensaje
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
     } catch (error) {
-      console.error('❌ Error al actualizar estado en la API:', error);
-      alert('Error al actualizar el estado. Por favor, intenta nuevamente.');
+      console.error('❌ Error inesperado:', error);
+      alert('Error inesperado. Por favor, verifica la consola para más detalles.');
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -387,10 +458,13 @@ export default function TodaySalesTable({
           <Select
             value={currentStatus.toString()}
             onValueChange={(value) => handleStatusChange(sale.tempId, value)}
+            disabled={updatingStatus === sale.tempId}
           >
-            <SelectTrigger className={`h-8 w-full ${statusColor} transition-colors duration-200`}>
+            <SelectTrigger className={`h-8 w-full ${statusColor} transition-colors duration-200 ${updatingStatus === sale.tempId ? 'opacity-50' : ''}`}>
               <div className="flex items-center justify-between w-full">
-                <span className="font-medium">{statusName}</span>
+                <span className="font-medium">
+                  {updatingStatus === sale.tempId ? 'Actualizando...' : statusName}
+                </span>
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </div>
             </SelectTrigger>
@@ -524,7 +598,7 @@ export default function TodaySalesTable({
   );
 }
 
-// Componente para el modal de detalles de venta
+// Componente para el modal de detalles de venta - CORREGIDO PARA MOSTRAR IMAGEN BASE64
 function SaleDetailsDialog({ 
   sale, 
   onStatusChange,
@@ -741,14 +815,32 @@ function SaleDetailsDialog({
                             <ImageIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
                               <div className="font-medium text-sm">Personalización</div>
-                              <div className="text-xs text-muted-foreground my-1">{detalle.personalizacion!.comentario_personalizacion}</div>
-                              <div className="text-xs font-medium">
+                              {detalle.personalizacion!.comentario_personalizacion && (
+                                <div className="text-xs text-muted-foreground my-1">
+                                  {detalle.personalizacion!.comentario_personalizacion}
+                                </div>
+                              )}
+                              <div className="text-xs font-medium mb-2">
                                 +{new Intl.NumberFormat("es-BO", {
                                   style: "currency",
                                   currency: "BOB",
                                   minimumFractionDigits: 2,
                                 }).format(detalle.personalizacion!.costo_personalizacion || 0)}
                               </div>
+                              
+                              {/* ✅ MOSTRAR IMAGEN BASE64 - CORREGIDO */}
+                              {detalle.personalizacion!.imagen_base64 && (
+                                <div className="mt-2">
+                                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                                    Imagen de referencia:
+                                  </p>
+                                  <Base64Image 
+                                    base64String={detalle.personalizacion!.imagen_base64}
+                                    alt="Personalización del producto"
+                                    className="w-32 h-32 border-2 border-purple-200 rounded-lg"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         )}

@@ -4,50 +4,19 @@ import { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ChevronDown, Check, Filter, Home, Truck, Calendar, Eye, Users, Package, DollarSign, MapPin, Phone, Clock, FileText } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronDown, Filter, Home, Truck, Calendar, Eye, Users, Package, DollarSign, MapPin, Phone, Clock, FileText } from "lucide-react";
 import { Sale } from "@/types/sales";
-
-// Mapeo de estados (consistente con TodaySalesTable)
-const STATUS_MAP: Record<number, string> = {
-  1: "Pendiente",
-  2: "En cocina", 
-  3: "Listo para recoger",
-  4: "En camino",
-  5: "Entregado",
-  6: "Cancelado"
-};
-
-// Colores para los estados (consistentes con TodaySalesTable)
-const STATUS_BG_COLORS = {
-  1: "bg-yellow-100 hover:bg-yellow-200 border-yellow-300 text-yellow-800",
-  2: "bg-orange-100 hover:bg-orange-200 border-orange-300 text-orange-800",
-  3: "bg-purple-100 hover:bg-purple-200 border-purple-300 text-purple-800",
-  4: "bg-indigo-100 hover:bg-indigo-200 border-indigo-300 text-indigo-800",
-  5: "bg-green-100 hover:bg-green-200 border-green-300 text-green-800",
-  6: "bg-red-100 hover:bg-red-200 border-red-300 text-red-800",
-};
 
 const DELIVERY_TYPE_MAP: Record<number, string> = {
   1: "Delivery",
   2: "Recoger en tienda"
 };
 
-const STATUS_OPTIONS = [
-  { id: "1", label: "Pendiente" },
-  { id: "2", label: "En cocina" },
-  { id: "3", label: "Listo para recoger" },
-  { id: "4", label: "En camino" },
-  { id: "5", label: "Entregado" },
-  { id: "6", label: "Cancelado" },
-];
-
 interface FutureSalesTableProps {
   sales?: Sale[];
-  updateSaleStatus?: (id: string, statusId: string) => void;
+  // Se elimina updateSaleStatus ya que no se permite cambiar estados
 }
 
 // Componente para mostrar el icono según el tipo de entrega
@@ -304,7 +273,6 @@ function getDaysUntilDelivery(deliveryDate: string): string {
   const diffTime = delivery.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  // Como ahora solo mostramos de mañana en adelante, no necesitamos "¡Hoy!"
   if (diffDays === 1) return "Mañana";
   if (diffDays === 2) return "En 2 días";
   if (diffDays === 3) return "En 3 días";
@@ -330,11 +298,7 @@ function getDaysColor(daysText: string): string {
 
 export default function FutureSalesTable({ 
   sales = [],
-  updateSaleStatus = (id, statusId) => {
-    console.log(`Updating sale ${id} status to ${statusId}`);
-  } 
 }: FutureSalesTableProps) {
-  const [localSales, setLocalSales] = useState<Sale[]>(sales);
   const [filterStatus, setFilterStatus] = useState("all");
 
   // Filtrar ventas futuras (mañana en adelante, excluyendo hoy)
@@ -346,7 +310,7 @@ export default function FutureSalesTable({
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
     
-    return localSales.filter((sale) => {
+    return sales.filter((sale) => {
       if (!sale.fecha_entrega_estimada) return false;
       
       try {
@@ -358,13 +322,11 @@ export default function FutureSalesTable({
         return false;
       }
     });
-  }, [localSales]);
+  }, [sales]);
 
   // Filtrar y ordenar ventas
   const filteredSales = useMemo(() => {
-    let result = futureSales.filter(sale => 
-      filterStatus === "all" || STATUS_MAP[sale.id_estado_entrega || 1] === filterStatus
-    );
+    let result = futureSales;
 
     // Ordenar por fecha de entrega (más próximas primero)
     result = result.sort((a, b) => 
@@ -372,23 +334,7 @@ export default function FutureSalesTable({
     );
 
     return result;
-  }, [futureSales, filterStatus]);
-
-  const handleStatusChange = (saleId: string, newStatusId: string) => {
-    const newStatus = parseInt(newStatusId);
-
-    setLocalSales((prevSales) =>
-      prevSales.map((sale) =>
-        sale.tempId === saleId ? { 
-          ...sale, 
-          id_estado_entrega: newStatus,
-          nombre_estado_entrega: STATUS_MAP[newStatus] || "Desconocido"
-        } : sale
-      )
-    );
-
-    updateSaleStatus(saleId, newStatusId);
-  };
+  }, [futureSales]);
 
   // Calcular total de ventas futuras
   const totalAmount = futureSales.reduce((sum, sale) => sum + (sale.total_general || 0), 0);
@@ -438,26 +384,6 @@ export default function FutureSalesTable({
       </CardHeader>
       
       <CardContent className="p-0 flex-1 flex flex-col">
-        {/* Filtros */}
-        <div className="flex items-center justify-between px-4 mb-4">
-          <div className="flex items-center space-x-2">
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-[180px] h-8">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                {STATUS_OPTIONS.map((status) => (
-                  <SelectItem key={status.id} value={status.label}>
-                    {status.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         {/* Tabla */}
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto">
@@ -469,7 +395,6 @@ export default function FutureSalesTable({
                   <TableHead className="w-[130px]">Fecha Entrega</TableHead>
                   <TableHead className="w-[120px]">Monto Total</TableHead>
                   <TableHead className="w-[120px]">Tipo Entrega</TableHead>
-                  <TableHead className="w-[150px]">Estado</TableHead>
                   <TableHead className="w-[100px] text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -525,44 +450,7 @@ export default function FutureSalesTable({
                           {deliveryType}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className={`h-8 w-full ${STATUS_BG_COLORS[(sale.id_estado_entrega || 1) as keyof typeof STATUS_BG_COLORS] || "bg-gray-100 text-gray-800"} transition-colors duration-200`}
-                            >
-                              <div className="flex items-center justify-between w-full">
-                                <span className="font-medium">{STATUS_MAP[sale.id_estado_entrega || 1] || "Desconocido"}</span>
-                                <ChevronDown className="h-4 w-4 opacity-50" />
-                              </div>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start">
-                            <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
-                            {STATUS_OPTIONS.map((status) => (
-                              <DropdownMenuItem
-                                key={status.id}
-                                className="flex items-center justify-between"
-                                onClick={() => handleStatusChange(sale.tempId, status.id)}
-                              >
-                                <div className="flex items-center">
-                                  <span
-                                    className={`w-2 h-2 rounded-full mr-2 ${
-                                      STATUS_BG_COLORS[parseInt(status.id) as keyof typeof STATUS_BG_COLORS]?.split(' ')[0] || "bg-gray-100"
-                                    }`}
-                                  />
-                                  {status.label}
-                                </div>
-                                {status.label === STATUS_MAP[sale.id_estado_entrega || 1] && (
-                                  <Check className="h-4 w-4" />
-                                )}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                      <TableCell>
+                      <TableCell className="text-right">
                         <SaleDetailsDialog sale={sale} />
                       </TableCell>
                     </TableRow>
@@ -573,11 +461,11 @@ export default function FutureSalesTable({
           </div>
         </div>
 
-        {/* Contador de resultados (sin paginación) */}
+        {/* Contador de resultados */}
         {filteredSales.length > 0 && (
           <div className="flex items-center justify-between px-4 py-2 border-t">
             <div className="text-sm text-muted-foreground">
-              Mostrando {filteredSales.length} ventas
+              Mostrando {filteredSales.length} ventas programadas
             </div>
           </div>
         )}

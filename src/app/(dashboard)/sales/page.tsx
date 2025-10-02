@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
+// app/sales/page.tsx
 import BreadcrumbNav from "./components/BreadcrumbNav";
 import FutureSalesTable from "./components/FutureSalesTable";
 import Header from "./components/Header";
@@ -157,52 +155,114 @@ function separateSalesByDate(sales: Sale[]): { todaySales: Sale[], futureSales: 
   return { todaySales, futureSales };
 }
 
-export default function Page() {
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [todaySales, setTodaySales] = useState<Sale[]>([]);
-  const [futureSales, setFutureSales] = useState<Sale[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    getSalesData().then((data) => {
-      console.log("Datos obtenidos de API:", data.length, "ventas");
-      setSales(data);
-      const separated = separateSalesByDate(data);
-      setTodaySales(separated.todaySales);
-      setFutureSales(separated.futureSales);
-      setLoading(false);
+// Server Action para actualizar el estado
+// En tu app/sales/page.tsx - Server Action final
+async function updateSaleStatus(saleId: number, statusId: number) {
+  'use server';
+  
+  try {
+    console.log('🔄 Server Action: Actualizando estado', { 
+      saleId, 
+      statusId 
     });
-  }, []);
 
-  // Función para actualizar el estado de una venta
-  const updateSaleStatus = (saleId: string, statusId: string) => {
-    const newStatus = parseInt(statusId);
+    // Usar el mismo formato que tu función getSalesData
+    const url = new URL("https://torta-express-production.af9gwe.easypanel.host/webhook/server");
+    url.searchParams.append('accion', 'actualizar_entrega');
+    url.searchParams.append('id_venta', saleId.toString());
+    url.searchParams.append('id_estado_entrega', statusId.toString());
+    url.searchParams.append('usuario', 'Administrador');
+
+    console.log('📤 URL de actualización:', url.toString());
+
+    const response = await fetch(url.toString(), {
+      method: "PUT",
+      headers: {
+        Authorization: `Basic ${Buffer.from(
+          "Administrador:429683C4C977415CAAFCCE10F7D57E11"
+        ).toString("base64")}`,
+      },
+      // Agregar timeout
+      signal: AbortSignal.timeout(10000),
+    });
+
+    console.log('📡 Response status:', response.status);
+    console.log('📡 Response ok:', response.ok);
+
+    // Leer la respuesta como texto primero
+    const responseText = await response.text();
+    console.log('📡 Response text (raw):', responseText);
+    console.log('📡 Response text length:', responseText.length);
+
+    // ✅ EL PROBLEMA ESTÁ AQUÍ: Respuesta vacía pero status 200
+    // Esto significa que la actualización probablemente funcionó
+    if (responseText.trim() === '') {
+      console.log('✅ Respuesta vacía pero status 200 - Asumiendo éxito');
+      return { 
+        success: true, 
+        message: "Estado actualizado correctamente" 
+      };
+    }
+
+    // Si hay contenido, intentar parsear como JSON
+    let result;
+    try {
+      result = JSON.parse(responseText);
+      console.log('✅ JSON parseado exitosamente:', result);
+    } catch (jsonError) {
+      console.log('⚠️ No es JSON válido, pero status es 200 - Asumiendo éxito');
+      // Si el status es 200, asumimos que la operación fue exitosa
+      if (response.ok) {
+        return { 
+          success: true, 
+          message: "Estado actualizado correctamente" 
+        };
+      } else {
+        throw new Error(`Respuesta del servidor: ${responseText}`);
+      }
+    }
+
+    // Verificar si hay algún error en la respuesta JSON
+    if (result && result.success === false) {
+      throw new Error(result.error || result.message || 'Error del servidor');
+    }
+
+    console.log('✅ Estado actualizado exitosamente en backend');
+    return { 
+      success: true, 
+      data: result,
+      message: result?.message || 'Estado actualizado correctamente'
+    };
     
-    // Solo actualizamos el id_estado_entrega, el nombre vendrá de la API de estados
-    setSales(prev => prev.map(sale => 
-      sale.tempId === saleId ? { 
-        ...sale, 
-        id_estado_entrega: newStatus
-        // El nombre_estado_entrega se actualizará automáticamente desde los estados de la API
-      } : sale
-    ));
+  } catch (error) {
+    console.error('❌ Error en Server Action:', error);
+    
+    // Manejar diferentes tipos de errores
+    let errorMessage = 'Error al actualizar el estado';
+    
+    if (error instanceof Error) {
+      if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+        errorMessage = 'Timeout: El servidor tardó demasiado en responder.';
+      } else if (error.message.includes('Failed to fetch')) {
+        errorMessage = 'Error de conexión: No se pudo conectar al servidor.';
+      } else if (error.message.includes('Unexpected end of JSON input')) {
+        errorMessage = 'Error: El servidor respondió con una respuesta vacía.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: errorMessage
+    };
+  }
+}
 
-    setTodaySales(prev => prev.map(sale => 
-      sale.tempId === saleId ? { 
-        ...sale, 
-        id_estado_entrega: newStatus
-      } : sale
-    ));
-
-    setFutureSales(prev => prev.map(sale => 
-      sale.tempId === saleId ? { 
-        ...sale, 
-        id_estado_entrega: newStatus
-      } : sale
-    ));
-
-    console.log(`Actualizando venta ${saleId} a estado ${statusId}`);
-  };
+export default async function SalesPage() {
+  // Obtener datos en el servidor
+  const salesData = await getSalesData();
+  const { todaySales, futureSales } = separateSalesByDate(salesData);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 lg:p-6">
@@ -227,32 +287,7 @@ export default function Page() {
       </div>
 
       {/* Main Content */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20 text-gray-500">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-lg">Cargando ventas...</p>
-          </div>
-        </div>
-      ) : sales.length > 0 ? (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
-          {/* TodaySalesTable - Solo ventas de hoy */}
-          <div className="w-full min-w-0">
-            <TodaySalesTable 
-              sales={todaySales} 
-              updateSaleStatus={updateSaleStatus}
-            />
-          </div>
-
-          {/* FutureSalesTable - Solo ventas futuras (mañana en adelante) */}
-          <div className="w-full min-w-0">
-            <FutureSalesTable 
-              sales={futureSales} 
-              updateSaleStatus={updateSaleStatus}
-            />
-          </div>
-        </div>
-      ) : (
+      {salesData.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-8 text-gray-500 bg-white rounded-lg shadow">
           <svg
             className="w-16 h-16 mb-4 text-gray-300"
@@ -273,6 +308,23 @@ export default function Page() {
           <p className="text-center text-gray-600">
             No se encontraron datos de ventas en el sistema.
           </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
+          {/* TodaySalesTable - Solo ventas de hoy */}
+          <div className="w-full min-w-0">
+            <TodaySalesTable 
+              sales={todaySales} 
+              updateSaleStatus={updateSaleStatus}
+            />
+          </div>
+
+          {/* FutureSalesTable - Solo ventas futuras (mañana en adelante) */}
+          <div className="w-full min-w-0">
+            <FutureSalesTable 
+              sales={futureSales} 
+            />
+          </div>
         </div>
       )}
     </div>
